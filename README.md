@@ -54,7 +54,7 @@ CLAUDE_API_KEY=sk-ant-your-claude-api-key-here
 # Get from: https://aistudio.google.com/apikey
 GEMINI_API_KEY=your-gemini-api-key-here
 
-# === Google Cloud (Optional - for production Gemini Live API) ===
+# === Google Cloud (Required for Gemini Live API) ===
 # Your GCP project ID
 GOOGLE_CLOUD_PROJECT=your-gcp-project-id
 
@@ -80,12 +80,14 @@ NODE_ENV=development
 3. Copy the key
 4. Add to `.env` as `GEMINI_API_KEY`
 
-**Google Cloud (for production):**
+**Google Cloud (for Gemini Live API):**
 1. Go to https://console.cloud.google.com/
 2. Create/select project
 3. Enable Vertex AI API
-4. Set up authentication
-5. Add project ID and location to `.env`
+4. Enable Cloud Text-to-Speech API
+5. Set up authentication: `gcloud config set project YOUR_PROJECT_ID`
+6. Set quota project: `gcloud auth application-default set-quota-project YOUR_PROJECT_ID`
+7. Add project ID and location to `.env`
 
 ## API Endpoints
 
@@ -228,7 +230,18 @@ Chat with AI assistant (Gemini, Claude, or Mock mode).
 
 **WS** `/api/voice`
 
-Real-time voice interaction via Gemini 2.0 Live API.
+Real-time voice interaction via Gemini 2.0 Live API with Vertex AI.
+
+**Features:**
+- 🎤 Push-to-talk interface (hold to record, release to send)
+- 📝 Real-time speech-to-text transcription
+- 🤖 Conversational AI responses from Gemini with full conversation memory
+- 🔊 Google Cloud Text-to-Speech with toggleable UI control
+- 💬 Separate user and assistant transcript display
+- 🧠 Automatic conversation context retention across messages
+
+**Test Page:**
+Open `http://localhost:3001/voice-test.html` in your browser for an interactive test interface with TTS toggle control.
 
 **Connection:**
 ```javascript
@@ -241,16 +254,18 @@ const ws = new WebSocket('ws://localhost:3001/api/voice');
 ```json
 {
   "action": "start_session",
-  "sessionId": "unique-session-id"
+  "sessionId": "unique-session-id",
+  "enableTTS": true
 }
 ```
+Note: `enableTTS` is optional (default: false)
 
 **Send Audio Chunk:**
 ```json
 {
   "action": "audio_chunk",
   "sessionId": "unique-session-id",
-  "audioData": "base64-encoded-pcm-audio",
+  "audioData": "base64-encoded-webm-audio",
   "sampleRate": 16000
 }
 ```
@@ -264,19 +279,40 @@ const ws = new WebSocket('ws://localhost:3001/api/voice');
 ```
 
 **Server Responses:**
+
+User transcript (immediate):
+```json
+{
+  "action": "user_transcript",
+  "sessionId": "unique-session-id",
+  "transcript": "What the user said"
+}
+```
+
+Assistant response:
 ```json
 {
   "action": "transcript",
   "sessionId": "unique-session-id",
-  "transcript": "User said something"
+  "transcript": "Assistant's text response"
 }
 ```
 
+Audio response (if TTS enabled):
 ```json
 {
   "action": "audio_response",
   "sessionId": "unique-session-id",
   "audioData": "base64-encoded-audio-response"
+}
+```
+
+Error:
+```json
+{
+  "action": "error",
+  "sessionId": "unique-session-id",
+  "error": "Error message"
 }
 ```
 
@@ -304,10 +340,12 @@ dn-server/
 │   │   ├── ai/                 # AI service integrations
 │   │   │   └── customerGenerator.ts
 │   │   └── gemini/             # Gemini Live API service
-│   │       └── liveApi.ts
+│   │       └── liveApi.ts      # Voice-to-text and response
 │   ├── types/
 │   │   └── index.ts            # TypeScript type definitions
 │   └── index.ts                # Main Express app
+├── public/
+│   └── voice-test.html         # Interactive voice test page
 ├── data/
 │   └── customers/              # Generated customer JSON files
 ├── .env.example                # Environment variable template
@@ -318,7 +356,43 @@ dn-server/
 
 ## Development Workflow
 
-### Testing WebSocket Connection
+### Testing Voice Assistant
+
+**Using the Interactive Test Page:**
+
+1. Start the server: `npm run dev`
+2. Open `http://localhost:3001/voice-test.html` in your browser
+3. **Toggle TTS** on/off (enabled by default) if you want voice responses
+4. Click "Connect" to start a WebSocket session
+5. Hold down "Hold to Talk" button and speak
+6. Release button to send audio
+7. Watch transcripts appear in real-time:
+   - Blue box: Your speech (transcribed)
+   - Pink box: Assistant's response
+8. Continue the conversation - Gemini remembers all previous messages!
+
+**Features:**
+- Push-to-talk: Hold button to record, release to send
+- Real-time transcription of user speech
+- Conversational AI responses with memory (Gemini remembers the conversation)
+- TTS toggle: Enable/disable voice responses on-the-fly
+- Visual feedback for connection/recording status
+- Separate display for user vs assistant messages
+
+**Configuration:**
+
+Text-to-speech can be toggled in the UI test page, or configured programmatically when starting a session. The conversation history is maintained automatically per WebSocket connection.
+
+Example with TTS enabled:
+```json
+{
+  "action": "start_session",
+  "sessionId": "session_123",
+  "enableTTS": true
+}
+```
+
+### Testing WebSocket Connection Programmatically
 
 Create a test file to verify voice WebSocket:
 
@@ -332,7 +406,8 @@ ws.on('open', () => {
   console.log('Connected to voice WebSocket');
   ws.send(JSON.stringify({
     action: 'start_session',
-    sessionId: 'test-session-123'
+    sessionId: 'test-session-123',
+    enableTTS: false
   }));
 });
 
@@ -360,6 +435,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 ```
+
+### Voice Assistant TTS
+Text-to-speech can be toggled per session via the `enableTTS` parameter when starting a session. The interactive test page includes a UI toggle for easy testing.
 
 ### File Paths
 Default paths for Figma bridge assume `dn-server` and `dn-starter` are siblings:
@@ -404,6 +482,39 @@ cat .env
 3. Ensure no firewall blocking WebSocket connections
 4. Check server console for connection logs
 
+### Voice Assistant Issues
+
+**Microphone not working:**
+- Grant browser microphone permissions
+- Check browser console for errors
+- Try HTTPS if on remote server (getUserMedia requires secure context)
+
+**Transcription errors:**
+- Verify `GOOGLE_CLOUD_PROJECT` is set correctly
+- Check Vertex AI API is enabled in Google Cloud Console
+- Ensure proper authentication: `gcloud config set project YOUR_PROJECT_ID`
+- Run: `gcloud auth application-default set-quota-project YOUR_PROJECT_ID`
+
+**Wrong GCP project being used:**
+- Check: `gcloud config get-value project`
+- Set correct project: `gcloud config set project YOUR_PROJECT_ID`
+- Update quota project: `gcloud auth application-default set-quota-project YOUR_PROJECT_ID`
+
+**No response from Gemini:**
+- Check server logs for API errors
+- Verify `GOOGLE_CLOUD_LOCATION` matches your project
+- Test with AI Assist endpoint first to verify Gemini connectivity
+
+**TTS not working:**
+- Verify Cloud Text-to-Speech API is enabled
+- Check project ID matches in gcloud and .env
+- Restart server after changing .env
+
+**Conversation context not working:**
+- Each WebSocket connection maintains its own conversation history
+- Disconnect and reconnect to start a fresh conversation
+- Check server logs for conversation history size
+
 ### TypeScript Errors
 
 ```bash
@@ -427,9 +538,6 @@ npm run build
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/dankupfer/dn-server/issues)
 - 💡 **Feature Requests**: [GitHub Discussions](https://github.com/dankupfer/dn-server/discussions)
 - 📚 **Documentation**: [DN Ecosystem Docs](https://github.com/dankupfer/dn-starter)
-
-## License
-
 
 ---
 

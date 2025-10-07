@@ -100,6 +100,73 @@
             }
         }
 
+        .settings {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
         .controls {
             display: flex;
             gap: 10px;
@@ -244,6 +311,18 @@
             <span>Disconnected</span>
         </div>
 
+        <div class="settings">
+            <div class="setting-row">
+                <label class="setting-label" for="ttsToggle">
+                    🔊 Text-to-Speech
+                </label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="ttsToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
         <div class="controls">
             <button id="connectBtn" class="btn-connect">Connect</button>
             <button id="recordBtn" class="btn-record" disabled>Hold to Talk</button>
@@ -252,10 +331,11 @@
         <div class="transcript-area" id="transcripts">
             <div class="info">
                 <strong>Instructions:</strong>
-                1. Click 'Connect' to start a session<br>
-                2. Hold down 'Hold to Talk' button and speak<br>
-                3. Release button to send<br>
-                4. Wait for Gemini's response
+                1. Toggle TTS on/off if you want voice responses<br>
+                2. Click 'Connect' to start a session<br>
+                3. Hold down 'Hold to Talk' button and speak<br>
+                4. Release button to send<br>
+                5. Wait for Gemini's response
             </div>
         </div>
 
@@ -274,6 +354,7 @@
         const recordBtn = document.getElementById('recordBtn');
         const transcriptsEl = document.getElementById('transcripts');
         const audioPlayer = document.getElementById('audioPlayer');
+        const ttsToggle = document.getElementById('ttsToggle');
 
         // Update status display
         function updateStatus(status, text) {
@@ -322,10 +403,14 @@
                 connectBtn.textContent = 'Disconnect';
                 recordBtn.disabled = false;
 
-                // Start session
+                // Start session with TTS preference
+                const enableTTS = ttsToggle.checked;
+                console.log(`Starting session with TTS: ${enableTTS}`);
+                
                 ws.send(JSON.stringify({
                     action: 'start_session',
-                    sessionId: sessionId
+                    sessionId: sessionId,
+                    enableTTS: enableTTS
                 }));
             };
 
@@ -471,7 +556,6 @@
             audioPlayer.src = audioUrl;
             audioPlayer.play();
 
-            addTranscript('assistant', '[Playing audio response]');
             updateStatus('connected', 'Connected');
         }
 

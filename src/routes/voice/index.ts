@@ -15,6 +15,7 @@ export function setupVoiceRoutes(app: expressWs.Application) {
 
     let sessionId: string | null = null;
     let geminiService: GeminiLiveService | null = null;
+    let conversationHistory: Array<{ role: 'user' | 'model', parts: Array<{ text: string }> }> = [];
 
     ws.on('message', async (data: string) => {
       try {
@@ -28,10 +29,14 @@ export function setupVoiceRoutes(app: expressWs.Application) {
 
             // Initialize Gemini Live service
             try {
+              const enableTTS = message.enableTTS ?? false; // Default to false if not specified
+
               geminiService = new GeminiLiveService({
                 systemInstruction: 'You are a helpful banking voice assistant. Keep responses concise and conversational.',
-                enableTTS: false // Set to true when you want audio responses
+                enableTTS: enableTTS
               });
+
+              console.log(`🔊 TTS ${enableTTS ? 'enabled' : 'disabled'} for this session`);
 
               await geminiService.connect();
 
@@ -79,8 +84,26 @@ export function setupVoiceRoutes(app: expressWs.Application) {
             };
             ws.send(JSON.stringify(userTranscriptResponse));
 
-            // 2. Get Gemini's response (in parallel, but we await it)
-            const geminiResponse = await geminiService.sendAudio(userTranscript);
+            // 2. Add user message to conversation history
+            conversationHistory.push({
+              role: 'user',
+              parts: [{ text: userTranscript }]
+            });
+
+            // 3. Get Gemini's response with full conversation context
+            // console.log('🔍 About to call sendAudio with history:');
+            // console.log('   Type:', typeof conversationHistory);
+            // console.log('   Is Array:', Array.isArray(conversationHistory));
+            // console.log('   Length:', conversationHistory.length);
+            // console.log('   Content:', JSON.stringify(conversationHistory, null, 2));
+
+            const geminiResponse = await geminiService.sendAudio(conversationHistory);
+
+            // 4. Add assistant response to conversation history
+            conversationHistory.push({
+              role: 'model',
+              parts: [{ text: geminiResponse }]
+            });
 
             // Send Gemini's transcript
             const geminiTranscriptResponse: VoiceResponseMessage = {
@@ -90,7 +113,7 @@ export function setupVoiceRoutes(app: expressWs.Application) {
             };
             ws.send(JSON.stringify(geminiTranscriptResponse));
 
-            // 3. Only generate audio if TTS is enabled
+            // 5. Only generate audio if TTS is enabled
             if (geminiService['enableTTS']) {
               const audioResponse = await geminiService.generateAudioResponse(geminiResponse);
 

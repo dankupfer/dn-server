@@ -103,6 +103,7 @@ export interface VoiceSessionMessage {
   sessionId: string;
   audioData?: string; // base64 encoded PCM audio
   sampleRate?: number;
+  enableTTS?: boolean;
 }
 
 export interface VoiceResponseMessage {

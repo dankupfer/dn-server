@@ -21,6 +21,7 @@
   "author": "Dan Kupfer",
   "license": "MIT",
   "dependencies": {
+    "@google-cloud/text-to-speech": "^6.3.0",
     "@google-cloud/vertexai": "^1.10.0",
     "@google/genai": "^1.22.0",
     "@google/generative-ai": "^0.24.1",

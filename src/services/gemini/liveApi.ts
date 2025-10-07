@@ -1,6 +1,7 @@
 // src/services/gemini/liveApi.ts
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { VertexAI } from '@google-cloud/vertexai';
+import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 
 export interface GeminiLiveConfig {
   model?: string;
@@ -19,11 +20,12 @@ export class GeminiLiveService {
   private model: string;
   private systemInstruction: string;
   private enableTTS: boolean;
+  private ttsClient: TextToSpeechClient;
 
   constructor(config: GeminiLiveConfig = {}) {
     const projectId = process.env.GOOGLE_CLOUD_PROJECT;
     const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
-    this.enableTTS = config.enableTTS ?? false;
+
 
     if (!projectId) {
       throw new Error('GOOGLE_CLOUD_PROJECT not configured');
@@ -36,6 +38,12 @@ export class GeminiLiveService {
 
     this.model = config.model || 'gemini-2.0-flash-exp';
     this.systemInstruction = config.systemInstruction || 'You are a helpful voice assistant.';
+
+    this.enableTTS = config.enableTTS ?? false;
+
+    this.ttsClient = new TextToSpeechClient({
+      projectId: projectId,
+    });
   }
 
   async connect() {
@@ -60,25 +68,18 @@ export class GeminiLiveService {
     }
   }
 
-  async sendAudio(transcript: string): Promise<string> {
+  async sendAudio(conversationHistory: Array<{ role: 'user' | 'model', parts: Array<{ text: string }> }>): Promise<string> {
     if (!this.activeModel) {
       throw new Error('Not connected. Call connect() first.');
     }
 
-    console.log('🤖 Getting Gemini response to:', transcript);
+    console.log('🤖 Getting Gemini response with conversation context...');
+    console.log(`📚 Conversation history: ${conversationHistory.length} messages`);
+    console.log('📋 History structure:', JSON.stringify(conversationHistory, null, 2));
 
     try {
       const result = await this.activeModel.generateContent({
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              {
-                text: transcript,
-              },
-            ],
-          },
-        ],
+        contents: conversationHistory,
       });
 
       const response = result.response;
@@ -131,40 +132,37 @@ export class GeminiLiveService {
   }
 
   async generateAudioResponse(text: string): Promise<string> {
-    if (!this.activeModel) {
-      throw new Error('Not connected. Call connect() first.');
+    if (!this.enableTTS) {
+      throw new Error('TTS is disabled');
     }
 
     console.log('🔊 Generating audio response from text...');
 
     try {
-      // Use Gemini to generate audio from text
-      const result = await this.activeModel.generateContent({
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              {
-                text: `Convert this text to speech: ${text}`,
-              },
-            ],
-          },
-        ],
+      // Call Google Cloud Text-to-Speech API
+      const [response] = await this.ttsClient.synthesizeSpeech({
+        input: { text },
+        voice: {
+          languageCode: 'en-US',
+          name: 'en-US-Neural2-F', // Natural female voice
+          ssmlGender: 'FEMALE',
+        },
+        audioConfig: {
+          audioEncoding: 'MP3',
+          speakingRate: 1.0,
+          pitch: 0.0,
+        },
       });
 
-      const response = await result.response;
-
-      // Check if response contains audio
-      if (response.candidates && response.candidates[0]?.content?.parts) {
-        for (const part of response.candidates[0].content.parts) {
-          if (part.inlineData && part.inlineData.mimeType?.startsWith('audio/')) {
-            console.log('✅ Audio response generated');
-            return part.inlineData.data; // Return base64 audio
-          }
-        }
+      if (!response.audioContent) {
+        throw new Error('No audio content in TTS response');
       }
 
-      throw new Error('No audio data in response');
+      // Convert audio content to base64
+      const audioBase64 = Buffer.from(response.audioContent).toString('base64');
+
+      console.log('✅ Audio response generated via Google Cloud TTS');
+      return audioBase64;
     } catch (error) {
       console.error('❌ Error generating audio response:', error);
       throw error;
