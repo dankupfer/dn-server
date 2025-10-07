@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Voice API Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status.disconnected {
+            background: #fee;
+            color: #c33;
+        }
+
+        .status.connected {
+            background: #efe;
+            color: #3c3;
+        }
+
+        .status.recording {
+            background: #fef3cd;
+            color: #856404;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status.disconnected .status-dot {
+            background: #c33;
+        }
+
+        .status.connected .status-dot {
+            background: #3c3;
+        }
+
+        .status.recording .status-dot {
+            background: #856404;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-connect {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-connect:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-record {
+            background: #f093fb;
+            color: white;
+        }
+
+        .btn-record:hover:not(:disabled) {
+            background: #d77ee8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-record.recording {
+            background: #ff6b6b;
+            animation: pulse-button 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-button {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .transcript-area {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .transcript-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .transcript-item.user {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+
+        .transcript-item.assistant {
+            background: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .transcript-item.error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+
+        .transcript-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .transcript-text {
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #1976d2;
+        }
+
+        .info strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎙️ Gemini Voice API Test</h1>
+        <p class="subtitle">Test your voice assistant integration</p>
+
+        <div id="status" class="status disconnected">
+            <span class="status-dot"></span>
+            <span>Disconnected</span>
+        </div>
+
+        <div class="controls">
+            <button id="connectBtn" class="btn-connect">Connect</button>
+            <button id="recordBtn" class="btn-record" disabled>Hold to Talk</button>
+        </div>
+
+        <div class="transcript-area" id="transcripts">
+            <div class="info">
+                <strong>Instructions:</strong>
+                1. Click 'Connect' to start a session<br>
+                2. Hold down 'Hold to Talk' button and speak<br>
+                3. Release button to send<br>
+                4. Wait for Gemini's response
+            </div>
+        </div>
+
+        <audio id="audioPlayer" style="display: none;"></audio>
+    </div>
+
+    <script>
+        let ws = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let sessionId = null;
+        let isRecording = false;
+
+        const statusEl = document.getElementById('status');
+        const connectBtn = document.getElementById('connectBtn');
+        const recordBtn = document.getElementById('recordBtn');
+        const transcriptsEl = document.getElementById('transcripts');
+        const audioPlayer = document.getElementById('audioPlayer');
+
+        // Update status display
+        function updateStatus(status, text) {
+            statusEl.className = `status ${status}`;
+            statusEl.innerHTML = `<span class="status-dot"></span><span>${text}</span>`;
+        }
+
+        // Add transcript to display
+        function addTranscript(type, text) {
+            const item = document.createElement('div');
+            item.className = `transcript-item ${type}`;
+
+            const label = document.createElement('div');
+            label.className = 'transcript-label';
+            label.textContent = type === 'user' ? '👤 YOU SAID' : type === 'assistant' ? '🤖 ASSISTANT' : '❌ ERROR';
+
+            const content = document.createElement('div');
+            content.className = 'transcript-text';
+            content.textContent = text;
+
+            item.appendChild(label);
+            item.appendChild(content);
+
+            // Remove instructions if present
+            const info = transcriptsEl.querySelector('.info');
+            if (info) info.remove();
+
+            transcriptsEl.appendChild(item);
+            transcriptsEl.scrollTop = transcriptsEl.scrollHeight;
+        }
+
+        // Connect to WebSocket
+        connectBtn.addEventListener('click', () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                // Disconnect
+                ws.close();
+                return;
+            }
+
+            sessionId = 'session_' + Date.now();
+            ws = new WebSocket('ws://localhost:3001/api/voice');
+
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                updateStatus('connected', 'Connected');
+                connectBtn.textContent = 'Disconnect';
+                recordBtn.disabled = false;
+
+                // Start session
+                ws.send(JSON.stringify({
+                    action: 'start_session',
+                    sessionId: sessionId
+                }));
+            };
+
+            ws.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                console.log('Received:', message);
+
+                switch (message.action) {
+                    case 'user_transcript':
+                        addTranscript('user', message.transcript);
+                        break;
+
+                    case 'transcript':
+                        if (message.transcript && !message.transcript.includes('Session started')) {
+                            addTranscript('assistant', message.transcript);
+                        }
+                        break;
+
+                    case 'audio_response':
+                        if (message.audioData) {
+                            playAudioResponse(message.audioData);
+                        }
+                        break;
+
+                    case 'error':
+                        addTranscript('error', message.error);
+                        break;
+                }
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                updateStatus('disconnected', 'Disconnected');
+                connectBtn.textContent = 'Connect';
+                recordBtn.disabled = true;
+                if (isRecording) {
+                    stopRecording();
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                addTranscript('error', 'Connection error');
+            };
+        });
+
+        // Push-to-talk: Hold to record, release to send
+        // Start recording on mouse/touch down
+        recordBtn.addEventListener('mousedown', async (e) => {
+            e.preventDefault();
+            if (!isRecording) {
+                await startRecording();
+            }
+        });
+
+        recordBtn.addEventListener('touchstart', async (e) => {
+            e.preventDefault();
+            if (!isRecording) {
+                await startRecording();
+            }
+        });
+
+        // Stop recording on mouse/touch up
+        recordBtn.addEventListener('mouseup', () => {
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
+        recordBtn.addEventListener('touchend', () => {
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
+        // Also stop if mouse leaves button while held
+        recordBtn.addEventListener('mouseleave', () => {
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    await sendAudioToServer(audioBlob);
+
+                    // Stop all tracks
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordBtn.textContent = 'Recording...';
+                recordBtn.classList.add('recording');
+                updateStatus('recording', 'Recording...');
+
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                addTranscript('error', 'Microphone access denied');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.textContent = 'Hold to Talk';
+                recordBtn.classList.remove('recording');
+                updateStatus('connected', 'Processing...');
+            }
+        }
+
+        async function sendAudioToServer(audioBlob) {
+            // Convert blob to base64
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64Audio = reader.result.split(',')[1];
+
+                ws.send(JSON.stringify({
+                    action: 'audio_chunk',
+                    sessionId: sessionId,
+                    audioData: base64Audio,
+                    sampleRate: 16000
+                }));
+            };
+            reader.readAsDataURL(audioBlob);
+        }
+
+        function playAudioResponse(base64Audio) {
+            const audioBlob = base64ToBlob(base64Audio, 'audio/mp3');
+            const audioUrl = URL.createObjectURL(audioBlob);
+            audioPlayer.src = audioUrl;
+            audioPlayer.play();
+
+            addTranscript('assistant', '[Playing audio response]');
+            updateStatus('connected', 'Connected');
+        }
+
+        function base64ToBlob(base64, mimeType) {
+            const byteCharacters = atob(base64);
+            const byteArrays = [];
+
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteArrays.push(byteCharacters.charCodeAt(i));
+            }
+
+            return new Blob([new Uint8Array(byteArrays)], { type: mimeType });
+        }
+    </script>
+</body>
+
+</html>

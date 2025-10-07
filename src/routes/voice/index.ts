@@ -29,12 +29,12 @@ export function setupVoiceRoutes(app: expressWs.Application) {
             // Initialize Gemini Live service
             try {
               geminiService = new GeminiLiveService({
-                systemInstruction: 'You are a helpful banking voice assistant. Keep responses concise and conversational.'
+                systemInstruction: 'You are a helpful banking voice assistant. Keep responses concise and conversational.',
+                enableTTS: false // Set to true when you want audio responses
               });
-              
-              // TODO: Connect to Gemini Live API
-              // await geminiService.connect();
-              
+
+              await geminiService.connect();
+
               // Send confirmation back to client
               const response: VoiceResponseMessage = {
                 action: 'transcript',
@@ -42,7 +42,7 @@ export function setupVoiceRoutes(app: expressWs.Application) {
                 transcript: 'Session started successfully'
               };
               ws.send(JSON.stringify(response));
-              
+
             } catch (error) {
               console.error('❌ Error starting Gemini session:', error);
               const errorResponse: VoiceResponseMessage = {
@@ -61,31 +61,56 @@ export function setupVoiceRoutes(app: expressWs.Application) {
             }
 
             console.log(`🎤 Received audio chunk for session: ${sessionId}`);
-            
-            // TODO: Send audio to Gemini Live API
-            // const audioChunk = {
-            //   data: message.audioData!,
-            //   mimeType: 'audio/pcm;rate=16000'
-            // };
-            // await geminiService.sendAudio(audioChunk);
-            
-            // For now, send a mock response
-            const mockResponse: VoiceResponseMessage = {
+
+            // Prepare audio chunk
+            const audioChunk = {
+              data: message.audioData!,
+              mimeType: `audio/pcm;rate=${message.sampleRate || 16000}`
+            };
+
+            // 1. Transcribe user speech immediately
+            const userTranscript = await geminiService.transcribeAudio(audioChunk);
+
+            // Send user transcript right away
+            const userTranscriptResponse: VoiceResponseMessage = {
+              action: 'user_transcript',
+              sessionId,
+              transcript: userTranscript
+            };
+            ws.send(JSON.stringify(userTranscriptResponse));
+
+            // 2. Get Gemini's response (in parallel, but we await it)
+            const geminiResponse = await geminiService.sendAudio(userTranscript);
+
+            // Send Gemini's transcript
+            const geminiTranscriptResponse: VoiceResponseMessage = {
               action: 'transcript',
               sessionId,
-              transcript: '[Mock transcript: audio received]'
+              transcript: geminiResponse
             };
-            ws.send(JSON.stringify(mockResponse));
+            ws.send(JSON.stringify(geminiTranscriptResponse));
+
+            // 3. Only generate audio if TTS is enabled
+            if (geminiService['enableTTS']) {
+              const audioResponse = await geminiService.generateAudioResponse(geminiResponse);
+
+              const audioResponseMessage: VoiceResponseMessage = {
+                action: 'audio_response',
+                sessionId,
+                audioData: audioResponse
+              };
+              ws.send(JSON.stringify(audioResponseMessage));
+            }
             break;
 
           case 'end_session':
             console.log(`🛑 Ending session: ${sessionId}`);
-            
+
             if (geminiService) {
               await geminiService.disconnect();
               geminiService = null;
             }
-            
+
             sessionId = null;
             break;
 

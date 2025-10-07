@@ -106,7 +106,7 @@ export interface VoiceSessionMessage {
 }
 
 export interface VoiceResponseMessage {
-  action: 'audio_response' | 'transcript' | 'error';
+  action: 'transcript' | 'user_transcript' | 'audio_response' | 'error';
   sessionId: string;
   audioData?: string; // base64 encoded audio response
   transcript?: string;

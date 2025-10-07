@@ -32,6 +32,9 @@ app.use(cors({
 // Parse JSON bodies (with larger limit for audio data)
 app.use(express.json({ limit: '10mb' }));
 
+// Serve static files from public directory
+app.use(express.static('public'));
+
 // Register HTTP routes
 app.use('/api', healthRoutes);
 app.use('/api', figmaRoutes);
