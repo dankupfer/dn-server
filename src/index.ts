@@ -1,11 +1,13 @@
 // src/index.ts
 import 'dotenv/config';
 import express from 'express';
+import expressWs from 'express-ws';
 import cors from 'cors';
 import healthRoutes from './routes/health';
 import figmaRoutes from './routes/figma';
 import customersRoutes from './routes/customers';
 import assistRoutes from './routes/assist';
+import { setupVoiceRoutes } from './routes/voice';
 
 // Log environment setup
 console.log('🔐 Environment variables loaded:');
@@ -17,6 +19,9 @@ console.log('- GOOGLE_CLOUD_LOCATION:', process.env.GOOGLE_CLOUD_LOCATION || 'No
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Enable WebSocket support
+const wsInstance = expressWs(app);
+
 // Enable CORS for Figma plugin and React Native apps
 app.use(cors({
   origin: '*', // Allow all origins for development
@@ -27,14 +32,15 @@ app.use(cors({
 // Parse JSON bodies (with larger limit for audio data)
 app.use(express.json({ limit: '10mb' }));
 
-// Register all routes
+// Register HTTP routes
 app.use('/api', healthRoutes);
 app.use('/api', figmaRoutes);
 app.use('/api', customersRoutes);
 app.use('/api', assistRoutes);
 
-// TODO: Voice routes coming soon
-// app.use('/api/voice', voiceRoutes);
+// Register WebSocket routes
+const voiceRouter = setupVoiceRoutes(wsInstance.app);
+app.use('/api', voiceRouter);
 
 // Start server
 app.listen(PORT, () => {
@@ -44,6 +50,6 @@ app.listen(PORT, () => {
   console.log(`   🎨 Figma:     http://localhost:${PORT}/api/create-module`);
   console.log(`   🦁 Customers: http://localhost:${PORT}/api/create-customer`);
   console.log(`   🤖 Assist:    http://localhost:${PORT}/api/assist/chat`);
-  console.log(`   🎙️  Voice:     🔄 (coming soon...)`);
+  console.log(`   🎙️  Voice:     ws://localhost:${PORT}/api/voice`);
   console.log('');
 });
