@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import expressWs from 'express-ws';
 import { WebSocket } from 'ws';
-import { VoiceSessionMessage, VoiceResponseMessage } from '../../types';
+import { WebSocketIncomingMessage, VoiceResponseMessage } from '../../types';
 import { GeminiLiveService } from '../../services/gemini/liveApi';
 import { MockAssistantService } from '../../services/mockAssistant';
 
@@ -21,14 +21,20 @@ export function setupAssistRoutes(app: expressWs.Application) {
 
     ws.on('message', async (data: string) => {
       try {
-        const message: VoiceSessionMessage = JSON.parse(data);
+        const message = JSON.parse(data) as any; // Use 'any' for flexibility in the switch
         console.log(`📨 Received message: ${message.action}`);
 
         switch (message.action) {
           case 'start_session':
+            // TypeScript knows this is VoiceSessionMessage here
             sessionId = message.sessionId;
             useMockMode = message.useMockMode ?? false; // NEW
             console.log(`✅ Session started: ${sessionId} ${useMockMode ? '(MOCK MODE)' : ''}`);
+
+            if (!sessionId) {
+              console.error('❌ No active session for text message');
+              return;
+            }
 
             try {
               const enableTTS = message.enableTTS ?? false;
@@ -56,11 +62,12 @@ export function setupAssistRoutes(app: expressWs.Application) {
               ws.send(JSON.stringify(response));
 
             } catch (error) {
-              console.error('❌ Error starting session:', error);
+              console.error('❌ Error processing message:', error);
+              
               const errorResponse: VoiceResponseMessage = {
                 action: 'error',
-                sessionId,
-                error: useMockMode ? 'Failed to start mock session' : 'Failed to start Gemini session'
+                sessionId: sessionId,
+                error: error instanceof Error ? error.message : 'Unknown error'
               };
               ws.send(JSON.stringify(errorResponse));
             }
@@ -160,6 +167,70 @@ export function setupAssistRoutes(app: expressWs.Application) {
                   audioData: audioResponse
                 };
                 ws.send(JSON.stringify(audioResponseMessage));
+              }
+            }
+            break;
+
+          case 'text_message':
+            if (!sessionId) {
+              console.error('❌ No active session');
+              return;
+            }
+
+            console.log(`💬 Received text message for session: ${sessionId}`);
+
+            if (useMockMode && mockService) {
+              // MOCK MODE: Return mock text response
+              console.log('🎭 Processing text in mock mode...');
+
+              // Simulate processing delay
+              await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+
+              // Get mock response
+              const mockResult = await mockService.processAudio(''); // Pass empty string for text mode
+
+              // Send mock response
+              const mockTextResponse: any = {
+                action: 'text_response',
+                sessionId,
+                text: mockResult.transcript,
+              };
+              ws.send(JSON.stringify(mockTextResponse));
+
+            } else if (geminiService) {
+              // REAL MODE: Use Gemini for text
+              try {
+                // Add user message to conversation history
+                conversationHistory.push({
+                  role: 'user',
+                  parts: [{ text: message.text! }]
+                });
+
+                // Get Gemini's response with conversation context
+                const geminiResponse = await geminiService.sendAudio(conversationHistory);
+
+                // Add assistant response to conversation history
+                conversationHistory.push({
+                  role: 'model',
+                  parts: [{ text: geminiResponse }]
+                });
+
+                // Send text response
+                const textResponse: any = {
+                  action: 'text_response',
+                  sessionId,
+                  text: geminiResponse,
+                };
+                ws.send(JSON.stringify(textResponse));
+
+              } catch (error) {
+                console.error('❌ Error processing text message:', error);
+                const errorResponse: any = {
+                  action: 'error',
+                  sessionId,
+                  error: 'Failed to process text message',
+                };
+                ws.send(JSON.stringify(errorResponse));
               }
             }
             break;
