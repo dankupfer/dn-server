@@ -104,6 +104,7 @@ export interface VoiceSessionMessage {
   audioData?: string; // base64 encoded PCM audio
   sampleRate?: number;
   enableTTS?: boolean;
+  useMockMode?: boolean;
 }
 
 export interface VoiceResponseMessage {

@@ -1,13 +1,12 @@
 # DN Server
 
-Express server for DN project services - Figma bridge, customer generation, AI assist, and Gemini Live API voice proxy.
+Express server for DN project services - Figma bridge, customer generation, and AI assist with voice support.
 
 ## Features
 
 🎨 **Figma Bridge** - Automatically create React Native modules from Figma designs  
 🦁 **Customer Generation** - AI-powered synthetic customer data with Claude  
-🤖 **AI Assist** - Chat assistant with Gemini/Claude/Mock modes  
-🎙️ **Voice Assistant** - WebSocket proxy for Gemini 2.0 Live API (real-time voice)  
+🤖 **AI Assist** - WebSocket assistant with voice and text support via Gemini 2.0 Live API  
 ⚡ **TypeScript** - Fully typed with comprehensive error handling  
 🌐 **CORS Enabled** - Works with Figma desktop, React Native, and web apps
 
@@ -46,11 +45,11 @@ Create a `.env` file in the root directory:
 
 ```bash
 # === API Keys ===
-# Claude API key for customer data generation
+# Claude API key for customer data generation (optional)
 # Get from: https://console.anthropic.com/
 CLAUDE_API_KEY=sk-ant-your-claude-api-key-here
 
-# Gemini API key for chat assist and voice
+# Gemini API key for AI assist (voice and text)
 # Get from: https://aistudio.google.com/apikey
 GEMINI_API_KEY=your-gemini-api-key-here
 
@@ -109,8 +108,7 @@ curl http://localhost:3001/api/health
   "services": {
     "figma": true,
     "customers": true,
-    "assist": true,
-    "voice": true
+    "assist": true
   }
 }
 ```
@@ -226,11 +224,11 @@ Chat with AI assistant (Gemini, Claude, or Mock mode).
 }
 ```
 
-### Voice Assistant (WebSocket)
+### AI Assist (WebSocket)
 
-**WS** `/api/voice`
+**WS** `/api/assist`
 
-Real-time voice interaction via Gemini 2.0 Live API with Vertex AI.
+Real-time voice and text interaction via Gemini 2.0 Live API with Vertex AI.
 
 **Features:**
 - 🎤 Push-to-talk interface (hold to record, release to send)
@@ -239,13 +237,14 @@ Real-time voice interaction via Gemini 2.0 Live API with Vertex AI.
 - 🔊 Google Cloud Text-to-Speech with toggleable UI control
 - 💬 Separate user and assistant transcript display
 - 🧠 Automatic conversation context retention across messages
+- 🎭 Mock mode for demos without Gemini API access
 
 **Test Page:**
-Open `http://localhost:3001/voice-test.html` in your browser for an interactive test interface with TTS toggle control.
+Open `http://localhost:3001/assist-test.html` in your browser for an interactive test interface with TTS toggle control.
 
 **Connection:**
 ```javascript
-const ws = new WebSocket('ws://localhost:3001/api/voice');
+const ws = new WebSocket('ws://localhost:3001/api/assist');
 ```
 
 **Message Format:**
@@ -255,10 +254,12 @@ const ws = new WebSocket('ws://localhost:3001/api/voice');
 {
   "action": "start_session",
   "sessionId": "unique-session-id",
-  "enableTTS": true
+  "enableTTS": true,
+  "useMockMode": false
 }
 ```
-Note: `enableTTS` is optional (default: false)
+Note: `enableTTS` is optional (default: false)  
+Note: `useMockMode` is optional (default: false) - Use mock responses instead of Gemini for demos
 
 **Send Audio Chunk:**
 ```json
@@ -334,18 +335,18 @@ dn-server/
 │   │   ├── health.ts           # Health check endpoint
 │   │   ├── figma/              # Figma bridge routes
 │   │   ├── customers/          # Customer generation routes
-│   │   ├── assist/             # AI chat assistant routes
-│   │   └── voice/              # Voice WebSocket routes
+│   │   └── assist/             # AI assist WebSocket routes
 │   ├── services/
 │   │   ├── ai/                 # AI service integrations
 │   │   │   └── customerGenerator.ts
-│   │   └── gemini/             # Gemini Live API service
-│   │       └── liveApi.ts      # Voice-to-text and response
+│   │   ├── gemini/             # Gemini Live API service
+│   │   │   └── liveApi.ts      # Voice-to-text and response
+│   │   └── mockAssistant.ts    # Mock responses for demos
 │   ├── types/
 │   │   └── index.ts            # TypeScript type definitions
 │   └── index.ts                # Main Express app
 ├── public/
-│   └── voice-test.html         # Interactive voice test page
+│   └── assist-test.html        # Interactive assist test page
 ├── data/
 │   └── customers/              # Generated customer JSON files
 ├── .env.example                # Environment variable template
@@ -356,12 +357,12 @@ dn-server/
 
 ## Development Workflow
 
-### Testing Voice Assistant
+### Testing AI Assist
 
 **Using the Interactive Test Page:**
 
 1. Start the server: `npm run dev`
-2. Open `http://localhost:3001/voice-test.html` in your browser
+2. Open `http://localhost:3001/assist-test.html` in your browser
 3. **Toggle TTS** on/off (enabled by default) if you want voice responses
 4. Click "Connect" to start a WebSocket session
 5. Hold down "Hold to Talk" button and speak
@@ -392,18 +393,28 @@ Example with TTS enabled:
 }
 ```
 
+Example with mock mode (no Gemini):
+```json
+{
+  "action": "start_session",
+  "sessionId": "session_123",
+  "enableTTS": false,
+  "useMockMode": true
+}
+```
+
 ### Testing WebSocket Connection Programmatically
 
-Create a test file to verify voice WebSocket:
+Create a test file to verify assist WebSocket:
 
 ```javascript
-// test-voice-ws.js
+// test-assist-ws.js
 const WebSocket = require('ws');
 
-const ws = new WebSocket('ws://localhost:3001/api/voice');
+const ws = new WebSocket('ws://localhost:3001/api/assist');
 
 ws.on('open', () => {
-  console.log('Connected to voice WebSocket');
+  console.log('Connected to assist WebSocket');
   ws.send(JSON.stringify({
     action: 'start_session',
     sessionId: 'test-session-123',
@@ -416,7 +427,7 @@ ws.on('message', (data) => {
 });
 ```
 
-Run with: `node test-voice-ws.js`
+Run with: `node test-assist-ws.js`
 
 ## Configuration
 
@@ -436,7 +447,7 @@ app.use(cors({
 }));
 ```
 
-### Voice Assistant TTS
+### AI Assist TTS
 Text-to-speech can be toggled per session via the `enableTTS` parameter when starting a session. The interactive test page includes a UI toggle for easy testing.
 
 ### File Paths
@@ -482,7 +493,7 @@ cat .env
 3. Ensure no firewall blocking WebSocket connections
 4. Check server console for connection logs
 
-### Voice Assistant Issues
+### AI Assist Issues
 
 **Microphone not working:**
 - Grant browser microphone permissions
@@ -514,6 +525,13 @@ cat .env
 - Each WebSocket connection maintains its own conversation history
 - Disconnect and reconnect to start a fresh conversation
 - Check server logs for conversation history size
+
+**Demo without Gemini access:**
+- Enable mock mode by setting `useMockMode: true` in start_session message
+- Mock mode returns 4 random canned responses with 1-2 second simulated delay
+- Perfect for demos behind corporate proxies or without API keys
+- Audio is received but not transcribed (displays placeholder text)
+- Mock responses include: 'That's interesting, tell me more about it', 'I see, can you elaborate on that?', etc.
 
 ### TypeScript Errors
 
