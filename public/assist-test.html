@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Voice API Test</title>
+    <title>Gemini Assistant API Test</title>
     <style>
         * {
             margin: 0;
@@ -303,8 +303,8 @@
 
 <body>
     <div class="container">
-        <h1>🎙️ Gemini Voice API Test</h1>
-        <p class="subtitle">Test your voice assistant integration</p>
+        <h1>🎙️ Gemini Assistant API Test</h1>
+        <p class="subtitle">Test your AI assistant integration</p>
 
         <div id="status" class="status disconnected">
             <span class="status-dot"></span>
@@ -395,7 +395,7 @@
             }
 
             sessionId = 'session_' + Date.now();
-            ws = new WebSocket('ws://localhost:3001/api/voice');
+            ws = new WebSocket('ws://localhost:3001/api/assist');
 
             ws.onopen = () => {
                 console.log('WebSocket connected');
