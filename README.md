@@ -108,7 +108,8 @@ curl http://localhost:3001/api/health
   "services": {
     "figma": true,
     "customers": true,
-    "assist": true
+    "assist": true,
+    "voice": true
   }
 }
 ```
@@ -325,6 +326,7 @@ Error:
 | `npm run build` | Build TypeScript to JavaScript |
 | `npm start` | Build and run production server |
 | `npm run type-check` | Check TypeScript types without building |
+| `npm run deploy` | Deploy to Google Cloud Run |
 
 ## Project Structure
 
@@ -349,6 +351,8 @@ dn-server/
 │   └── assist-test.html        # Interactive assist test page
 ├── data/
 │   └── customers/              # Generated customer JSON files
+├── Dockerfile                  # Docker container definition
+├── deploy.sh                   # Production deployment script
 ├── .env.example                # Environment variable template
 ├── package.json
 ├── tsconfig.json
@@ -460,6 +464,159 @@ workspace/
 
 Adjust paths in `src/routes/figma/index.ts` if your structure differs.
 
+## 🚀 Production Deployment (Google Cloud Run)
+
+### Production URL
+**API Base:** `https://dn-server-974885144591.us-central1.run.app`
+
+**Test Health Check:**
+```bash
+curl https://dn-server-974885144591.us-central1.run.app/api/health
+```
+
+### Prerequisites
+- Google Cloud account with billing enabled
+- `gcloud` CLI installed and authenticated (`gcloud auth login`)
+- Docker installed locally
+- Your API keys (Claude, Gemini)
+
+### Initial Setup (One-Time)
+
+#### 1. Create GCP Project
+```bash
+# Create new project (use unique project ID)
+gcloud projects create dankupfer-dn-server --name="DN Server"
+
+# Set as active project
+gcloud config set project dankupfer-dn-server
+gcloud auth application-default set-quota-project dankupfer-dn-server
+
+# Link billing account
+gcloud billing accounts list
+gcloud billing projects link dankupfer-dn-server --billing-account=YOUR_BILLING_ACCOUNT_ID
+
+# Enable required APIs
+gcloud services enable run.googleapis.com
+gcloud services enable containerregistry.googleapis.com
+gcloud services enable secretmanager.googleapis.com
+```
+
+#### 2. Store API Keys in Secret Manager
+```bash
+# Create secrets (replace with your actual API keys)
+echo -n "your-claude-api-key" | gcloud secrets create claude-api-key --data-file=-
+echo -n "your-gemini-api-key" | gcloud secrets create gemini-api-key --data-file=-
+
+# Grant Cloud Run access to secrets (replace PROJECT_NUMBER with your project number)
+# Get project number: gcloud projects describe dankupfer-dn-server --format="value(projectNumber)"
+gcloud secrets add-iam-policy-binding claude-api-key \
+  --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+
+gcloud secrets add-iam-policy-binding gemini-api-key \
+  --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+### Deploy to Production
+
+Once setup is complete, deploy with a single command:
+
+```bash
+npm run deploy
+```
+
+This automated script will:
+1. ✅ Build Docker image with TypeScript compilation
+2. ✅ Tag image for Google Container Registry
+3. ✅ Push image to GCR
+4. ✅ Deploy to Cloud Run with secrets automatically injected
+5. ✅ Configure public access (no authentication required)
+6. ✅ Deploy to `us-central1` region
+
+**Expected output:**
+```
+Building Docker image...
+Tagging image...
+Pushing image to GCR...
+Deploying to Google Cloud Run...
+✓ Deployment completed successfully!
+Service URL: https://dn-server-974885144591.us-central1.run.app
+```
+
+### Verify Deployment
+
+```bash
+# Test health endpoint
+curl https://dn-server-974885144591.us-central1.run.app/api/health
+
+# Expected response:
+# {
+#   "status": "ok",
+#   "message": "DN Server is running",
+#   "timestamp": "2025-01-15T10:30:00.000Z",
+#   "services": {
+#     "figma": true,
+#     "customers": true,
+#     "assist": true,
+#     "voice": true
+#   }
+# }
+```
+
+### Update Secrets
+
+To update API keys in production:
+
+```bash
+# Update Claude API key
+echo -n "new-claude-api-key" | gcloud secrets versions add claude-api-key --data-file=-
+
+# Update Gemini API key  
+echo -n "new-gemini-api-key" | gcloud secrets versions add gemini-api-key --data-file=-
+
+# Redeploy to use new secrets
+npm run deploy
+```
+
+### Monitor Production
+
+```bash
+# View Cloud Run logs
+gcloud run services logs read dn-server --region us-central1 --limit 50
+
+# Get service details
+gcloud run services describe dn-server --region us-central1
+
+# Check deployment status
+gcloud run revisions list --service dn-server --region us-central1
+```
+
+### Deployment Architecture
+
+```
+Local Machine
+    ↓ (npm run deploy)
+Docker Build (TypeScript → JavaScript)
+    ↓
+Google Container Registry (gcr.io)
+    ↓
+Google Cloud Run (us-central1)
+    ├── Secrets: Claude + Gemini API Keys
+    ├── Public Access: No auth required
+    └── Auto-scaling: 0-100 instances
+```
+
+### Cost Optimization
+
+Cloud Run pricing:
+- **Free tier:** 2 million requests/month
+- **Pricing beyond free tier:** $0.40 per million requests
+- **Always-on:** Minimal cost (scales to zero when idle)
+- **Secrets:** Free for first 6 secrets
+
+Expected monthly cost for typical usage: **$0-5**
+
 ## Troubleshooting
 
 ### Server Won't Start
@@ -492,6 +649,34 @@ cat .env
 2. Check WebSocket URL uses `ws://` not `http://`
 3. Ensure no firewall blocking WebSocket connections
 4. Check server console for connection logs
+
+### Deployment Issues
+
+**Docker build fails:**
+```bash
+# Clean Docker cache
+docker system prune -a
+
+# Rebuild
+npm run deploy
+```
+
+**Permission denied on secrets:**
+```bash
+# Re-grant permissions (use your actual project number)
+gcloud secrets add-iam-policy-binding claude-api-key \
+  --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+**TypeScript compilation errors:**
+```bash
+# Test build locally first
+npm run build
+
+# Check for type errors
+npm run type-check
+```
 
 ### AI Assist Issues
 

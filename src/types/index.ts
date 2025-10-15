@@ -133,6 +133,21 @@ export interface TextChatResponse {
 }
 
 // ============================================
+// Health Check Types
+// ============================================
+export interface HealthResponse {
+  status: string;
+  message: string;
+  timestamp: string;
+  services: {
+    figma: boolean;
+    customers: boolean;
+    assist: boolean;
+    voice: boolean;
+  };
+}
+
+// ============================================
 // Combined WebSocket Message Types
 // ============================================
 

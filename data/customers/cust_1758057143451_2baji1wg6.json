@@ -1,0 +1,55 @@
+{
+  "customerId": "cust_1758057143451_2baji1wg6",
+  "profile": {
+    "name": "Elizabeth James 2",
+    "age": 31,
+    "gender": "female",
+    "profession": "Marketing Assistant",
+    "frescoSegment": "C1"
+  },
+  "dateRange": {
+    "from": "2025-07-01",
+    "to": "2025-09-16"
+  },
+  "accounts": [
+    {
+      "id": "acc_1",
+      "type": "current",
+      "name": "Barclays Current Account",
+      "accountNumber": "74-12-55 / 82746153",
+      "balance": 2134.67,
+      "sortCode": "74-12-55"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "txn_1",
+      "accountId": "acc_1",
+      "date": "2025-09-15",
+      "description": "BACS Transfer - Digital Marketing Co",
+      "amount": 2100,
+      "type": "credit",
+      "category": "salary"
+    },
+    {
+      "id": "txn_2",
+      "accountId": "acc_1",
+      "date": "2025-09-14",
+      "description": "Tesco Stores 2773",
+      "amount": 67.35,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "txn_3",
+      "accountId": "acc_1",
+      "date": "2025-09-14",
+      "description": "Costa Coffee",
+      "amount": 3.75,
+      "type": "debit",
+      "category": "dining"
+    }
+  ],
+  "createdAt": "2025-09-16T21:12:30.872Z",
+  "generatedBy": "Claude AI"
+}

@@ -1,0 +1,134 @@
+{
+  "customerId": "cust_1758058359411_6xdg42jjj",
+  "profile": {
+    "name": "Elizabeth James 6",
+    "age": 31,
+    "gender": "female",
+    "profession": "Marketing Assistant",
+    "frescoSegment": "C1"
+  },
+  "dateRange": {
+    "from": "2025-07-01",
+    "to": "2025-09-16"
+  },
+  "accounts": [
+    {
+      "id": "acc_1",
+      "type": "current",
+      "name": "Barclays Current Account",
+      "accountNumber": "23-45-67/34567891",
+      "balance": 2345.67,
+      "sortCode": "20-45-89"
+    },
+    {
+      "id": "acc_2",
+      "type": "savings",
+      "name": "Barclays Savings Account",
+      "accountNumber": "23-45-67/34567892",
+      "balance": 8750.23,
+      "sortCode": "20-45-89"
+    },
+    {
+      "id": "acc_3",
+      "type": "credit",
+      "name": "Barclaycard Credit Card",
+      "accountNumber": "4562 xxxx xxxx 7891",
+      "balance": -1245.89,
+      "sortCode": ""
+    }
+  ],
+  "transactions": [
+    {
+      "id": "txn_1",
+      "accountId": "acc_1",
+      "date": "2025-09-16",
+      "description": "Tesco Express London",
+      "amount": -45.67,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "txn_2",
+      "accountId": "acc_1",
+      "date": "2025-09-15",
+      "description": "Shell Petrol Station",
+      "amount": -65,
+      "type": "debit",
+      "category": "fuel"
+    },
+    {
+      "id": "txn_3",
+      "accountId": "acc_1",
+      "date": "2025-09-15",
+      "description": "Salary - Marketing Co Ltd",
+      "amount": 2450,
+      "type": "credit",
+      "category": "salary"
+    },
+    {
+      "id": "txn_4",
+      "accountId": "acc_1",
+      "date": "2025-09-14",
+      "description": "Costa Coffee",
+      "amount": -4.75,
+      "type": "debit",
+      "category": "dining"
+    },
+    {
+      "id": "txn_5",
+      "accountId": "acc_1",
+      "date": "2025-09-14",
+      "description": "TfL Travel",
+      "amount": -7.4,
+      "type": "debit",
+      "category": "transport"
+    },
+    {
+      "id": "txn_6",
+      "accountId": "acc_1",
+      "date": "2025-09-13",
+      "description": "Sainsbury's Local",
+      "amount": -28.45,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "txn_7",
+      "accountId": "acc_1",
+      "date": "2025-09-12",
+      "description": "Nando's Restaurant",
+      "amount": -32.5,
+      "type": "debit",
+      "category": "dining"
+    },
+    {
+      "id": "txn_8",
+      "accountId": "acc_1",
+      "date": "2025-09-11",
+      "description": "Amazon.co.uk",
+      "amount": -24.99,
+      "type": "debit",
+      "category": "shopping"
+    },
+    {
+      "id": "txn_9",
+      "accountId": "acc_1",
+      "date": "2025-09-10",
+      "description": "British Gas",
+      "amount": -85,
+      "type": "debit",
+      "category": "utilities"
+    },
+    {
+      "id": "txn_10",
+      "accountId": "acc_1",
+      "date": "2025-09-10",
+      "description": "Vodafone UK",
+      "amount": -45,
+      "type": "debit",
+      "category": "utilities"
+    }
+  ],
+  "createdAt": "2025-09-16T21:32:51.938Z",
+  "generatedBy": "Claude AI"
+}

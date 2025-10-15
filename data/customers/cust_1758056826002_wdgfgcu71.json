@@ -1,0 +1,179 @@
+{
+  "customerId": "cust_1758056826002_wdgfgcu71",
+  "profile": {
+    "name": "Elizabeth James",
+    "age": 31,
+    "gender": "female",
+    "profession": "Marketing Assistant",
+    "frescoSegment": "C1"
+  },
+  "dateRange": {
+    "from": "2025-07-01",
+    "to": "2025-09-16"
+  },
+  "accounts": [
+    {
+      "id": "acc_1",
+      "type": "current",
+      "name": "Barclays Bank Current Account",
+      "accountNumber": "23-45-67 / 34567891",
+      "balance": 2341.56,
+      "sortCode": "23-45-67"
+    },
+    {
+      "id": "acc_2",
+      "type": "savings",
+      "name": "Barclays Easy Saver",
+      "accountNumber": "23-45-67 / 34567892",
+      "balance": 4567.89,
+      "sortCode": "23-45-67"
+    },
+    {
+      "id": "acc_3",
+      "type": "credit",
+      "name": "Barclaycard Rewards",
+      "accountNumber": "5436 7891 2345 6789",
+      "balance": -756.43,
+      "sortCode": null
+    }
+  ],
+  "transactions": [
+    {
+      "id": "txn_1",
+      "accountId": "acc_1",
+      "date": "2025-07-01",
+      "description": "Sainsbury's Local",
+      "amount": 23.45,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "txn_2",
+      "accountId": "acc_1",
+      "date": "2025-07-01",
+      "description": "Costa Coffee",
+      "amount": 3.75,
+      "type": "debit",
+      "category": "food_drinks"
+    },
+    {
+      "id": "txn_3",
+      "accountId": "acc_1",
+      "date": "2025-07-01",
+      "description": "TfL Travel",
+      "amount": 7.2,
+      "type": "debit",
+      "category": "transport"
+    },
+    {
+      "id": "txn_4",
+      "accountId": "acc_1",
+      "date": "2025-07-02",
+      "description": "Pret A Manger",
+      "amount": 6.95,
+      "type": "debit",
+      "category": "food_drinks"
+    },
+    {
+      "id": "txn_5",
+      "accountId": "acc_1",
+      "date": "2025-07-02",
+      "description": "Thames Water",
+      "amount": 32.5,
+      "type": "debit",
+      "category": "utilities"
+    },
+    {
+      "id": "txn_6",
+      "accountId": "acc_1",
+      "date": "2025-07-25",
+      "description": "SALARY Digital Marketing Ltd",
+      "amount": 2450,
+      "type": "credit",
+      "category": "salary"
+    },
+    {
+      "id": "txn_7",
+      "accountId": "acc_1",
+      "date": "2025-07-03",
+      "description": "Netflix",
+      "amount": 9.99,
+      "type": "debit",
+      "category": "entertainment"
+    },
+    {
+      "id": "txn_8",
+      "accountId": "acc_1",
+      "date": "2025-07-03",
+      "description": "Virgin Media",
+      "amount": 45,
+      "type": "debit",
+      "category": "utilities"
+    },
+    {
+      "id": "txn_9",
+      "accountId": "acc_1",
+      "date": "2025-07-04",
+      "description": "Boots",
+      "amount": 28.99,
+      "type": "debit",
+      "category": "shopping"
+    },
+    {
+      "id": "txn_10",
+      "accountId": "acc_1",
+      "date": "2025-07-04",
+      "description": "H&M",
+      "amount": 65.97,
+      "type": "debit",
+      "category": "shopping"
+    },
+    {
+      "id": "txn_11",
+      "accountId": "acc_1",
+      "date": "2025-07-05",
+      "description": "Shell Petrol",
+      "amount": 52.45,
+      "type": "debit",
+      "category": "transport"
+    },
+    {
+      "id": "txn_12",
+      "accountId": "acc_1",
+      "date": "2025-07-05",
+      "description": "Zara",
+      "amount": 89.99,
+      "type": "debit",
+      "category": "shopping"
+    },
+    {
+      "id": "txn_13",
+      "accountId": "acc_1",
+      "date": "2025-08-25",
+      "description": "SALARY Digital Marketing Ltd",
+      "amount": 2450,
+      "type": "credit",
+      "category": "salary"
+    },
+    {
+      "id": "txn_14",
+      "accountId": "acc_1",
+      "date": "2025-09-25",
+      "description": "SALARY Digital Marketing Ltd",
+      "amount": 2450,
+      "type": "credit",
+      "category": "salary"
+    },
+    {
+      "id": "txn_15",
+      "accountId": "acc_1",
+      "date": "2025-07-06",
+      "description": "Tesco",
+      "amount": 85.67,
+      "type": "debit",
+      "category": "groceries"
+    }
+  ],
+  "createdAt": "2025-09-16T21:07:22.980Z",
+  "generatedBy": "Claude AI"
+}

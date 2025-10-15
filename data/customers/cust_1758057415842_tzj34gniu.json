@@ -1,0 +1,64 @@
+{
+  "customerId": "cust_1758057415842_tzj34gniu",
+  "profile": {
+    "name": "Elizabeth James 4",
+    "age": 31,
+    "gender": "female",
+    "profession": "Marketing Assistant",
+    "frescoSegment": "C1"
+  },
+  "dateRange": {
+    "from": "2025-07-01",
+    "to": "2025-09-16"
+  },
+  "accounts": [
+    {
+      "id": "acc_1",
+      "type": "current",
+      "name": "Barclays Current Account",
+      "accountNumber": "47582913",
+      "balance": 2134.56,
+      "sortCode": "20-43-71"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "txn_1",
+      "accountId": "acc_1",
+      "date": "2025-09-15",
+      "description": "Salary Payment - FRESCO MARKETING LTD",
+      "amount": 2100,
+      "type": "credit",
+      "category": "salary"
+    },
+    {
+      "id": "txn_2",
+      "accountId": "acc_1",
+      "date": "2025-09-15",
+      "description": "MORTGAGE PAYMENT",
+      "amount": 850,
+      "type": "debit",
+      "category": "housing"
+    },
+    {
+      "id": "txn_3",
+      "accountId": "acc_1",
+      "date": "2025-09-14",
+      "description": "TESCO STORES 2474",
+      "amount": 67.45,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "txn_4",
+      "accountId": "acc_1",
+      "date": "2025-09-14",
+      "description": "COSTA COFFEE",
+      "amount": 3.75,
+      "type": "debit",
+      "category": "dining"
+    }
+  ],
+  "createdAt": "2025-09-16T21:17:04.061Z",
+  "generatedBy": "Claude AI"
+}

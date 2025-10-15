@@ -1,0 +1,196 @@
+{
+  "customerId": "cust_1758050263552_xfy6vhxq0",
+  "profile": {
+    "name": "Mila Milovitch",
+    "age": 19,
+    "gender": "female",
+    "profession": "Student",
+    "frescoSegment": "A"
+  },
+  "dateRange": {
+    "from": "2024-08-01",
+    "to": "2025-09-16"
+  },
+  "accounts": [
+    {
+      "id": "acc_1",
+      "type": "current",
+      "name": "HSBC Student Account",
+      "accountNumber": "40-47-12 / 82736451",
+      "balance": 3241.89,
+      "sortCode": "40-47-12"
+    },
+    {
+      "id": "acc_2",
+      "type": "savings",
+      "name": "HSBC Monthly Saver",
+      "accountNumber": "40-47-12 / 82736452",
+      "balance": 15000,
+      "sortCode": "40-47-12"
+    },
+    {
+      "id": "acc_3",
+      "type": "credit",
+      "name": "HSBC Student Credit Card",
+      "accountNumber": "5355 1234 5678 9012",
+      "balance": -245.67,
+      "sortCode": "40-47-12"
+    },
+    {
+      "id": "acc_4",
+      "type": "credit",
+      "name": "HSBC Student Credit Card",
+      "accountNumber": "5355 1234 5678 9012",
+      "balance": -245.67,
+      "sortCode": "40-47-12"
+    },
+    {
+      "id": "acc_5",
+      "type": "credit",
+      "name": "HSBC Student Credit Card",
+      "accountNumber": "5355 1234 5678 9012",
+      "balance": -245.67,
+      "sortCode": "40-47-12"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "txn_1",
+      "merchant": "Tosco",
+      "accountId": "acc_1",
+      "date": "2024-09-15",
+      "description": "Family Allowance",
+      "amount": 2000,
+      "type": "credit",
+      "category": "allowance"
+    },
+    {
+      "id": "txn_2",
+      "accountId": "acc_1",
+      "date": "2024-09-14",
+      "description": "Zara",
+      "amount": 145.99,
+      "type": "debit",
+      "category": "shopping"
+    },
+    {
+      "id": "txn_3",
+      "accountId": "acc_1",
+      "date": "2024-09-13",
+      "description": "Uber",
+      "amount": 24.5,
+      "type": "debit",
+      "category": "transport"
+    },
+    {
+      "id": "txn_4",
+      "accountId": "acc_1",
+      "date": "2024-09-12",
+      "description": "Starbucks",
+      "amount": 4.75,
+      "type": "debit",
+      "category": "dining"
+    },
+    {
+      "id": "txn_5",
+      "accountId": "acc_1",
+      "date": "2024-09-10",
+      "description": "Amazon Prime",
+      "amount": 7.99,
+      "type": "debit",
+      "category": "subscriptions"
+    },
+    {
+      "id": "txn_6",
+      "accountId": "acc_1",
+      "date": "2024-09-08",
+      "description": "Student Accommodation",
+      "amount": 800,
+      "type": "debit",
+      "category": "housing"
+    },
+    {
+      "id": "txn_7",
+      "accountId": "acc_1",
+      "date": "2024-09-05",
+      "description": "Apple Music",
+      "amount": 9.99,
+      "type": "debit",
+      "category": "subscriptions"
+    },
+    {
+      "id": "txn_8",
+      "accountId": "acc_2",
+      "date": "2024-09-01",
+      "description": "Monthly Savings Transfer",
+      "amount": 250,
+      "type": "credit",
+      "category": "transfer"
+    },
+    {
+      "id": "txn_9",
+      "accountId": "acc_3",
+      "date": "2024-09-14",
+      "description": "Selfridges",
+      "amount": 245.67,
+      "type": "debit",
+      "category": "shopping"
+    },
+    {
+      "id": "txn_10",
+      "accountId": "acc_1",
+      "date": "2024-09-07",
+      "description": "Cinema",
+      "amount": 15.99,
+      "type": "debit",
+      "category": "entertainment"
+    },
+    {
+      "id": "txn_11",
+      "accountId": "acc_1",
+      "date": "2024-09-06",
+      "description": "Waterstones",
+      "amount": 45.98,
+      "type": "debit",
+      "category": "education"
+    },
+    {
+      "id": "txn_12",
+      "accountId": "acc_1",
+      "date": "2024-09-04",
+      "description": "Phone Bill - EE",
+      "amount": 35,
+      "type": "debit",
+      "category": "utilities"
+    },
+    {
+      "id": "txn_13",
+      "accountId": "acc_1",
+      "date": "2024-09-03",
+      "description": "Spotify Premium",
+      "amount": 5.99,
+      "type": "debit",
+      "category": "subscriptions"
+    },
+    {
+      "id": "txn_14",
+      "accountId": "acc_1",
+      "date": "2024-09-02",
+      "description": "Waitrose",
+      "amount": 75.45,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "txn_15",
+      "accountId": "acc_1",
+      "date": "2024-09-01",
+      "description": "Netflix",
+      "amount": 13.99,
+      "type": "debit",
+      "category": "subscriptions"
+    }
+  ],
+  "createdAt": "2025-09-16T19:18:00.150Z",
+  "generatedBy": "Claude AI"
+}

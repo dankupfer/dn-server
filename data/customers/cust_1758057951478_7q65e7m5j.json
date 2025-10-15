@@ -1,0 +1,448 @@
+{
+  "customerId": "cust_1758057951478_7q65e7m5j",
+  "profile": {
+    "name": "Elizabeth James 5",
+    "age": 31,
+    "gender": "female",
+    "profession": "Marketing Assistant",
+    "frescoSegment": "C1"
+  },
+  "dateRange": {
+    "from": "2025-07-01",
+    "to": "2025-09-16"
+  },
+  "accounts": [
+    {
+      "id": "acc_1",
+      "type": "current",
+      "name": "NatWest Current Account",
+      "accountNumber": "45287631",
+      "sortCode": "60-24-77",
+      "balance": 2347.82
+    },
+    {
+      "id": "acc_2",
+      "type": "savings",
+      "name": "NatWest Savings",
+      "accountNumber": "45287649",
+      "sortCode": "60-24-77",
+      "balance": 8432.15
+    },
+    {
+      "id": "acc_3",
+      "type": "credit",
+      "name": "NatWest Credit Card",
+      "accountNumber": "5436782198654321",
+      "balance": -642.3
+    }
+  ],
+  "transactions": [
+    {
+      "id": "t1",
+      "accountId": "acc_1",
+      "date": "2025-09-15",
+      "description": "Tesco Metro London",
+      "amount": -48.35,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "t2",
+      "accountId": "acc_1",
+      "date": "2025-09-15",
+      "description": "Shell Fulham Rd",
+      "amount": -65.2,
+      "type": "debit",
+      "category": "fuel"
+    },
+    {
+      "id": "t3",
+      "accountId": "acc_1",
+      "date": "2025-09-14",
+      "description": "Costa Coffee Oxford St",
+      "amount": -4.75,
+      "type": "debit",
+      "category": "dining"
+    },
+    {
+      "id": "t4",
+      "accountId": "acc_1",
+      "date": "2025-09-12",
+      "description": "TFL Travel",
+      "amount": -7.4,
+      "type": "debit",
+      "category": "transport"
+    },
+    {
+      "id": "t5",
+      "accountId": "acc_1",
+      "date": "2025-09-10",
+      "description": "Sainsbury's Local",
+      "amount": -32.45,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "t6",
+      "accountId": "acc_1",
+      "date": "2025-09-08",
+      "description": "Rent Payment",
+      "amount": -1200,
+      "type": "debit",
+      "category": "housing"
+    },
+    {
+      "id": "t7",
+      "accountId": "acc_1",
+      "date": "2025-09-05",
+      "description": "British Gas",
+      "amount": -85,
+      "type": "debit",
+      "category": "utilities"
+    },
+    {
+      "id": "t8",
+      "accountId": "acc_1",
+      "date": "2025-09-05",
+      "description": "Thames Water",
+      "amount": -35,
+      "type": "debit",
+      "category": "utilities"
+    },
+    {
+      "id": "t9",
+      "accountId": "acc_1",
+      "date": "2025-09-05",
+      "description": "EE Mobile",
+      "amount": -45,
+      "type": "debit",
+      "category": "utilities"
+    },
+    {
+      "id": "t10",
+      "accountId": "acc_1",
+      "date": "2025-09-01",
+      "description": "Digital Marketing Ltd Salary",
+      "amount": 2450,
+      "type": "credit",
+      "category": "salary"
+    },
+    {
+      "id": "t11",
+      "accountId": "acc_1",
+      "date": "2025-08-28",
+      "description": "Tesco Superstore",
+      "amount": -82.35,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "t12",
+      "accountId": "acc_1",
+      "date": "2025-08-25",
+      "description": "Pret A Manger",
+      "amount": -7.85,
+      "type": "debit",
+      "category": "dining"
+    },
+    {
+      "id": "t13",
+      "accountId": "acc_1",
+      "date": "2025-08-22",
+      "description": "Shell Garage",
+      "amount": -58.9,
+      "type": "debit",
+      "category": "fuel"
+    },
+    {
+      "id": "t14",
+      "accountId": "acc_1",
+      "date": "2025-08-20",
+      "description": "Sainsbury's Local",
+      "amount": -25.4,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "t15",
+      "accountId": "acc_1",
+      "date": "2025-08-15",
+      "description": "Nando's Restaurant",
+      "amount": -32.5,
+      "type": "debit",
+      "category": "dining"
+    },
+    {
+      "id": "t16",
+      "accountId": "acc_1",
+      "date": "2025-08-12",
+      "description": "TFL Travel",
+      "amount": -7.4,
+      "type": "debit",
+      "category": "transport"
+    },
+    {
+      "id": "t17",
+      "accountId": "acc_1",
+      "date": "2025-08-10",
+      "description": "Tesco Express",
+      "amount": -28.75,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "t18",
+      "accountId": "acc_1",
+      "date": "2025-08-08",
+      "description": "Rent Payment",
+      "amount": -1200,
+      "type": "debit",
+      "category": "housing"
+    },
+    {
+      "id": "t19",
+      "accountId": "acc_1",
+      "date": "2025-08-05",
+      "description": "British Gas",
+      "amount": -85,
+      "type": "debit",
+      "category": "utilities"
+    },
+    {
+      "id": "t20",
+      "accountId": "acc_1",
+      "date": "2025-08-01",
+      "description": "Digital Marketing Ltd Salary",
+      "amount": 2450,
+      "type": "credit",
+      "category": "salary"
+    },
+    {
+      "id": "t21",
+      "accountId": "acc_1",
+      "date": "2025-07-30",
+      "description": "Tesco Metro",
+      "amount": -45.3,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "t22",
+      "accountId": "acc_1",
+      "date": "2025-07-28",
+      "description": "Costa Coffee",
+      "amount": -4.75,
+      "type": "debit",
+      "category": "dining"
+    },
+    {
+      "id": "t23",
+      "accountId": "acc_1",
+      "date": "2025-07-25",
+      "description": "Shell Fulham Rd",
+      "amount": -62.4,
+      "type": "debit",
+      "category": "fuel"
+    },
+    {
+      "id": "t24",
+      "accountId": "acc_1",
+      "date": "2025-07-22",
+      "description": "Sainsbury's Local",
+      "amount": -34.2,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "t25",
+      "accountId": "acc_1",
+      "date": "2025-07-20",
+      "description": "Wagamama",
+      "amount": -28.95,
+      "type": "debit",
+      "category": "dining"
+    },
+    {
+      "id": "t26",
+      "accountId": "acc_1",
+      "date": "2025-07-18",
+      "description": "TFL Travel",
+      "amount": -7.4,
+      "type": "debit",
+      "category": "transport"
+    },
+    {
+      "id": "t27",
+      "accountId": "acc_1",
+      "date": "2025-07-15",
+      "description": "Tesco Express",
+      "amount": -22.85,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "t28",
+      "accountId": "acc_1",
+      "date": "2025-07-08",
+      "description": "Rent Payment",
+      "amount": -1200,
+      "type": "debit",
+      "category": "housing"
+    },
+    {
+      "id": "t29",
+      "accountId": "acc_1",
+      "date": "2025-07-05",
+      "description": "British Gas",
+      "amount": -85,
+      "type": "debit",
+      "category": "utilities"
+    },
+    {
+      "id": "t30",
+      "accountId": "acc_1",
+      "date": "2025-07-01",
+      "description": "Digital Marketing Ltd Salary",
+      "amount": 2450,
+      "type": "credit",
+      "category": "salary"
+    },
+    {
+      "id": "t31",
+      "accountId": "acc_3",
+      "date": "2025-09-14",
+      "description": "ASOS.com",
+      "amount": -85.5,
+      "type": "debit",
+      "category": "shopping"
+    },
+    {
+      "id": "t32",
+      "accountId": "acc_3",
+      "date": "2025-09-10",
+      "description": "Amazon.co.uk",
+      "amount": -45.99,
+      "type": "debit",
+      "category": "shopping"
+    },
+    {
+      "id": "t33",
+      "accountId": "acc_3",
+      "date": "2025-08-25",
+      "description": "Boots",
+      "amount": -32.5,
+      "type": "debit",
+      "category": "health"
+    },
+    {
+      "id": "t34",
+      "accountId": "acc_3",
+      "date": "2025-08-15",
+      "description": "H&M",
+      "amount": -65.9,
+      "type": "debit",
+      "category": "shopping"
+    },
+    {
+      "id": "t35",
+      "accountId": "acc_3",
+      "date": "2025-07-28",
+      "description": "Superdrug",
+      "amount": -28.75,
+      "type": "debit",
+      "category": "health"
+    },
+    {
+      "id": "t36",
+      "accountId": "acc_2",
+      "date": "2025-09-15",
+      "description": "Transfer from Current",
+      "amount": 200,
+      "type": "credit",
+      "category": "transfer"
+    },
+    {
+      "id": "t37",
+      "accountId": "acc_2",
+      "date": "2025-08-15",
+      "description": "Transfer from Current",
+      "amount": 200,
+      "type": "credit",
+      "category": "transfer"
+    },
+    {
+      "id": "t38",
+      "accountId": "acc_2",
+      "date": "2025-07-15",
+      "description": "Transfer from Current",
+      "amount": 200,
+      "type": "credit",
+      "category": "transfer"
+    },
+    {
+      "id": "t39",
+      "accountId": "acc_1",
+      "date": "2025-09-15",
+      "description": "Transfer to Savings",
+      "amount": -200,
+      "type": "debit",
+      "category": "transfer"
+    },
+    {
+      "id": "t40",
+      "accountId": "acc_1",
+      "date": "2025-08-15",
+      "description": "Transfer to Savings",
+      "amount": -200,
+      "type": "debit",
+      "category": "transfer"
+    },
+    {
+      "id": "t41",
+      "accountId": "acc_1",
+      "date": "2025-07-15",
+      "description": "Transfer to Savings",
+      "amount": -200,
+      "type": "debit",
+      "category": "transfer"
+    },
+    {
+      "id": "t42",
+      "accountId": "acc_1",
+      "date": "2025-09-07",
+      "description": "Netflix",
+      "amount": -9.99,
+      "type": "debit",
+      "category": "entertainment"
+    },
+    {
+      "id": "t43",
+      "accountId": "acc_1",
+      "date": "2025-08-07",
+      "description": "Netflix",
+      "amount": -9.99,
+      "type": "debit",
+      "category": "entertainment"
+    },
+    {
+      "id": "t44",
+      "accountId": "acc_1",
+      "date": "2025-07-07",
+      "description": "Netflix",
+      "amount": -9.99,
+      "type": "debit",
+      "category": "entertainment"
+    },
+    {
+      "id": "t45",
+      "accountId": "acc_1",
+      "date": "2025-09-03",
+      "description": "Spotify",
+      "amount": -9.99,
+      "type": "debit",
+      "category": "entertainment"
+    }
+  ],
+  "createdAt": "2025-09-16T21:26:23.995Z",
+  "generatedBy": "Claude AI"
+}

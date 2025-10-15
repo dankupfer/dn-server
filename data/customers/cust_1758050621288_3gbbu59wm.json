@@ -1,0 +1,171 @@
+{
+  "customerId": "cust_1758050621288_3gbbu59wm",
+  "profile": {
+    "name": "John Fraser",
+    "age": 67,
+    "gender": "male",
+    "profession": "Plumber",
+    "frescoSegment": "E"
+  },
+  "dateRange": {
+    "from": "2024-06-01",
+    "to": "2025-09-16"
+  },
+  "accounts": [
+    {
+      "id": "acc_1",
+      "type": "current",
+      "name": "Barclays Essential Account",
+      "accountNumber": "23-45-67 / 34567891",
+      "balance": 847.23,
+      "sortCode": "20-49-76"
+    },
+    {
+      "id": "acc_2",
+      "type": "savings",
+      "name": "Barclays Easy Saver",
+      "accountNumber": "23-45-67 / 34567892",
+      "balance": 3241.88,
+      "sortCode": "20-49-76"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "txn_1",
+      "accountId": "acc_1",
+      "date": "2024-09-15",
+      "description": "State Pension Payment",
+      "amount": 818.5,
+      "type": "credit",
+      "category": "pension"
+    },
+    {
+      "id": "txn_2",
+      "accountId": "acc_1",
+      "date": "2024-09-14",
+      "description": "Plumbing Job - Mrs Smith",
+      "amount": 85,
+      "type": "credit",
+      "category": "income"
+    },
+    {
+      "id": "txn_3",
+      "accountId": "acc_1",
+      "date": "2024-09-12",
+      "description": "Screwfix Ltd",
+      "amount": -47.82,
+      "type": "debit",
+      "category": "supplies"
+    },
+    {
+      "id": "txn_4",
+      "accountId": "acc_1",
+      "date": "2024-09-10",
+      "description": "Tesco",
+      "amount": -68.45,
+      "type": "debit",
+      "category": "groceries"
+    },
+    {
+      "id": "txn_5",
+      "accountId": "acc_1",
+      "date": "2024-09-08",
+      "description": "TV Licence",
+      "amount": -13.25,
+      "type": "debit",
+      "category": "bills"
+    },
+    {
+      "id": "txn_6",
+      "accountId": "acc_1",
+      "date": "2024-09-05",
+      "description": "British Gas",
+      "amount": -85,
+      "type": "debit",
+      "category": "utilities"
+    },
+    {
+      "id": "txn_7",
+      "accountId": "acc_1",
+      "date": "2024-09-03",
+      "description": "Local Pub",
+      "amount": -12.4,
+      "type": "debit",
+      "category": "entertainment"
+    },
+    {
+      "id": "txn_8",
+      "accountId": "acc_3",
+      "date": "2024-09-02",
+      "description": "B&Q",
+      "amount": -124.56,
+      "type": "debit",
+      "category": "supplies"
+    },
+    {
+      "id": "txn_9",
+      "accountId": "acc_1",
+      "date": "2024-09-01",
+      "description": "Council Tax",
+      "amount": -124,
+      "type": "debit",
+      "category": "bills"
+    },
+    {
+      "id": "txn_10",
+      "accountId": "acc_1",
+      "date": "2024-08-30",
+      "description": "Plumbing Job - Mr Jones",
+      "amount": 95,
+      "type": "credit",
+      "category": "income"
+    },
+    {
+      "id": "txn_11",
+      "accountId": "acc_1",
+      "date": "2024-08-28",
+      "description": "Vodafone",
+      "amount": -18.99,
+      "type": "debit",
+      "category": "phone"
+    },
+    {
+      "id": "txn_12",
+      "accountId": "acc_1",
+      "date": "2024-08-25",
+      "description": "Local Cafe",
+      "amount": -7.85,
+      "type": "debit",
+      "category": "dining"
+    },
+    {
+      "id": "txn_13",
+      "accountId": "acc_2",
+      "date": "2024-08-20",
+      "description": "Interest Payment",
+      "amount": 1.25,
+      "type": "credit",
+      "category": "interest"
+    },
+    {
+      "id": "txn_14",
+      "accountId": "acc_1",
+      "date": "2024-08-15",
+      "description": "State Pension Payment",
+      "amount": 818.5,
+      "type": "credit",
+      "category": "pension"
+    },
+    {
+      "id": "txn_15",
+      "accountId": "acc_1",
+      "date": "2024-08-12",
+      "description": "Water Bill",
+      "amount": -32.5,
+      "type": "debit",
+      "category": "utilities"
+    }
+  ],
+  "createdAt": "2025-09-16T19:23:58.005Z",
+  "generatedBy": "Claude AI"
+}

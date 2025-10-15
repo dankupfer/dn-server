@@ -1,0 +1,73 @@
+{
+  "customerId": "cust_1758054392870_07cm8qi2m",
+  "profile": {
+    "name": "Oku Abuntu",
+    "age": 55,
+    "gender": "male",
+    "profession": "Sales Manager",
+    "frescoSegment": "C2"
+  },
+  "dateRange": {
+    "from": "2024-07-01",
+    "to": "2025-09-16"
+  },
+  "accounts": [
+    {
+      "accountId": "82716354",
+      "sortCode": "40-35-15",
+      "accountNumber": "82716354",
+      "accountType": "Current Account",
+      "balance": 2845.67
+    },
+    {
+      "accountId": "82716355",
+      "sortCode": "40-35-15",
+      "accountNumber": "82716355",
+      "accountType": "Savings Account",
+      "balance": 6234.12
+    },
+    {
+      "accountId": "82716356",
+      "sortCode": "40-35-15",
+      "accountNumber": "82716356",
+      "accountType": "ISA",
+      "balance": 11250
+    }
+  ],
+  "transactions": [
+    {
+      "date": "2024-07-25",
+      "description": "SALARY FRESCO LTD",
+      "amount": 3250,
+      "type": "credit",
+      "accountId": "82716354",
+      "category": "income"
+    },
+    {
+      "date": "2024-07-02",
+      "description": "THAMES WATER",
+      "amount": -45.5,
+      "type": "debit",
+      "accountId": "82716354",
+      "category": "utilities"
+    },
+    {
+      "date": "2024-07-05",
+      "description": "TESCO SUPERSTORE",
+      "amount": -125.45,
+      "type": "debit",
+      "accountId": "82716354",
+      "category": "groceries"
+    },
+    {
+      "date": "2024-07-15",
+      "description": "BRITISH GAS",
+      "amount": -85,
+      "type": "debit",
+      "accountId": "82716354",
+      "category": "utilities"
+    }
+  ],
+  "createdAt": "2025-09-16T20:26:39.965Z",
+  "generatedBy": "Claude AI"
+}
