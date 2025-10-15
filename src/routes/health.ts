@@ -6,7 +6,9 @@ const router = Router();
 
 // Health check endpoint - shows status of all services
 router.get('/health', (req: Request, res: Response<HealthResponse>) => {
-  res.json({
+  console.log('🏥 Health check requested');
+  
+  const healthData = {
     status: 'ok',
     message: 'DN Server is running',
     timestamp: new Date().toISOString(),
@@ -14,9 +16,13 @@ router.get('/health', (req: Request, res: Response<HealthResponse>) => {
       figma: true,
       customers: true,
       assist: true,
-      voice: false, // Will be true once we implement voice
+      voice: true,
     }
-  });
+  };
+  
+  console.log('✅ Health check response:', JSON.stringify(healthData, null, 2));
+  
+  res.json(healthData);
 });
 
 export default router;

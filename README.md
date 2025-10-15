@@ -581,15 +581,40 @@ npm run deploy
 
 ### Monitor Production
 
-```bash
-# View Cloud Run logs
-gcloud run services logs read dn-server --region us-central1 --limit 50
+**Recommended: Real-time Terminal Logs**
 
-# Get service details
+For the best development experience, stream logs directly to your terminal:
+
+```bash
+# One-time setup: Install beta components
+gcloud components install beta
+
+# Stream live logs (clean output, no metadata)
+gcloud beta logging tail "resource.type=cloud_run_revision AND resource.labels.service_name=dn-server" --format="value(textPayload)"
+```
+
+This gives you clean, real-time logs in your terminal - perfect for testing and debugging. Press `Ctrl+C` to stop.
+
+**Other Useful Commands:**
+
+```bash
+# View recent logs (last 50 entries)
+gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=dn-server" --limit 50
+
+# List all deployed services
+gcloud run services list --region us-central1
+
+# Get detailed service info (URL, status, traffic)
 gcloud run services describe dn-server --region us-central1
 
-# Check deployment status
+# View deployment history
 gcloud run revisions list --service dn-server --region us-central1
+
+# Filter logs by severity (errors only)
+gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=dn-server AND severity>=ERROR" --limit 20
+
+# Open Cloud Run console in browser
+open "https://console.cloud.google.com/run/detail/us-central1/dn-server/logs?project=dankupfer-dn-server"
 ```
 
 ### Deployment Architecture

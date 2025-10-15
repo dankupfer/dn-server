@@ -19,6 +19,6 @@ gcloud run deploy dn-server \
   --region us-central1 \
   --allow-unauthenticated \
   --set-secrets=CLAUDE_API_KEY=claude-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest \
-  --set-env-vars=NODE_ENV=production
+  --env-vars-file env.yaml
 
 echo "Deployment completed successfully!"
