@@ -64,7 +64,7 @@ router.post('/create-customer', async (req: Request<{}, CustomerResponse, Create
     };
 
     // Ensure data directory exists
-    const dataDir = path.join(process.cwd(), 'data', 'customers');
+    const dataDir = path.join(process.cwd(), 'public', 'data', 'customers');
     await fs.ensureDir(dataDir);
 
     // Save customer data
@@ -92,7 +92,7 @@ router.post('/create-customer', async (req: Request<{}, CustomerResponse, Create
 // Get list of customer profiles for CustomerSelector
 router.get('/customers', async (req: Request, res: Response) => {
   try {
-    const dataDir = path.join(process.cwd(), 'data', 'customers');
+    const dataDir = path.join(process.cwd(), 'public', 'data', 'customers');
     
     if (!await fs.pathExists(dataDir)) {
       return res.json([]);
@@ -136,7 +136,7 @@ router.get('/customers', async (req: Request, res: Response) => {
 router.get('/customers/:id/full', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const filePath = path.join(process.cwd(), 'data', 'customers', `${id}.json`);
+    const filePath = path.join(process.cwd(), 'public', 'data', 'customers', `${id}.json`);
 
     if (!await fs.pathExists(filePath)) {
       return res.status(404).json({

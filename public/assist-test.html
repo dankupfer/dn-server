@@ -159,11 +159,11 @@
             border-radius: 50%;
         }
 
-        input:checked + .slider {
+        input:checked+.slider {
             background-color: #667eea;
         }
 
-        input:checked + .slider:before {
+        input:checked+.slider:before {
             transform: translateX(22px);
         }
 
@@ -395,7 +395,16 @@
             }
 
             sessionId = 'session_' + Date.now();
-            ws = new WebSocket('ws://localhost:3001/api/assist');
+
+
+            // Detect environment and set WebSocket URL
+            const isProduction = window.location.hostname !== 'localhost';
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsHost = isProduction ? window.location.host : 'localhost:3001';
+            const wsUrl = `${wsProtocol}//${wsHost}/api/assist`;
+
+            console.log(`🌐 Connecting to: ${wsUrl}`);
+            ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
                 console.log('WebSocket connected');
@@ -406,7 +415,7 @@
                 // Start session with TTS preference
                 const enableTTS = ttsToggle.checked;
                 console.log(`Starting session with TTS: ${enableTTS}`);
-                
+
                 ws.send(JSON.stringify({
                     action: 'start_session',
                     sessionId: sessionId,
