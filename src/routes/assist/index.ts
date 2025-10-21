@@ -5,6 +5,7 @@ import { WebSocket } from 'ws';
 import { WebSocketIncomingMessage, VoiceResponseMessage } from '../../types';
 import { GeminiLiveService } from '../../services/gemini/liveApi';
 import { MockAssistantService } from '../../services/mockAssistant';
+import { convertToWav } from '../../utils/audioConverter';
 
 // This will be set up in the main index.ts
 export function setupAssistRoutes(app: expressWs.Application) {
@@ -63,7 +64,7 @@ export function setupAssistRoutes(app: expressWs.Application) {
 
             } catch (error) {
               console.error('❌ Error processing message:', error);
-              
+
               const errorResponse: VoiceResponseMessage = {
                 action: 'error',
                 sessionId: sessionId,
@@ -80,6 +81,7 @@ export function setupAssistRoutes(app: expressWs.Application) {
             }
 
             console.log(`🎤 Received audio chunk for session: ${sessionId}`);
+            console.log(`📊 Audio format: ${message.mimeType || 'unknown'}`); // NEW
 
             if (useMockMode && mockService) {
               // MOCK MODE: Simulate processing
@@ -117,56 +119,75 @@ export function setupAssistRoutes(app: expressWs.Application) {
 
             } else if (geminiService) {
               // REAL MODE: Use Gemini
-              // Prepare audio chunk
-              const audioChunk = {
-                data: message.audioData!,
-                mimeType: `audio/pcm;rate=${message.sampleRate || 16000}`
-              };
 
-              // 1. Transcribe user speech immediately
-              const userTranscript = await geminiService.transcribeAudio(audioChunk);
+              const clientMimeType = message.mimeType || 'audio/pcm';
+              console.log(`📤 Client sent: ${clientMimeType}`);
 
-              // Send user transcript right away
-              const userTranscriptResponse: VoiceResponseMessage = {
-                action: 'user_transcript',
-                sessionId,
-                transcript: userTranscript
-              };
-              ws.send(JSON.stringify(userTranscriptResponse));
+              try {
+                // Convert audio to WAV if needed
+                const convertedAudio = await convertToWav(message.audioData!, clientMimeType);
+                console.log(`📤 Sending to Gemini as: ${convertedAudio.mimeType}`);
 
-              // 2. Add user message to conversation history
-              conversationHistory.push({
-                role: 'user',
-                parts: [{ text: userTranscript }]
-              });
-
-              // 3. Get Gemini's response with full conversation context
-              const geminiResponse = await geminiService.sendAudio(conversationHistory);
-
-              // 4. Add assistant response to conversation history
-              conversationHistory.push({
-                role: 'model',
-                parts: [{ text: geminiResponse }]
-              });
-
-              // Send Gemini's transcript
-              const geminiTranscriptResponse: VoiceResponseMessage = {
-                action: 'transcript',
-                sessionId,
-                transcript: geminiResponse
-              };
-              ws.send(JSON.stringify(geminiTranscriptResponse));
-
-              // 5. Only generate audio if TTS is enabled
-              if (geminiService['enableTTS']) {
-                const audioResponse = await geminiService.generateAudioResponse(geminiResponse);
-
-                const audioResponseMessage: VoiceResponseMessage = {
-                  action: 'audio_response',
-                  sessionId,
-                  audioData: audioResponse
+                // Prepare audio chunk with converted data
+                const audioChunk = {
+                  data: convertedAudio.data,
+                  mimeType: convertedAudio.mimeType
                 };
-                ws.send(JSON.stringify(audioResponseMessage));
+
+                // 1. Transcribe user speech immediately
+                const userTranscript = await geminiService.transcribeAudio(audioChunk);
+
+                // Send user transcript right away
+                const userTranscriptResponse: VoiceResponseMessage = {
+                  action: 'user_transcript',
+                  sessionId,
+                  transcript: userTranscript
+                };
+                ws.send(JSON.stringify(userTranscriptResponse));
+
+                // 2. Add user message to conversation history
+                conversationHistory.push({
+                  role: 'user',
+                  parts: [{ text: userTranscript }]
+                });
+
+                // 3. Get Gemini's response with full conversation context
+                const geminiResponse = await geminiService.sendAudio(conversationHistory);
+
+                // 4. Add assistant response to conversation history
+                conversationHistory.push({
+                  role: 'model',
+                  parts: [{ text: geminiResponse }]
+                });
+
+                // Send Gemini's transcript
+                const geminiTranscriptResponse: VoiceResponseMessage = {
+                  action: 'transcript',
+                  sessionId,
+                  transcript: geminiResponse
+                };
+                ws.send(JSON.stringify(geminiTranscriptResponse));
+
+                // 5. Only generate audio if TTS is enabled
+                if (geminiService['enableTTS']) {
+                  const audioResponse = await geminiService.generateAudioResponse(geminiResponse);
+
+                  const audioResponseMessage: VoiceResponseMessage = {
+                    action: 'audio_response',
+                    sessionId,
+                    audioData: audioResponse
+                  };
+                  ws.send(JSON.stringify(audioResponseMessage));
+                }
+
+              } catch (error) {
+                console.error('❌ Error processing audio:', error);
+                const errorResponse: VoiceResponseMessage = {
+                  action: 'error',
+                  sessionId,
+                  error: error instanceof Error ? error.message : 'Audio processing failed'
+                };
+                ws.send(JSON.stringify(errorResponse));
               }
             }
             break;

@@ -105,6 +105,7 @@ export interface VoiceSessionMessage {
   sampleRate?: number;
   enableTTS?: boolean;
   useMockMode?: boolean;
+  mimeType?: string;
 }
 
 export interface VoiceResponseMessage {
