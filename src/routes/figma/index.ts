@@ -22,9 +22,16 @@ router.post('/create-module', async (req: Request<{}, CreateModuleResponse, Crea
       });
     }
 
-    // Default folder path if not provided
-    // NOTE: This assumes dn-server is sibling to dn-starter
-    const targetPath = folderPath || path.join(process.cwd(), '..', 'dn-starter', 'template', 'src', 'modules', 'feature', moduleId);
+    // Default folder path from environment variable or provided path
+    const projectRoot = process.env.PROJECT_ROOT_PATH;
+    if (!projectRoot && !folderPath) {
+      return res.status(500).json({
+        success: false,
+        error: 'PROJECT_ROOT_PATH not set in .env file and no folderPath provided'
+      });
+    }
+
+    const targetPath = folderPath || path.join(projectRoot!, 'src', 'modules', 'feature', moduleId);
 
     // Create module folder
     await fs.ensureDir(targetPath);
@@ -65,7 +72,12 @@ router.post('/create-module', async (req: Request<{}, CreateModuleResponse, Crea
 
 // Helper function to update screenRoutes.tsx
 async function updateScreenRoutes(moduleId: string, moduleName: string, targetSection?: string): Promise<void> {
-  const screenRoutesPath = path.join(process.cwd(), '..', 'dn-starter', 'template', 'src', 'modules', 'core', 'combined-auth', 'screenRoutes.tsx');
+  const projectRoot = process.env.PROJECT_ROOT_PATH;
+  if (!projectRoot) {
+    console.log('⚠️  PROJECT_ROOT_PATH not set, skipping route update');
+    return;
+  }
+  const screenRoutesPath = path.join(projectRoot, 'src', 'modules', 'core', 'assist-router', 'screenRoutes.tsx');
 
   try {
     // Check if screenRoutes.tsx exists
@@ -139,7 +151,7 @@ async function updateScreenRoutes(moduleId: string, moduleName: string, targetSe
 
     // Generate the complete file content
     const sortedImports = Array.from(existingImports);
-    const fileContent = `// template/modules/core/combined-auth/screenRoutes.tsx
+    const fileContent = `// template/modules/core/assist-router/screenRoutes.tsx
 ${sortedImports.join('\n')}
 
 export interface ScreenRoute {
