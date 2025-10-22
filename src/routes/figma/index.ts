@@ -31,7 +31,9 @@ router.post('/create-module', async (req: Request<{}, CreateModuleResponse, Crea
       });
     }
 
-    const targetPath = folderPath || path.join(projectRoot!, 'src', 'modules', 'feature', moduleId);
+    // Determine the base path (either from UI override or .env)
+    const basePath = folderPath || projectRoot!;
+    const targetPath = path.join(basePath, 'src', 'modules', 'feature', moduleId);
 
     // Create module folder
     await fs.ensureDir(targetPath);
