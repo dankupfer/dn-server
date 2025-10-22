@@ -6,6 +6,46 @@ import { CreateModuleRequest, CreateModuleResponse } from '../../types';
 
 const router = Router();
 
+// Validation function to check if paths exist
+async function validatePaths(basePath: string, routerName: string): Promise<{ valid: boolean; error?: string }> {
+  // Check if base path exists
+  if (!await fs.pathExists(basePath)) {
+    return {
+      valid: false,
+      error: `Project path does not exist: ${basePath}\n\nPlease check that you've provided the correct absolute path to your project folder.`
+    };
+  }
+
+  // Check if it's actually a project (has src folder)
+  const srcPath = path.join(basePath, 'src');
+  if (!await fs.pathExists(srcPath)) {
+    return {
+      valid: false,
+      error: `The path exists but doesn't appear to be a valid project.\n\nMissing 'src' folder at: ${basePath}\n\nMake sure you're pointing to the root of your React Native project.`
+    };
+  }
+
+  // Check if router module exists in this project
+  const routerPath = path.join(basePath, 'src', 'modules', 'core', routerName);
+  if (!await fs.pathExists(routerPath)) {
+    return {
+      valid: false,
+      error: `Router module '${routerName}' not found in this project.\n\nExpected location: ${routerPath}\n\nPlease check:\n1. The router module name is correct\n2. You're using the right project path\n3. The router module exists in src/modules/core/`
+    };
+  }
+
+  // Check if screenRoutes.tsx exists in the router module
+  const screenRoutesPath = path.join(routerPath, 'screenRoutes.tsx');
+  if (!await fs.pathExists(screenRoutesPath)) {
+    return {
+      valid: false,
+      error: `Router module exists but missing screenRoutes.tsx\n\nExpected file: ${screenRoutesPath}\n\nThe router module must contain a screenRoutes.tsx file.`
+    };
+  }
+
+  return { valid: true };
+}
+
 // Main endpoint for creating modules
 router.post('/create-module', async (req: Request<{}, CreateModuleResponse, CreateModuleRequest>, res: Response<CreateModuleResponse>) => {
   try {
@@ -34,6 +74,17 @@ router.post('/create-module', async (req: Request<{}, CreateModuleResponse, Crea
 
     // Determine the base path (either from UI override or .env)
     const basePath = folderPath || projectRoot!;
+    const routerModuleName = routerName || process.env.ROUTER_MODULE_NAME || 'assist-router';
+
+    // Validate paths before creating any files
+    const validation = await validatePaths(basePath, routerModuleName);
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        error: validation.error || 'Validation failed'
+      });
+    }
+
     const targetPath = path.join(basePath, 'src', 'modules', 'feature', moduleId);
 
     // Create module folder
