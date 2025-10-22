@@ -10,6 +10,7 @@ export interface CreateModuleRequest {
   screenData: ScreenBuilderConfig;
   folderPath?: string;
   targetSection?: string;
+  routerName?: string;
 }
 
 export interface CreateModuleSuccessResponse {

@@ -9,10 +9,11 @@ const router = Router();
 // Main endpoint for creating modules
 router.post('/create-module', async (req: Request<{}, CreateModuleResponse, CreateModuleRequest>, res: Response<CreateModuleResponse>) => {
   try {
-    const { moduleName, moduleId, screenData, folderPath, targetSection } = req.body;
+    const { moduleName, moduleId, screenData, folderPath, targetSection, routerName } = req.body;
 
     console.log(`📦 Creating module: ${moduleName} (${moduleId})`);
     console.log(`📁 Target folder: ${folderPath}`);
+    console.log(`🧭 Router name: ${routerName}`);
 
     // Validate required fields
     if (!moduleName || !moduleId || !screenData) {
@@ -50,7 +51,7 @@ router.post('/create-module', async (req: Request<{}, CreateModuleResponse, Crea
     console.log('✅ Files written successfully');
 
     // Update screenRoutes.tsx to include new module
-    await updateScreenRoutes(moduleId, moduleName, targetSection);
+    await updateScreenRoutes(moduleId, moduleName, targetSection, routerName, basePath);
 
     res.json({
       success: true,
@@ -73,13 +74,24 @@ router.post('/create-module', async (req: Request<{}, CreateModuleResponse, Crea
 });
 
 // Helper function to update screenRoutes.tsx
-async function updateScreenRoutes(moduleId: string, moduleName: string, targetSection?: string): Promise<void> {
-  const projectRoot = process.env.PROJECT_ROOT_PATH;
+async function updateScreenRoutes(
+  moduleId: string,
+  moduleName: string,
+  targetSection?: string,
+  routerName?: string,
+  basePath?: string
+): Promise<void> {
+  const projectRoot = basePath || process.env.PROJECT_ROOT_PATH;
   if (!projectRoot) {
     console.log('⚠️  PROJECT_ROOT_PATH not set, skipping route update');
     return;
   }
-  const screenRoutesPath = path.join(projectRoot, 'src', 'modules', 'core', 'assist-router', 'screenRoutes.tsx');
+
+  const routerModuleName = routerName || process.env.ROUTER_MODULE_NAME || 'assist-router';
+  const screenRoutesPath = path.join(projectRoot, 'src', 'modules', 'core', routerModuleName, 'screenRoutes.tsx');
+
+  console.log(`🧭 Using router module: ${routerModuleName}`);
+  console.log(`📄 Screen routes path: ${screenRoutesPath}`);
 
   try {
     // Check if screenRoutes.tsx exists
@@ -153,7 +165,7 @@ async function updateScreenRoutes(moduleId: string, moduleName: string, targetSe
 
     // Generate the complete file content
     const sortedImports = Array.from(existingImports);
-    const fileContent = `// template/modules/core/assist-router/screenRoutes.tsx
+    const fileContent = `// template/modules/core/${routerModuleName}/screenRoutes.tsx
 ${sortedImports.join('\n')}
 
 export interface ScreenRoute {
