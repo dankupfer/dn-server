@@ -1,4 +1,4 @@
-// src/views/figma/scrip.js
+// src/views/figma/script.js
 
 // Set default date values
 const today = new Date();
@@ -157,62 +157,138 @@ function buildFormForComponent(selection) {
     if (componentName === 'App_frame') {
         html += `
       <div class="input-group">
-        <label for="config-brand">Brand:</label>
+        <label for="config-brand">Brand</label>
+        <small class="description">Brand theme to use (BrandA, BrandB)</small>
         <select id="config-brand" onchange="autoSave()">
           <option value="BrandA" ${properties.brand === 'BrandA' ? 'selected' : ''}>Brand A</option>
           <option value="BrandB" ${properties.brand === 'BrandB' ? 'selected' : ''}>Brand B</option>
         </select>
       </div>
       <div class="input-group">
-        <label for="config-mode">Mode:</label>
+        <label for="config-mode">Theme Mode</label>
+        <small class="description">Light or dark theme mode</small>
         <select id="config-mode" onchange="autoSave()">
           <option value="light" ${properties.mode === 'light' ? 'selected' : ''}>Light</option>
           <option value="dark" ${properties.mode === 'dark' ? 'selected' : ''}>Dark</option>
         </select>
       </div>
       <div class="input-group">
-        <label for="config-apiBase">API Base URL:</label>
+        <label for="config-apiBase">API Base URL</label>
+        <small class="description">Base URL for API endpoints</small>
         <input type="text" id="config-apiBase" value="${properties.apiBase || 'http://localhost:3001'}" onchange="autoSave()">
       </div>
     `;
     }
 
-    // DN_Frame_Journey_Core
-    else if (componentName === 'DN_Frame_Journey_Core') {
+    // Journey (dynamic based on Type)
+    else if (componentName === 'Journey') {
+        // Get current Type value
+        const currentType = properties.Type || 'CoreJourney';
+        console.log('Building form with Type:', currentType, 'Properties:', properties);
+
+        html += `     
+      <div class="input-group">
+            <label for="config-prop0">Journey ID</label>
+            <small class="description">Unique identifier for this journey instance</small>
+            <input type="text" id="config-prop0" value="${properties.prop0 || 'core-journey-1'}" onchange="autoSave()">
+      </div>
+
+      <div class="input-group">
+            <label for="config-prop1">Section Type</label>
+            <small class="description">Where this journey appears: top, bottom, or modal</small>
+            <select id="config-prop1" onchange="autoSave()">
+              <option value="top" ${properties.prop1 === 'top' ? 'selected' : ''}>Top</option>
+              <option value="bottom" ${properties.prop1 === 'bottom' ? 'selected' : ''}>Bottom</option>
+              <option value="modal" ${properties.prop1 === 'modal' ? 'selected' : ''}>Modal</option>
+            </select>
+          </div>
+
+
+      <div class="input-group">
+        <label for="config-Type">Journey Type</label>
+        <small class="description">Select the type of journey</small>
+        <select id="config-Type" onchange="handleTypeChange()">
+          <option value="CoreJourney" ${currentType === 'CoreJourney' ? 'selected' : ''}>Core Journey</option>
+          <option value="AssistJourney" ${currentType === 'AssistJourney' ? 'selected' : ''}>Assist Journey</option>
+        </select>
+      </div>
+    `;
+
+        // Render fields based on Type
+        if (currentType === 'CoreJourney') {
+            html += `
+          <div class="input-group">
+            <label for="config-prop2">Customer ID</label>
+            <small class="description">ID of the customer data to load for this journey</small>
+            <input type="text" id="config-prop2" value="${properties.prop2 || 'customer-1'}" onchange="autoSave()">
+          </div>
+        `;
+        } else if (currentType === 'AssistJourney') {
+            html += `
+          <div class="input-group">
+            <label>
+              <input type="checkbox" id="config-prop3" ${properties.prop3 ? 'checked' : ''} onchange="autoSave()">
+              Enable TTS
+            </label>
+            <small class="description">Enable text-to-speech for voice interactions</small>
+          </div>
+          <div class="input-group">
+            <label>
+              <input type="checkbox" id="config-prop4" ${properties.prop4 ? 'checked' : ''} onchange="autoSave()">
+              Enable Gemini
+            </label>
+            <small class="description">Use Gemini AI instead of Claude for responses</small>
+          </div>
+        `;
+        }
+    }
+
+    // ScreenBuilder_frame
+    else if (componentName === 'ScreenBuilder_frame') {
         html += `
       <div class="input-group">
-        <label for="config-customerId">Customer ID:</label>
-        <input type="text" id="config-customerId" value="${properties.customerId || 'customer-1'}" onchange="autoSave()">
+        <label for="config-id">Screen ID</label>
+        <small class="description">Unique identifier for this screen</small>
+        <input type="text" id="config-id" value="${properties.id || 'screen-1'}" onchange="autoSave()">
+      </div>
+      <div class="input-group">
+        <label for="config-section_type">Section Type</label>
+        <small class="description">Where this screen appears: top, bottom, or modal</small>
+        <select id="config-section_type" onchange="autoSave()">
+          <option value="top" ${properties.section_type === 'top' ? 'selected' : ''}>Top</option>
+          <option value="bottom" ${properties.section_type === 'bottom' ? 'selected' : ''}>Bottom</option>
+          <option value="modal" ${properties.section_type === 'modal' ? 'selected' : ''}>Modal</option>
+        </select>
       </div>
     `;
     }
 
-    // DN_Frame_Journey_Assist
-    else if (componentName === 'DN_Frame_Journey_Assist') {
+    // Modal_frame
+    else if (componentName === 'Modal_frame') {
         html += `
       <div class="input-group">
-        <label>
-          <input type="checkbox" id="config-tts" ${properties.tts ? 'checked' : ''} onchange="autoSave()">
-          Enable TTS (Text-to-Speech)
-        </label>
+        <label for="config-id">Modal ID</label>
+        <small class="description">Unique identifier for this modal</small>
+        <input type="text" id="config-id" value="${properties.id || 'modal-1'}" onchange="autoSave()">
       </div>
       <div class="input-group">
-        <label>
-          <input type="checkbox" id="config-gemini" ${properties.gemini ? 'checked' : ''} onchange="autoSave()">
-          Enable Gemini AI
-        </label>
+        <label for="config-section_type">Section Type</label>
+        <small class="description">Where this modal appears: top, bottom, or modal</small>
+        <select id="config-section_type" onchange="autoSave()">
+          <option value="top" ${properties.section_type === 'top' ? 'selected' : ''}>Top</option>
+          <option value="bottom" ${properties.section_type === 'bottom' ? 'selected' : ''}>Bottom</option>
+          <option value="modal" ${properties.section_type === 'modal' ? 'selected' : ''}>Modal</option>
+        </select>
       </div>
     `;
     }
 
-    // Other frames
+    // Other components
     else {
         html += `<p>No configurable properties for this component.</p>`;
     }
 
-    // Remove the save button - auto-save handles it!
     html += `</div>`;
-
     return html;
 }
 
@@ -228,11 +304,27 @@ function autoSave() {
         updatedProperties.brand = document.getElementById('config-brand').value;
         updatedProperties.mode = document.getElementById('config-mode').value;
         updatedProperties.apiBase = document.getElementById('config-apiBase').value;
-    } else if (componentName === 'DN_Frame_Journey_Core') {
-        updatedProperties.customerId = document.getElementById('config-customerId').value;
-    } else if (componentName === 'DN_Frame_Journey_Assist') {
-        updatedProperties.tts = document.getElementById('config-tts').checked;
-        updatedProperties.gemini = document.getElementById('config-gemini').checked;
+    } else if (componentName === 'Journey') {
+        updatedProperties.Type = document.getElementById('config-Type').value;
+
+        const prop0 = document.getElementById('config-prop0');
+        const prop1 = document.getElementById('config-prop1');
+        const prop2 = document.getElementById('config-prop2');
+        const prop3 = document.getElementById('config-prop3');
+        const prop4 = document.getElementById('config-prop4');
+
+        if (prop0) updatedProperties.prop0 = prop0.value;
+        if (prop1) updatedProperties.prop1 = prop1.value;
+
+        if (updatedProperties.Type === 'CoreJourney') {
+            if (prop2) updatedProperties.prop2 = prop2.value;
+        } else if (updatedProperties.Type === 'AssistJourney') {
+            if (prop3) updatedProperties.prop3 = prop3.checked;
+            if (prop4) updatedProperties.prop4 = prop4.checked;
+        }
+    } else if (componentName === 'ScreenBuilder_frame' || componentName === 'Modal_frame') {
+        updatedProperties.id = document.getElementById('config-id').value;
+        updatedProperties.section_type = document.getElementById('config-section_type').value;
     }
 
     // Send to plugin
@@ -262,6 +354,26 @@ function showSaveFeedback() {
 // Keep the old saveProperties function for backwards compatibility (if needed)
 function saveProperties() {
     autoSave();
+}
+
+// Handle Journey Type change - save and rebuild form
+function handleTypeChange() {
+    if (!currentSelection) return;
+
+    // Get the new Type value
+    const newType = document.getElementById('config-Type').value;
+    console.log('Type changed to:', newType);
+
+    // Update the Type in currentSelection immediately
+    currentSelection.properties.Type = newType;
+    console.log('Updated currentSelection.properties.Type:', currentSelection.properties.Type);
+
+    // Save to Figma
+    autoSave();
+
+    // Rebuild the form to show correct fields
+    console.log('Rebuilding form...');
+    updateConfigForm();
 }
 
 // Listen for messages from the plugin
@@ -312,3 +424,6 @@ window.onmessage = (event) => {
         output.textContent = msg.data.message;
     }
 };
+
+// Request initial selection when plugin opens
+parent.postMessage({ pluginMessage: { type: 'get-selection' } }, '*');

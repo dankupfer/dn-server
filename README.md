@@ -168,27 +168,54 @@ The Figma plugin loads its UI from the server at `/api/plugin-ui`. This allows f
 ```
 src/views/figma/
 ├── layouts/
-│   └── base.html              # Shared HTML structure, head, scripts
+│   └── base.html              # Shared HTML structure (not used yet)
 ├── components/
-│   ├── tabs.html              # Tab navigation component
-│   └── propertyForm.html      # Dynamic form generator
+│   └── tabs.html              # Tab navigation component
 ├── pages/
-│   ├── screenBuilder.html     # ScreenBuilder tab content
-│   ├── customerBuilder.html   # CustomerBuilder tab content
-│   └── configure.html         # Configure tab content (dynamic forms)
-└── index.html                 # Main entry point
+│   ├── generate.html          # Generate tab (ScreenBuilder + CustomerBuilder)
+│   ├── configure.html         # Configure tab (component properties)
+│   └── export.html            # Export tab (app generation)
+├── controllers/
+│   └── figmaController.ts     # Server-side template assembly
+├── styles.css                 # All UI styles
+├── script.js                  # All UI JavaScript
+└── index.html                 # Main entry point with placeholders
 ```
 
+**Three-Tab Interface:**
+
+1. **Generate Tab** - Create Figma assets
+   - ScreenBuilder: Generate Figma components from definitions
+   - CustomerBuilder: Generate AI-powered synthetic customer data
+
+2. **Configure Tab** - Edit component properties
+   - Auto-save on change (no save button)
+   - Dynamic forms based on selected component type
+   - Properties stored in Figma plugin data per instance
+   - Listens to `selectionchange` events for efficient updates
+
+3. **Export Tab** - Push to React Native app
+   - Export selected screen to code
+   - Project path configuration
+   - Router integration options
+
 **Features:**
-- Server-side HTML rendering
-- Three-tab interface: ScreenBuilder, CustomerBuilder, Configure
-- Dynamic property forms based on selected Figma component
-- Component definitions drive UI generation (JSON-based)
-- Bi-directional communication: Figma ↔ Server
+- Server-side HTML rendering with inline CSS/JS (Figma iframe compatible)
+- Component-based view architecture (layouts/components/pages)
+- Auto-save functionality - changes persist immediately
+- Figma plugin data storage - configs stored with each component instance
+- Selection change listener - no polling, updates on actual selection changes
+- Modular template assembly via FigmaController
 
 **GET** `/api/plugin-ui`
 
-Returns the main plugin UI HTML.
+Returns the complete plugin UI HTML with inlined styles and scripts.
+
+**Technical Notes:**
+- CSS and JavaScript are inlined to comply with Figma's iframe security restrictions
+- Uses `process.cwd()` for reliable file paths in compiled code
+- Template placeholders (`{{STYLES}}`, `{{SCRIPT}}`, etc.) replaced server-side
+- Each component instance stores its own configuration using `node.setPluginData()`
 
 ### Customer Generation
 

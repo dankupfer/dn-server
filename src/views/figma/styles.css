@@ -213,3 +213,12 @@ button.secondary:hover {
     font-size: 11px;
     color: #92400e;
 }
+
+.description {
+    display: block;
+    color: #666;
+    font-size: 11px;
+    margin-top: 2px;
+    margin-bottom: 6px;
+    font-style: italic;
+}
