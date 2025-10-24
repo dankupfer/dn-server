@@ -3,8 +3,10 @@ import { Router, Request, Response } from 'express';
 import fs from 'fs-extra';
 import path from 'path';
 import { CreateModuleRequest, CreateModuleResponse } from '../../types';
+import { FigmaController } from '../../controllers/figmaController';
 
 const router = Router();
+const figmaController = new FigmaController();
 
 // Validation function to check if paths exist
 async function validatePaths(basePath: string, routerName: string): Promise<{ valid: boolean; error?: string }> {
@@ -122,6 +124,30 @@ router.post('/create-module', async (req: Request<{}, CreateModuleResponse, Crea
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
+});
+
+// Serve the main plugin UI
+router.get('/plugin-ui', (req: Request, res: Response) => {
+  try {
+    const html = figmaController.renderPluginUI();
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  } catch (error) {
+    console.error('Error rendering plugin UI:', error);
+    res.status(500).send('Error loading plugin UI');
+  }
+});
+
+// Serve static CSS
+router.get('/figma/styles.css', (req: Request, res: Response) => {
+  const cssPath = path.join(__dirname, '../../views/figma/styles.css');
+  res.sendFile(cssPath);
+});
+
+// Serve static JS
+router.get('/figma/script.js', (req: Request, res: Response) => {
+  const jsPath = path.join(__dirname, '../../views/figma/script.js');
+  res.sendFile(jsPath);
 });
 
 // Helper function to update screenRoutes.tsx

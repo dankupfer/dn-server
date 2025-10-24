@@ -160,6 +160,35 @@ Creates React Native modules from Figma plugin data.
   "moduleName": "SaveInvestRedesign"
 }
 ```
+#### Figma Plugin UI
+
+The Figma plugin loads its UI from the server at `/api/plugin-ui`. This allows for dynamic UI generation and easy updates without plugin redeployment.
+
+**UI Architecture:**
+```
+src/views/figma/
+├── layouts/
+│   └── base.html              # Shared HTML structure, head, scripts
+├── components/
+│   ├── tabs.html              # Tab navigation component
+│   └── propertyForm.html      # Dynamic form generator
+├── pages/
+│   ├── screenBuilder.html     # ScreenBuilder tab content
+│   ├── customerBuilder.html   # CustomerBuilder tab content
+│   └── configure.html         # Configure tab content (dynamic forms)
+└── index.html                 # Main entry point
+```
+
+**Features:**
+- Server-side HTML rendering
+- Three-tab interface: ScreenBuilder, CustomerBuilder, Configure
+- Dynamic property forms based on selected Figma component
+- Component definitions drive UI generation (JSON-based)
+- Bi-directional communication: Figma ↔ Server
+
+**GET** `/api/plugin-ui`
+
+Returns the main plugin UI HTML.
 
 ### Customer Generation
 

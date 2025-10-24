@@ -1,0 +1,77 @@
+<!-- Generate Tab -->
+<div id="generate-tab" class="tab-content active">
+    <h1>Generate</h1>
+
+    <!-- ScreenBuilder Components Section -->
+    <div class="section">
+        <h2>ScreenBuilder Components</h2>
+        <p>Generate Figma components from ScreenBuilder definitions. This creates reusable components you can
+            drag onto your canvas.</p>
+        <button id="create-components">Create Components</button>
+    </div>
+
+    <!-- CustomerBuilder Section -->
+    <div class="section">
+        <h2>CustomerBuilder</h2>
+        <p>Create synthetic bank customer profiles with realistic account and transaction data using AI.</p>
+
+        <div class="note">
+            <strong>Bridge Server Required:</strong> Make sure the figma-bridge server is running on
+            localhost:3001
+        </div>
+
+        <div class="input-group">
+            <label for="customer-name">Customer Name:</label>
+            <input type="text" id="customer-name" placeholder="John Smith" value="">
+        </div>
+
+        <div class="input-group">
+            <label for="fresco-segment">FRESCO Segment:</label>
+            <select id="fresco-segment">
+                <option value="">Select segment...</option>
+                <option value="A">A - Highest income, most advantaged</option>
+                <option value="B">B - Higher managerial, administrative</option>
+                <option value="C1">C1 - Supervisory, clerical, junior managerial</option>
+                <option value="C2">C2 - Skilled manual workers</option>
+                <option value="D">D - Semi-skilled and unskilled manual</option>
+                <option value="E">E - State pensioners, unemployed, lowest grade</option>
+            </select>
+        </div>
+
+        <div class="input-row">
+            <div class="input-group">
+                <label for="customer-age">Age:</label>
+                <input type="number" id="customer-age" placeholder="35" min="18" max="100" value="">
+            </div>
+
+            <div class="input-group">
+                <label for="customer-gender">Gender:</label>
+                <select id="customer-gender">
+                    <option value="">Select...</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="customer-profession">Profession:</label>
+            <input type="text" id="customer-profession" placeholder="Software Developer" value="">
+        </div>
+
+        <div class="input-row">
+            <div class="input-group">
+                <label for="from-date">From Date:</label>
+                <input type="date" id="from-date" value="">
+            </div>
+
+            <div class="input-group">
+                <label for="to-date">To Date:</label>
+                <input type="date" id="to-date" value="">
+            </div>
+        </div>
+
+        <button id="generate-customer">Generate Customer</button>
+    </div>
+</div>
