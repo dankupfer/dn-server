@@ -146,150 +146,186 @@ function updateConfigForm() {
     configForm.innerHTML = formHTML;
 }
 
-// Build form HTML based on component type
-function buildFormForComponent(selection) {
+// Build form HTML based on component type - NOW DYNAMIC!
+async function buildFormForComponent(selection) {
     const { componentName, properties } = selection;
 
     let html = `<div class="section">`;
     html += `<h2>${componentName}</h2>`;
 
-    // App_frame
-    if (componentName === 'App_frame') {
-        html += `
-      <div class="input-group">
-        <label for="config-brand">Brand</label>
-        <small class="description">Brand theme to use (BrandA, BrandB)</small>
-        <select id="config-brand" onchange="autoSave()">
-          <option value="BrandA" ${properties.brand === 'BrandA' ? 'selected' : ''}>Brand A</option>
-          <option value="BrandB" ${properties.brand === 'BrandB' ? 'selected' : ''}>Brand B</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label for="config-mode">Theme Mode</label>
-        <small class="description">Light or dark theme mode</small>
-        <select id="config-mode" onchange="autoSave()">
-          <option value="light" ${properties.mode === 'light' ? 'selected' : ''}>Light</option>
-          <option value="dark" ${properties.mode === 'dark' ? 'selected' : ''}>Dark</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label for="config-apiBase">API Base URL</label>
-        <small class="description">Base URL for API endpoints</small>
-        <input type="text" id="config-apiBase" value="${properties.apiBase || 'http://localhost:3001'}" onchange="autoSave()">
-      </div>
-    `;
-    }
+    // Check if this is a Journey component (uses dynamic forms from server)
+    if (componentName === 'Journey') {
+        const journeyType = properties.Type || 'AccountCard'; // Default to AccountCard
 
-    // Journey (dynamic based on Type)
-    else if (componentName === 'Journey') {
-        // Get current Type value
-        const currentType = properties.Type || 'CoreJourney';
-        console.log('Building form with Type:', currentType, 'Properties:', properties);
+        try {
+            // Fetch form configuration from server
+            const response = await fetch(`http://localhost:3001/api/figma/form-config/${journeyType}`);
+            const result = await response.json();
 
-        html += `     
-      <div class="input-group">
-            <label for="config-prop0">Journey ID</label>
-            <small class="description">Unique identifier for this journey instance</small>
-            <input type="text" id="config-prop0" value="${properties.prop0 || 'core-journey-1'}" onchange="autoSave()">
-      </div>
+            if (result.success && result.data) {
+                const formConfig = result.data;
 
-      <div class="input-group">
-            <label for="config-prop1">Section Type</label>
-            <small class="description">Where this journey appears: top, bottom, or modal</small>
-            <select id="config-prop1" onchange="autoSave()">
-              <option value="top" ${properties.prop1 === 'top' ? 'selected' : ''}>Top</option>
-              <option value="bottom" ${properties.prop1 === 'bottom' ? 'selected' : ''}>Bottom</option>
-              <option value="modal" ${properties.prop1 === 'modal' ? 'selected' : ''}>Modal</option>
-            </select>
-          </div>
+                // First, add Journey Type selector (to switch between component types)
+                html += await buildJourneyTypeSelector(properties);
 
-
-      <div class="input-group">
-        <label for="config-Type">Journey Type</label>
-        <small class="description">Select the type of journey</small>
-        <select id="config-Type" onchange="handleTypeChange()">
-          <option value="CoreJourney" ${currentType === 'CoreJourney' ? 'selected' : ''}>Core Journey</option>
-          <option value="AssistJourney" ${currentType === 'AssistJourney' ? 'selected' : ''}>Assist Journey</option>
-        </select>
-      </div>
-    `;
-
-        // Render fields based on Type
-        if (currentType === 'CoreJourney') {
-            html += `
-          <div class="input-group">
-            <label for="config-prop2">Customer ID</label>
-            <small class="description">ID of the customer data to load for this journey</small>
-            <input type="text" id="config-prop2" value="${properties.prop2 || 'customer-1'}" onchange="autoSave()">
-          </div>
-        `;
-        } else if (currentType === 'AssistJourney') {
-            html += `
-          <div class="input-group">
-            <label>
-              <input type="checkbox" id="config-prop3" ${properties.prop3 ? 'checked' : ''} onchange="autoSave()">
-              Enable TTS
-            </label>
-            <small class="description">Enable text-to-speech for voice interactions</small>
-          </div>
-          <div class="input-group">
-            <label>
-              <input type="checkbox" id="config-prop4" ${properties.prop4 ? 'checked' : ''} onchange="autoSave()">
-              Enable Gemini
-            </label>
-            <small class="description">Use Gemini AI instead of Claude for responses</small>
-          </div>
-        `;
+                // Then add dynamic fields based on the selected type
+                html += buildDynamicFields(formConfig.fields, properties);
+            } else {
+                html += `<p class="error">Failed to load form configuration for ${journeyType}</p>`;
+            }
+        } catch (error) {
+            console.error('Error fetching form config:', error);
+            html += `<p class="error">Error loading form: ${error.message}</p>`;
         }
     }
-
-    // ScreenBuilder_frame
+    // Keep existing hardcoded forms for App_frame and other components
+    else if (componentName === 'App_frame') {
+        html += buildAppFrameForm(properties);
+    }
     else if (componentName === 'ScreenBuilder_frame') {
-        html += `
-      <div class="input-group">
-        <label for="config-id">Screen ID</label>
-        <small class="description">Unique identifier for this screen</small>
-        <input type="text" id="config-id" value="${properties.id || 'screen-1'}" onchange="autoSave()">
-      </div>
-      <div class="input-group">
-        <label for="config-section_type">Section Type</label>
-        <small class="description">Where this screen appears: top, bottom, or modal</small>
-        <select id="config-section_type" onchange="autoSave()">
-          <option value="top" ${properties.section_type === 'top' ? 'selected' : ''}>Top</option>
-          <option value="bottom" ${properties.section_type === 'bottom' ? 'selected' : ''}>Bottom</option>
-          <option value="modal" ${properties.section_type === 'modal' ? 'selected' : ''}>Modal</option>
-        </select>
-      </div>
-    `;
+        html += buildScreenBuilderForm(properties);
     }
-
-    // Modal_frame
     else if (componentName === 'Modal_frame') {
-        html += `
-      <div class="input-group">
-        <label for="config-id">Modal ID</label>
-        <small class="description">Unique identifier for this modal</small>
-        <input type="text" id="config-id" value="${properties.id || 'modal-1'}" onchange="autoSave()">
-      </div>
-      <div class="input-group">
-        <label for="config-section_type">Section Type</label>
-        <small class="description">Where this modal appears: top, bottom, or modal</small>
-        <select id="config-section_type" onchange="autoSave()">
-          <option value="top" ${properties.section_type === 'top' ? 'selected' : ''}>Top</option>
-          <option value="bottom" ${properties.section_type === 'bottom' ? 'selected' : ''}>Bottom</option>
-          <option value="modal" ${properties.section_type === 'modal' ? 'selected' : ''}>Modal</option>
-        </select>
-      </div>
-    `;
+        html += buildModalForm(properties);
     }
-
-    // Other components
     else {
         html += `<p>No configurable properties for this component.</p>`;
     }
 
     html += `</div>`;
     return html;
+}
+
+// Build Journey Type selector to switch between component types
+async function buildJourneyTypeSelector(properties) {
+    try {
+        // Fetch available component types from server
+        const response = await fetch('http://localhost:3001/api/figma/component-types');
+        const result = await response.json();
+
+        if (!result.success || !result.data) {
+            return '<p class="error">Failed to load component types</p>';
+        }
+
+        const componentTypes = result.data;
+        const currentType = properties.Type || 'AccountCard';
+
+        let html = `
+            <div class="input-group">
+                <label for="config-Type">Component Type</label>
+                <small class="description">Select the type of component to configure</small>
+                <select id="config-Type" onchange="handleTypeChange()">
+        `;
+
+        componentTypes.forEach(type => {
+            html += `<option value="${type.componentType}" ${currentType === type.componentType ? 'selected' : ''}>
+                ${type.label} (${type.fieldCount} properties)
+            </option>`;
+        });
+
+        html += `
+                </select>
+            </div>
+        `;
+
+        return html;
+    } catch (error) {
+        console.error('Error building type selector:', error);
+        return '<p class="error">Error loading component types</p>';
+    }
+}
+
+// Build dynamic form fields from server configuration
+function buildDynamicFields(fields, properties) {
+    let html = '';
+
+    fields.forEach(field => {
+        const value = properties[field.genericKey] || field.defaultValue;
+
+        html += `<div class="input-group">`;
+        html += `<label for="config-${field.genericKey}">${field.label}</label>`;
+
+        if (field.type === 'text') {
+            html += `<input type="text" id="config-${field.genericKey}" value="${value}" onchange="autoSave()">`;
+        } else if (field.type === 'checkbox') {
+            html += `<input type="checkbox" id="config-${field.genericKey}" ${value ? 'checked' : ''} onchange="autoSave()">`;
+        } else if (field.type === 'select' && field.options) {
+            html += `<select id="config-${field.genericKey}" onchange="autoSave()">`;
+            field.options.forEach(option => {
+                html += `<option value="${option}" ${value === option ? 'selected' : ''}>${option}</option>`;
+            });
+            html += `</select>`;
+        }
+
+        html += `</div>`;
+    });
+
+    return html;
+}
+
+// Keep existing hardcoded form builders for other component types
+function buildAppFrameForm(properties) {
+    return `
+        <div class="input-group">
+            <label for="config-brand">Brand</label>
+            <small class="description">Brand theme to use (BrandA, BrandB)</small>
+            <select id="config-brand" onchange="autoSave()">
+                <option value="BrandA" ${properties.brand === 'BrandA' ? 'selected' : ''}>Brand A</option>
+                <option value="BrandB" ${properties.brand === 'BrandB' ? 'selected' : ''}>Brand B</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="config-mode">Theme Mode</label>
+            <small class="description">Light or dark theme mode</small>
+            <select id="config-mode" onchange="autoSave()">
+                <option value="light" ${properties.mode === 'light' ? 'selected' : ''}>Light</option>
+                <option value="dark" ${properties.mode === 'dark' ? 'selected' : ''}>Dark</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="config-apiBase">API Base URL</label>
+            <small class="description">Base URL for API endpoints</small>
+            <input type="text" id="config-apiBase" value="${properties.apiBase || 'http://localhost:3001'}" onchange="autoSave()">
+        </div>
+    `;
+}
+
+function buildScreenBuilderForm(properties) {
+    return `
+        <div class="input-group">
+            <label for="config-id">Screen ID</label>
+            <small class="description">Unique identifier for this screen</small>
+            <input type="text" id="config-id" value="${properties.id || 'screen-1'}" onchange="autoSave()">
+        </div>
+        <div class="input-group">
+            <label for="config-section_type">Section Type</label>
+            <small class="description">Where this screen appears: top, bottom, or modal</small>
+            <select id="config-section_type" onchange="autoSave()">
+                <option value="top" ${properties.section_type === 'top' ? 'selected' : ''}>Top</option>
+                <option value="bottom" ${properties.section_type === 'bottom' ? 'selected' : ''}>Bottom</option>
+                <option value="modal" ${properties.section_type === 'modal' ? 'selected' : ''}>Modal</option>
+            </select>
+        </div>
+    `;
+}
+
+function buildModalForm(properties) {
+    return `
+        <div class="input-group">
+            <label for="config-id">Modal ID</label>
+            <small class="description">Unique identifier for this modal</small>
+            <input type="text" id="config-id" value="${properties.id || 'modal-1'}" onchange="autoSave()">
+        </div>
+        <div class="input-group">
+            <label for="config-section_type">Section Type</label>
+            <small class="description">Where this modal appears: top, bottom, or modal</small>
+            <select id="config-section_type" onchange="autoSave()">
+                <option value="top" ${properties.section_type === 'top' ? 'selected' : ''}>Top</option>
+                <option value="bottom" ${properties.section_type === 'bottom' ? 'selected' : ''}>Bottom</option>
+                <option value="modal" ${properties.section_type === 'modal' ? 'selected' : ''}>Modal</option>
+            </select>
+        </div>
+    `;
 }
 
 // Auto-save properties when any input changes

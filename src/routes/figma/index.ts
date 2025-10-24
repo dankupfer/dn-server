@@ -5,6 +5,10 @@ import path from 'path';
 import { CreateModuleRequest, CreateModuleResponse } from '../../types';
 import { FigmaController } from '../../controllers/figmaController';
 
+import validator from '../../figma-api/services/validator.service';
+import formBuilder from '../../figma-api/services/formBuilder.service';
+import propertyMapper from '../../figma-api/services/propertyMapper.service';
+
 const router = Router();
 const figmaController = new FigmaController();
 
@@ -119,6 +123,66 @@ router.post('/create-module', async (req: Request<{}, CreateModuleResponse, Crea
 
   } catch (error) {
     console.error('❌ Error creating module:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get list of all available component types
+router.get('/component-types', (req: Request, res: Response) => {
+  try {
+    console.log('📋 Getting available component types');
+
+    const componentTypes = formBuilder.getAvailableComponentForms();
+
+    res.json({
+      success: true,
+      data: componentTypes
+    });
+
+  } catch (error) {
+    console.error('❌ Error getting component types:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get form configuration for a component type
+router.get('/form-config/:componentType', (req: Request, res: Response) => {
+  try {
+    const { componentType } = req.params;
+
+    console.log(`📋 Building form for component: ${componentType}`);
+
+    // Validate component type exists
+    if (!propertyMapper.isValidComponentType(componentType)) {
+      return res.status(404).json({
+        success: false,
+        error: `Unknown component type: ${componentType}`
+      });
+    }
+
+    // Build form configuration
+    const formConfig = formBuilder.buildForm(componentType);
+
+    if (!formConfig) {
+      return res.status(500).json({
+        success: false,
+        error: `Failed to build form for component type: ${componentType}`
+      });
+    }
+
+    res.json({
+      success: true,
+      data: formConfig
+    });
+
+  } catch (error) {
+    console.error('❌ Error building form config:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
