@@ -30,30 +30,6 @@
       { "type": "text", "content": "Use plugin UI to configure →", "x": 20, "y": 100, "fontSize": 12, "color": "#666666" }
     ]
   },
-  "Modal_frame": {
-    "name": "Modal_frame",
-    "width": 393,
-    "height": 852,
-    "backgroundColor": "#F5F5F5",
-    "properties": {
-      "id": {
-        "type": "TEXT",
-        "defaultValue": "modal-1",
-        "label": "Modal ID",
-        "description": "Unique identifier for this modal"
-      },
-      "section_type": {
-        "type": "TEXT",
-        "defaultValue": "modal",
-        "label": "Section Type",
-        "description": "Where this modal appears: top, bottom, or modal"
-      }
-    },
-    "elements": [
-      { "type": "text", "content": "Modal Frame", "x": 20, "y": 20, "fontSize": 24, "fontWeight": 700 },
-      { "type": "text", "content": "Full screen modal container", "x": 20, "y": 55, "fontSize": 14, "color": "#666666" }
-    ]
-  },
   "ScreenBuilder_frame": {
     "name": "ScreenBuilder_frame",
     "width": 393,
@@ -68,9 +44,9 @@
       },
       "section_type": {
         "type": "TEXT",
-        "defaultValue": "top",
+        "defaultValue": "slide-panel",
         "label": "Section Type",
-        "description": "Where this screen appears: top, bottom, or modal"
+        "description": "Where this journey appears: main-carousel (between tabs and bottomNav), slide-panel (slides from right, keeps bottomNav), full-screen (complete takeover), or modal (slides up from bottom)"
       }
     },
     "elements": [

@@ -4,74 +4,39 @@
     "width": 393,
     "height": 568,
     "backgroundColor": "#FFF3E0",
-    "genericProperties": {
-      "Type": {
-        "type": "TEXT",
-        "defaultValue": "CoreJourney"
-      },
+    "genericPropsTotal": 10,
+    "commonProperties": {
       "prop0": {
-        "type": "TEXT",
-        "defaultValue": ""
+        "maps_to": "id"
       },
       "prop1": {
-        "type": "TEXT",
-        "defaultValue": ""
+        "maps_to": "section_type"
       },
       "prop2": {
-        "type": "TEXT",
-        "defaultValue": ""
-      },
-      "prop3": {
-        "type": "BOOLEAN",
-        "defaultValue": false
-      },
-      "prop4": {
-        "type": "BOOLEAN",
-        "defaultValue": false
+        "maps_to": "sectionHome"
       }
     },
-    "typeConfigurations": {
+    "optionConfigurations": {
       "CoreJourney": {
-        "prop0": {
-          "maps_to": "id",
-          "label": "Journey ID",
-          "description": "Unique identifier for this journey instance",
-          "defaultValue": "core-journey-1"
-        },
-        "prop1": {
-          "maps_to": "section_type",
-          "label": "Section Type",
-          "description": "Where this journey appears: top, bottom, or modal",
-          "defaultValue": "top"
-        },
-        "prop2": {
+        "prop3": {
           "maps_to": "customer-id",
+          "type": "text",
           "label": "Customer ID",
           "description": "ID of the customer data to load for this journey",
           "defaultValue": "customer-1"
         }
       },
       "AssistJourney": {
-        "prop0": {
-          "maps_to": "id",
-          "label": "Journey ID",
-          "description": "Unique identifier for this journey instance",
-          "defaultValue": "assist-journey-1"
-        },
-        "prop1": {
-          "maps_to": "section_type",
-          "label": "Section Type",
-          "description": "Where this journey appears: top, bottom, or modal",
-          "defaultValue": "top"
-        },
-        "prop3": {
+        "prop4": {
           "maps_to": "tts",
+          "type": "checkbox",
           "label": "Enable TTS",
           "description": "Enable text-to-speech for voice interactions",
           "defaultValue": false
         },
-        "prop4": {
+        "prop5": {
           "maps_to": "gemini",
+          "type": "checkbox",
           "label": "Enable Gemini",
           "description": "Use Gemini AI instead of Claude for responses",
           "defaultValue": false

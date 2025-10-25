@@ -82,7 +82,7 @@ function switchTab(tabName: string, targetButton: HTMLElement) {
 function setupMessageListener() {
     window.onmessage = (event) => {
         const msg = event.data.pluginMessage;
-        console.log('UI received message:', msg);
+        console.log('UI received message ::**::', msg);
 
         switch (msg.type) {
             case 'components-created':
@@ -98,11 +98,18 @@ function setupMessageListener() {
                 break;
 
             case 'selection-changed':
+                console.log('🔔 selection-changed received:', msg.data);
+                console.log('   componentName:', msg.data?.componentName);
+                console.log('   properties:', msg.data?.properties);
                 updateSelection(msg.data);
                 break;
 
             case 'properties-updated':
                 showFeedback('✅ Properties updated successfully!', 'success');
+                break;
+
+            case 'plugin-data-cleared':
+                showFeedback(`✅ Cleared plugin data from ${msg.data.count} component(s)`, 'success');
                 break;
 
             case 'error':

@@ -156,37 +156,59 @@ File: ${data.filePath}`, "success");
 
   // src/views/figma/scripts/api.ts
   var API_BASE_URL = "http://localhost:3001/api/figma";
-  async function fetchComponentTypes() {
+  async function fetchJourneyOptions() {
     try {
-      const response = await fetch(`${API_BASE_URL}/component-types`);
+      console.log("\u{1F4E1} Fetching journey options from:", `${API_BASE_URL}/journey-options`);
+      const response = await fetch(`${API_BASE_URL}/journey-options`);
       const result = await response.json();
+      console.log("\u{1F4E6} Server response:", result);
       if (!result.success || !result.data) {
-        throw new Error(result.error || "Failed to fetch component types");
+        throw new Error(result.error || "Failed to fetch journey options");
       }
       return result.data;
     } catch (error) {
-      console.error("Error fetching component types:", error);
+      console.error("\u274C Error fetching journey options:", error);
       throw error;
     }
   }
-  async function fetchFormConfig(componentType) {
+  async function fetchFormConfig(journeyOption) {
     try {
-      const response = await fetch(`${API_BASE_URL}/form-config/${componentType}`);
+      console.log("\u{1F517} Fetching form config for:", journeyOption);
+      const response = await fetch(`${API_BASE_URL}/form-config/${journeyOption}`);
       const result = await response.json();
       if (!result.success || !result.data) {
         throw new Error(result.error || "Failed to fetch form config");
       }
       return result.data;
     } catch (error) {
-      console.error("Error fetching form config:", error);
+      console.error("\u274C Error fetching form config:", error);
       throw error;
     }
+  }
+  async function fetchFieldDefinitions() {
+    const response = await fetch(`${API_BASE_URL}/field-definitions`);
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.error || "Failed to fetch field definitions");
+    }
+    return result.data;
   }
 
   // src/views/figma/scripts/configure.ts
   var currentSelection = null;
-  function initConfigureTab() {
+  var fieldDefinitions = null;
+  async function initConfigureTab() {
     console.log("Configure tab initialized");
+    try {
+      fieldDefinitions = await fetchFieldDefinitions();
+      console.log("\u2705 Field definitions loaded:", fieldDefinitions);
+    } catch (error) {
+      console.error("\u274C Error loading field definitions:", error);
+    }
+    const clearButton = document.getElementById("clear-plugin-data");
+    if (clearButton) {
+      clearButton.onclick = handleClearPluginData;
+    }
   }
   function updateSelection(selection) {
     currentSelection = selection;
@@ -205,19 +227,170 @@ File: ${data.filePath}`, "success");
     configForm.style.display = "block";
     const formHTML = await buildFormForComponent(currentSelection);
     configForm.innerHTML = formHTML;
+    setupConditionalFieldListeners();
+  }
+  function shouldDisableField(fieldName, dependentFieldValue) {
+    const fieldDef = fieldDefinitions?.[fieldName];
+    if (!fieldDef || !fieldDef.conditionalRules) return false;
+    const disableWhen = fieldDef.conditionalRules.disableWhen;
+    if (!disableWhen) return false;
+    for (const [dependentField, disableValues] of Object.entries(disableWhen)) {
+      if (Array.isArray(disableValues) && disableValues.includes(dependentFieldValue)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function setupConditionalFieldListeners() {
+    const componentName = currentSelection?.componentName;
+    let sectionHomeCheckboxId;
+    let sectionHomeInputGroupId;
+    let sectionTypeSelectId;
+    let conditionalContainerId;
+    let sectionHomeOptionSelectId;
+    if (componentName === "Journey") {
+      sectionHomeCheckboxId = "config-prop2";
+      sectionHomeInputGroupId = "input-group-prop2";
+      sectionTypeSelectId = "config-prop1";
+      conditionalContainerId = "config-prop2-conditional";
+      sectionHomeOptionSelectId = "config-prop2-option";
+    } else {
+      sectionHomeCheckboxId = "config-sectionHome";
+      sectionHomeInputGroupId = "input-group-sectionHome";
+      sectionTypeSelectId = "config-section_type";
+      conditionalContainerId = "config-sectionHome-conditional";
+      sectionHomeOptionSelectId = "config-sectionHome-option";
+    }
+    const sectionHomeCheckbox = document.getElementById(sectionHomeCheckboxId);
+    const sectionTypeSelect = document.getElementById(sectionTypeSelectId);
+    if (sectionHomeCheckbox) {
+      sectionHomeCheckbox.addEventListener("change", () => {
+        toggleSectionHomeOptions(conditionalContainerId, sectionHomeCheckboxId);
+        autoSave();
+      });
+    }
+    if (sectionTypeSelect) {
+      sectionTypeSelect.addEventListener("change", () => {
+        applyConditionalRules(sectionTypeSelectId, sectionHomeCheckboxId, sectionHomeInputGroupId);
+        updateSectionHomeOptions(sectionTypeSelectId, conditionalContainerId, sectionHomeOptionSelectId);
+        autoSave();
+      });
+    }
+    applyConditionalRules(sectionTypeSelectId, sectionHomeCheckboxId, sectionHomeInputGroupId);
+    toggleSectionHomeOptions(conditionalContainerId, sectionHomeCheckboxId);
+  }
+  function applyConditionalRules(sectionTypeSelectId, sectionHomeCheckboxId, sectionHomeInputGroupId) {
+    const sectionTypeSelect = document.getElementById(sectionTypeSelectId);
+    const sectionHomeCheckbox = document.getElementById(sectionHomeCheckboxId);
+    const sectionHomeInputGroup = document.getElementById(sectionHomeInputGroupId);
+    if (!sectionTypeSelect || !sectionHomeCheckbox || !sectionHomeInputGroup) return;
+    const sectionTypeValue = sectionTypeSelect.value;
+    const shouldDisable = shouldDisableField("sectionHome", sectionTypeValue);
+    if (shouldDisable) {
+      sectionHomeCheckbox.disabled = true;
+      sectionHomeCheckbox.checked = false;
+      sectionHomeInputGroup.style.opacity = "0.5";
+      sectionHomeInputGroup.style.pointerEvents = "none";
+      const conditionalContainerId = sectionHomeCheckboxId.replace("config-", "config-") + "-conditional";
+      const conditionalContainer = document.getElementById(conditionalContainerId);
+      if (conditionalContainer) {
+        conditionalContainer.style.display = "none";
+      }
+    } else {
+      sectionHomeCheckbox.disabled = false;
+      sectionHomeInputGroup.style.opacity = "1";
+      sectionHomeInputGroup.style.pointerEvents = "auto";
+    }
+  }
+  function toggleSectionHomeOptions(conditionalContainerId, checkboxId) {
+    const sectionHomeCheckbox = document.getElementById(checkboxId);
+    const conditionalContainer = document.getElementById(conditionalContainerId);
+    if (!conditionalContainer) return;
+    if (sectionHomeCheckbox && sectionHomeCheckbox.checked && !sectionHomeCheckbox.disabled) {
+      conditionalContainer.style.display = "block";
+      const selectId = conditionalContainerId.replace("-conditional", "-option");
+      const sectionTypeId = checkboxId.replace("sectionHome", "section_type").replace("prop2", "prop1");
+      updateSectionHomeOptions(sectionTypeId, conditionalContainerId, selectId);
+    } else {
+      conditionalContainer.style.display = "none";
+    }
+  }
+  function updateSectionHomeOptions(sectionTypeSelectId, conditionalContainerId, sectionHomeOptionSelectId) {
+    const sectionTypeSelect = document.getElementById(sectionTypeSelectId);
+    const sectionHomeOptionsSelect = document.getElementById(sectionHomeOptionSelectId);
+    if (!sectionTypeSelect || !sectionHomeOptionsSelect) return;
+    const sectionType = sectionTypeSelect.value;
+    const fieldDef = fieldDefinitions?.sectionHome;
+    if (!fieldDef || !fieldDef.conditionalOptions) return;
+    const options = fieldDef.conditionalOptions[sectionType] || [];
+    sectionHomeOptionsSelect.innerHTML = "";
+    options.forEach((option) => {
+      const optionElement = document.createElement("option");
+      optionElement.value = option;
+      optionElement.textContent = option;
+      sectionHomeOptionsSelect.appendChild(optionElement);
+    });
+    if (currentSelection?.properties.sectionHomeOption) {
+      sectionHomeOptionsSelect.value = currentSelection.properties.sectionHomeOption;
+    }
+  }
+  function buildFieldFromDefinition(fieldName, fieldId, currentValue, overrides) {
+    const fieldDef = fieldDefinitions?.[fieldName] || {};
+    const label = overrides?.label || fieldDef.label || fieldName;
+    const description = overrides?.description || fieldDef.description || "";
+    const defaultValue = overrides?.defaultValue || fieldDef.defaultValue || "";
+    const value = currentValue !== void 0 ? currentValue : defaultValue;
+    const inputGroupId = `input-group-${fieldName}`;
+    let html = `<div class="input-group" id="${inputGroupId}">`;
+    html += `<label for="${fieldId}">${label}</label>`;
+    if (description) {
+      html += `<small class="description">${description}</small>`;
+    }
+    const fieldType = fieldDef.type || "text";
+    if (fieldType === "checkbox") {
+      html += `<input type="checkbox" id="${fieldId}" ${value ? "checked" : ""} onchange="autoSave()">`;
+      if (fieldName === "sectionHome") {
+        const conditionalId = `${fieldId}-conditional`;
+        const optionSelectId = `${fieldId}-option`;
+        html += `
+                <div id="${conditionalId}" style="display: none; margin-top: 12px;">
+                    <label for="${optionSelectId}">Home Tab</label>
+                    <small class="description">Select which home tab to display</small>
+                    <select id="${optionSelectId}" onchange="autoSave()">
+                        <!-- Options populated dynamically -->
+                    </select>
+                </div>
+            `;
+      }
+    } else if (fieldType === "select" && fieldDef.options) {
+      html += `<select id="${fieldId}" onchange="autoSave()">`;
+      fieldDef.options.forEach((option) => {
+        html += `<option value="${option}" ${value === option ? "selected" : ""}>${option}</option>`;
+      });
+      html += `</select>`;
+    } else {
+      html += `<input type="text" id="${fieldId}" value="${value}" onchange="autoSave()">`;
+    }
+    html += `</div>`;
+    return html;
   }
   async function buildFormForComponent(selection) {
     const { componentName, properties } = selection;
     let html = `<div class="section">`;
     html += `<h2>${componentName}</h2>`;
     if (componentName === "Journey") {
-      const journeyType = properties.Type || "AccountCard";
+      const journeyOption = properties.journeyOption || "CoreJourney";
+      console.log("\u{1F3AF} Journey component detected");
+      console.log("\u{1F3AF} journeyOption:", journeyOption);
+      console.log("\u{1F3AF} properties:", properties);
       try {
-        const formConfig = await fetchFormConfig(journeyType);
-        html += await buildJourneyTypeSelector(properties);
+        html += await buildJourneyOptionSelector(properties, journeyOption);
+        console.log("\u{1F517} Fetching form config for:", journeyOption);
+        const formConfig = await fetchFormConfig(journeyOption);
+        console.log("\u2705 Form config received:", formConfig);
         html += buildDynamicFields(formConfig.fields, properties);
       } catch (error) {
-        console.error("Error fetching form config:", error);
+        console.error("\u274C Error in Journey form building:", error);
         html += `<p class="error">Error loading form: ${error instanceof Error ? error.message : "Unknown error"}</p>`;
       }
     } else if (componentName === "App_frame") {
@@ -232,41 +405,58 @@ File: ${data.filePath}`, "success");
     html += `</div>`;
     return html;
   }
-  async function buildJourneyTypeSelector(properties) {
+  async function buildJourneyOptionSelector(properties, currentOption) {
     try {
-      const componentTypes = await fetchComponentTypes();
-      const currentType = properties.Type || "AccountCard";
+      console.log("\u{1F50D} Building selector with currentOption:", currentOption);
+      const journeyOptions = await fetchJourneyOptions();
+      console.log("\u{1F4CB} Available journey options:", journeyOptions);
+      console.log("\u{1F4CB} Number of options:", journeyOptions.length);
       let html = `
             <div class="input-group">
-                <label for="config-Type">Component Type</label>
-                <small class="description">Select the type of component to configure</small>
-                <select id="config-Type" onchange="handleTypeChange()">
+                <label for="config-journeyOption">Journey Option</label>
+                <small class="description">Select the type of journey to configure</small>
+                <select id="config-journeyOption" onchange="handleJourneyOptionChange()">
         `;
-      componentTypes.forEach((type) => {
-        html += `<option value="${type.componentType}" ${currentType === type.componentType ? "selected" : ""}>
-                ${type.label} (${type.fieldCount} properties)
+      journeyOptions.forEach((option) => {
+        console.log("  - Adding option:", option.journeyOption, "Label:", option.label);
+        html += `<option value="${option.journeyOption}" ${currentOption === option.journeyOption ? "selected" : ""}>
+                ${option.label}
             </option>`;
       });
-      html += `
-                </select>
-            </div>
-        `;
+      html += `</select></div>`;
       return html;
     } catch (error) {
-      console.error("Error building type selector:", error);
-      return '<p class="error">Error loading component types</p>';
+      console.error("\u274C Error building journey option selector:", error);
+      return '<p class="error">Error loading journey options</p>';
     }
   }
   function buildDynamicFields(fields, properties) {
     let html = "";
     fields.forEach((field) => {
       const value = properties[field.genericKey] || field.defaultValue;
-      html += `<div class="input-group">`;
+      const inputGroupId = `input-group-${field.genericKey}`;
+      html += `<div class="input-group" id="${inputGroupId}">`;
       html += `<label for="config-${field.genericKey}">${field.label}</label>`;
+      if (field.description) {
+        html += `<small class="description">${field.description}</small>`;
+      }
       if (field.type === "text") {
         html += `<input type="text" id="config-${field.genericKey}" value="${value}" onchange="autoSave()">`;
       } else if (field.type === "checkbox") {
         html += `<input type="checkbox" id="config-${field.genericKey}" ${value ? "checked" : ""} onchange="autoSave()">`;
+        if (field.name === "sectionHome") {
+          const conditionalId = `config-${field.genericKey}-conditional`;
+          const optionSelectId = `config-${field.genericKey}-option`;
+          html += `
+                    <div id="${conditionalId}" style="display: none; margin-top: 12px;">
+                        <label for="${optionSelectId}">Home Tab</label>
+                        <small class="description">Select which home tab to display</small>
+                        <select id="${optionSelectId}" onchange="autoSave()">
+                            <!-- Options populated dynamically -->
+                        </select>
+                    </div>
+                `;
+        }
       } else if (field.type === "select" && field.options) {
         html += `<select id="config-${field.genericKey}" onchange="autoSave()">`;
         field.options.forEach((option) => {
@@ -279,7 +469,8 @@ File: ${data.filePath}`, "success");
     return html;
   }
   function buildAppFrameForm(properties) {
-    return `
+    let html = "";
+    html += `
         <div class="input-group">
             <label for="config-brand">Brand</label>
             <small class="description">Brand theme to use (BrandA, BrandB)</small>
@@ -288,6 +479,8 @@ File: ${data.filePath}`, "success");
                 <option value="BrandB" ${properties.brand === "BrandB" ? "selected" : ""}>Brand B</option>
             </select>
         </div>
+    `;
+    html += `
         <div class="input-group">
             <label for="config-mode">Theme Mode</label>
             <small class="description">Light or dark theme mode</small>
@@ -296,48 +489,29 @@ File: ${data.filePath}`, "success");
                 <option value="dark" ${properties.mode === "dark" ? "selected" : ""}>Dark</option>
             </select>
         </div>
+    `;
+    html += `
         <div class="input-group">
             <label for="config-apiBase">API Base URL</label>
             <small class="description">Base URL for API endpoints</small>
             <input type="text" id="config-apiBase" value="${properties.apiBase || "http://localhost:3001"}" onchange="autoSave()">
         </div>
     `;
+    return html;
   }
   function buildScreenBuilderForm(properties) {
-    return `
-        <div class="input-group">
-            <label for="config-id">Screen ID</label>
-            <small class="description">Unique identifier for this screen</small>
-            <input type="text" id="config-id" value="${properties.id || "screen-1"}" onchange="autoSave()">
-        </div>
-        <div class="input-group">
-            <label for="config-section_type">Section Type</label>
-            <small class="description">Where this screen appears: top, bottom, or modal</small>
-            <select id="config-section_type" onchange="autoSave()">
-                <option value="top" ${properties.section_type === "top" ? "selected" : ""}>Top</option>
-                <option value="bottom" ${properties.section_type === "bottom" ? "selected" : ""}>Bottom</option>
-                <option value="modal" ${properties.section_type === "modal" ? "selected" : ""}>Modal</option>
-            </select>
-        </div>
-    `;
+    let html = "";
+    html += buildFieldFromDefinition("id", "config-id", properties.id, { label: "Screen ID" });
+    html += buildFieldFromDefinition("section_type", "config-section_type", properties.section_type);
+    html += buildFieldFromDefinition("sectionHome", "config-sectionHome", properties.sectionHome);
+    return html;
   }
   function buildModalForm(properties) {
-    return `
-        <div class="input-group">
-            <label for="config-id">Modal ID</label>
-            <small class="description">Unique identifier for this modal</small>
-            <input type="text" id="config-id" value="${properties.id || "modal-1"}" onchange="autoSave()">
-        </div>
-        <div class="input-group">
-            <label for="config-section_type">Section Type</label>
-            <small class="description">Where this modal appears: top, bottom, or modal</small>
-            <select id="config-section_type" onchange="autoSave()">
-                <option value="top" ${properties.section_type === "top" ? "selected" : ""}>Top</option>
-                <option value="bottom" ${properties.section_type === "bottom" ? "selected" : ""}>Bottom</option>
-                <option value="modal" ${properties.section_type === "modal" ? "selected" : ""}>Modal</option>
-            </select>
-        </div>
-    `;
+    let html = "";
+    html += buildFieldFromDefinition("id", "config-id", properties.id, { label: "Modal ID" });
+    html += buildFieldFromDefinition("section_type", "config-section_type", properties.section_type);
+    html += buildFieldFromDefinition("sectionHome", "config-sectionHome", properties.sectionHome);
+    return html;
   }
   function autoSave() {
     if (!currentSelection) return;
@@ -348,7 +522,7 @@ File: ${data.filePath}`, "success");
       updatedProperties.mode = document.getElementById("config-mode")?.value;
       updatedProperties.apiBase = document.getElementById("config-apiBase")?.value;
     } else if (componentName === "Journey") {
-      updatedProperties.Type = document.getElementById("config-Type")?.value;
+      updatedProperties.journeyOption = document.getElementById("config-journeyOption")?.value;
       for (let i = 0; i < 10; i++) {
         const propKey = `prop${i}`;
         const element = document.getElementById(`config-${propKey}`);
@@ -364,27 +538,50 @@ File: ${data.filePath}`, "success");
           }
         }
       }
+      const sectionHomeCheckbox = document.getElementById("config-prop2");
+      if (sectionHomeCheckbox?.checked && !sectionHomeCheckbox.disabled) {
+        const sectionHomeOptionSelect = document.getElementById("config-prop2-option");
+        if (sectionHomeOptionSelect) {
+          updatedProperties.sectionHomeOption = sectionHomeOptionSelect.value;
+        }
+      }
     } else if (componentName === "ScreenBuilder_frame" || componentName === "Modal_frame") {
       updatedProperties.id = document.getElementById("config-id")?.value;
       updatedProperties.section_type = document.getElementById("config-section_type")?.value;
+      updatedProperties.sectionHome = document.getElementById("config-sectionHome")?.checked;
+      const sectionHomeCheckbox = document.getElementById("config-sectionHome");
+      if (sectionHomeCheckbox?.checked && !sectionHomeCheckbox.disabled) {
+        const sectionHomeOptionSelect = document.getElementById("config-sectionHome-option");
+        if (sectionHomeOptionSelect) {
+          updatedProperties.sectionHomeOption = sectionHomeOptionSelect.value;
+        }
+      }
     }
+    console.log("\u{1F4BE} Saving properties:", updatedProperties);
     sendToPlugin({
       type: "update-properties",
       properties: updatedProperties
     });
     showSaveFeedback();
   }
-  function handleTypeChange() {
+  function handleJourneyOptionChange() {
     if (!currentSelection) return;
-    const newType = document.getElementById("config-Type")?.value;
-    console.log("Type changed to:", newType);
-    currentSelection.properties.Type = newType;
+    const newOption = document.getElementById("config-journeyOption")?.value;
+    console.log("Journey option changed to:", newOption);
+    currentSelection.properties.journeyOption = newOption;
     autoSave();
     console.log("Rebuilding form...");
     updateConfigForm();
   }
+  function handleClearPluginData() {
+    if (!confirm("This will clear all saved configuration data from the selected component(s). Continue?")) {
+      return;
+    }
+    sendToPlugin({ type: "clear-plugin-data" });
+  }
   window.autoSave = autoSave;
-  window.handleTypeChange = handleTypeChange;
+  window.handleJourneyOptionChange = handleJourneyOptionChange;
+  window.handleClearPluginData = handleClearPluginData;
 
   // src/views/figma/scripts/main.ts
   function init() {
@@ -430,7 +627,7 @@ File: ${data.filePath}`, "success");
   function setupMessageListener() {
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
-      console.log("UI received message:", msg);
+      console.log("UI received message ::**::", msg);
       switch (msg.type) {
         case "components-created":
           handleComponentsCreated(msg.data);
@@ -442,10 +639,16 @@ File: ${data.filePath}`, "success");
           handleCustomerGenerated(msg.data);
           break;
         case "selection-changed":
+          console.log("\u{1F514} selection-changed received:", msg.data);
+          console.log("   componentName:", msg.data?.componentName);
+          console.log("   properties:", msg.data?.properties);
           updateSelection(msg.data);
           break;
         case "properties-updated":
           showFeedback("\u2705 Properties updated successfully!", "success");
+          break;
+        case "plugin-data-cleared":
+          showFeedback(`\u2705 Cleared plugin data from ${msg.data.count} component(s)`, "success");
           break;
         case "error":
           handleCustomerError();

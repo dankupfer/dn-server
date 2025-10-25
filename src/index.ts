@@ -36,7 +36,7 @@ app.use(express.static('public'));
 
 // Register HTTP routes
 app.use('/api', healthRoutes);
-app.use('/api', figmaRoutes);
+app.use('/api/figma', figmaRoutes);
 app.use('/api', customersRoutes);
 
 // Register Assist routes (includes both REST and WebSocket)

@@ -1,0 +1,32 @@
+{
+  "section_type": {
+    "type": "select",
+    "label": "Section Type",
+    "description": "Where this content appears: main-carousel (between tabs and bottomNav), slide-panel (slides from right, keeps bottomNav), full-screen (complete takeover), or modal (slides up from bottom)",
+    "options": ["main-carousel", "slide-panel", "full-screen", "modal"],
+    "defaultValue": "main-carousel"
+  },
+  "sectionHome": {
+    "type": "checkbox",
+    "label": "Section Home",
+    "description": "Enable home navigation tabs based on section type",
+    "defaultValue": false,
+    "conditionalRules": {
+      "disableWhen": {
+        "section_type": ["full-screen"]
+      }
+    },
+    "conditionalOptions": {
+      "main-carousel": ["summary", "everyday", "invest", "borrow", "homes", "insurance"],
+      "slide-panel": ["home", "apply", "cards"],
+      "modal": ["payments", "search"],
+      "full-screen": []
+    }
+  },
+  "id": {
+    "type": "text",
+    "label": "ID",
+    "description": "Unique identifier",
+    "defaultValue": ""
+  }
+}

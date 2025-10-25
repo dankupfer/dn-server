@@ -3,8 +3,8 @@
 
 const API_BASE_URL = 'http://localhost:3001/api/figma';
 
-interface ComponentTypeMetadata {
-    componentType: string;
+interface JourneyOptionMetadata {
+    journeyOption: string;
     label: string;
     fieldCount: number;
 }
@@ -21,7 +21,7 @@ interface FormField {
 }
 
 interface FormConfig {
-    componentType: string;
+    journeyOption: string;
     title: string;
     fields: FormField[];
 }
@@ -33,30 +33,34 @@ interface ApiResponse<T> {
 }
 
 /**
- * Fetch available component types
+ * Fetch available journey options
  */
-export async function fetchComponentTypes(): Promise<ComponentTypeMetadata[]> {
+export async function fetchJourneyOptions(): Promise<JourneyOptionMetadata[]> {
     try {
-        const response = await fetch(`${API_BASE_URL}/component-types`);
-        const result = await response.json() as ApiResponse<ComponentTypeMetadata[]>;
+        console.log('📡 Fetching journey options from:', `${API_BASE_URL}/journey-options`);
+        const response = await fetch(`${API_BASE_URL}/journey-options`);
+        const result = await response.json() as ApiResponse<JourneyOptionMetadata[]>;
+
+        console.log('📦 Server response:', result);
 
         if (!result.success || !result.data) {
-            throw new Error(result.error || 'Failed to fetch component types');
+            throw new Error(result.error || 'Failed to fetch journey options');
         }
 
         return result.data;
     } catch (error) {
-        console.error('Error fetching component types:', error);
+        console.error('❌ Error fetching journey options:', error);
         throw error;
     }
 }
 
 /**
- * Fetch form configuration for a component type
+ * Fetch form configuration for a journey option
  */
-export async function fetchFormConfig(componentType: string): Promise<FormConfig> {
+export async function fetchFormConfig(journeyOption: string): Promise<FormConfig> {
     try {
-        const response = await fetch(`${API_BASE_URL}/form-config/${componentType}`);
+        console.log('🔗 Fetching form config for:', journeyOption);
+        const response = await fetch(`${API_BASE_URL}/form-config/${journeyOption}`);
         const result = await response.json() as ApiResponse<FormConfig>;
 
         if (!result.success || !result.data) {
@@ -65,7 +69,21 @@ export async function fetchFormConfig(componentType: string): Promise<FormConfig
 
         return result.data;
     } catch (error) {
-        console.error('Error fetching form config:', error);
+        console.error('❌ Error fetching form config:', error);
         throw error;
     }
+}
+
+/**
+ * Fetch field definitions from server
+ */
+export async function fetchFieldDefinitions(): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/field-definitions`);
+    const result = await response.json();
+
+    if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch field definitions');
+    }
+
+    return result.data;
 }

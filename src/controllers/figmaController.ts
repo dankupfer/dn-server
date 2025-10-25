@@ -38,7 +38,7 @@ export class FigmaController {
         const configure = this.readView('pages/configure.html');
         const exportPage = this.readView('pages/export.html');
         const styles = this.readView('styles.css');
-        const script = this.readView('compiled/bundle.js');
+        const script = this.readView('bundle.js');
         let html = this.readView('index.html');
 
         console.log('🔄 Replacing placeholders...');
@@ -50,8 +50,8 @@ export class FigmaController {
         html = html.replace(/\{\{SCRIPT\}\}/g, script);
 
         console.log('✅ HTML generated, length:', html.length);
-        console.log('📄 Final HTML preview (first 500 chars):\n', html.substring(0, 500));
-        console.log('📄 Final HTML preview (last 500 chars):\n', html.substring(html.length - 500));
+        // console.log('📄 Final HTML preview (first 500 chars):\n', html.substring(0, 500));
+        // console.log('📄 Final HTML preview (last 500 chars):\n', html.substring(html.length - 500));
         return html;
     }
 }

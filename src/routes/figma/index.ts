@@ -1,194 +1,12 @@
-// src/routes/figma/index.ts
-import { Router, Request, Response } from 'express';
-import fs from 'fs-extra';
+import express, { Request, Response } from 'express';
+import fs from 'fs';
 import path from 'path';
-import { CreateModuleRequest, CreateModuleResponse } from '../../types';
 import { FigmaController } from '../../controllers/figmaController';
-
-import validator from '../../figma-api/services/validator.service';
 import formBuilder from '../../figma-api/services/formBuilder.service';
-import propertyMapper from '../../figma-api/services/propertyMapper.service';
+import { generateCustomerWithAI } from '../../services/ai/customerGenerator';
 
-const router = Router();
+const router = express.Router();
 const figmaController = new FigmaController();
-
-// Validation function to check if paths exist
-async function validatePaths(basePath: string, routerName: string): Promise<{ valid: boolean; error?: string }> {
-  // Check if base path exists
-  if (!await fs.pathExists(basePath)) {
-    return {
-      valid: false,
-      error: `Project path does not exist: ${basePath}\n\nPlease check that you've provided the correct absolute path to your project folder.`
-    };
-  }
-
-  // Check if it's actually a project (has src folder)
-  const srcPath = path.join(basePath, 'src');
-  if (!await fs.pathExists(srcPath)) {
-    return {
-      valid: false,
-      error: `The path exists but doesn't appear to be a valid project.\n\nMissing 'src' folder at: ${basePath}\n\nMake sure you're pointing to the root of your React Native project.`
-    };
-  }
-
-  // Check if router module exists in this project
-  const routerPath = path.join(basePath, 'src', 'modules', 'core', routerName);
-  if (!await fs.pathExists(routerPath)) {
-    return {
-      valid: false,
-      error: `Router module '${routerName}' not found in this project.\n\nExpected location: ${routerPath}\n\nPlease check:\n1. The router module name is correct\n2. You're using the right project path\n3. The router module exists in src/modules/core/`
-    };
-  }
-
-  // Check if screenRoutes.tsx exists in the router module
-  const screenRoutesPath = path.join(routerPath, 'screenRoutes.tsx');
-  if (!await fs.pathExists(screenRoutesPath)) {
-    return {
-      valid: false,
-      error: `Router module exists but missing screenRoutes.tsx\n\nExpected file: ${screenRoutesPath}\n\nThe router module must contain a screenRoutes.tsx file.`
-    };
-  }
-
-  return { valid: true };
-}
-
-// Main endpoint for creating modules
-router.post('/create-module', async (req: Request<{}, CreateModuleResponse, CreateModuleRequest>, res: Response<CreateModuleResponse>) => {
-  try {
-    const { moduleName, moduleId, screenData, folderPath, targetSection, routerName } = req.body;
-
-    console.log(`📦 Creating module: ${moduleName} (${moduleId})`);
-    console.log(`📁 Target folder: ${folderPath}`);
-    console.log(`🧭 Router name: ${routerName}`);
-
-    // Validate required fields
-    if (!moduleName || !moduleId || !screenData) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required fields: moduleName, moduleId, or screenData'
-      });
-    }
-
-    // Default folder path from environment variable or provided path
-    const projectRoot = process.env.PROJECT_ROOT_PATH;
-    if (!projectRoot && !folderPath) {
-      return res.status(500).json({
-        success: false,
-        error: 'PROJECT_ROOT_PATH not set in .env file and no folderPath provided'
-      });
-    }
-
-    // Determine the base path (either from UI override or .env)
-    const basePath = folderPath || projectRoot!;
-    const routerModuleName = routerName || process.env.ROUTER_MODULE_NAME || 'assist-router';
-
-    // Validate paths before creating any files
-    const validation = await validatePaths(basePath, routerModuleName);
-    if (!validation.valid) {
-      return res.status(400).json({
-        success: false,
-        error: validation.error || 'Validation failed'
-      });
-    }
-
-    const targetPath = path.join(basePath, 'src', 'modules', 'feature', moduleId);
-
-    // Create module folder
-    await fs.ensureDir(targetPath);
-    console.log(`✅ Created directory: ${targetPath}`);
-
-    // Generate module files
-    const indexContent = generateModuleIndex(moduleName, moduleId);
-    const screenDataContent = JSON.stringify(screenData, null, 2);
-
-    // Write files
-    await fs.writeFile(path.join(targetPath, 'index.tsx'), indexContent);
-    await fs.writeFile(path.join(targetPath, 'screenData.json'), screenDataContent);
-
-    console.log('✅ Files written successfully');
-
-    // Update screenRoutes.tsx to include new module
-    await updateScreenRoutes(moduleId, moduleName, targetSection, routerName, basePath);
-
-    res.json({
-      success: true,
-      message: `Module "${moduleName}" created successfully`,
-      files: [
-        path.join(targetPath, 'index.tsx'),
-        path.join(targetPath, 'screenData.json')
-      ],
-      moduleId,
-      moduleName
-    });
-
-  } catch (error) {
-    console.error('❌ Error creating module:', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
-
-// Get list of all available component types
-router.get('/component-types', (req: Request, res: Response) => {
-  try {
-    console.log('📋 Getting available component types');
-
-    const componentTypes = formBuilder.getAvailableComponentForms();
-
-    res.json({
-      success: true,
-      data: componentTypes
-    });
-
-  } catch (error) {
-    console.error('❌ Error getting component types:', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
-
-// Get form configuration for a component type
-router.get('/form-config/:componentType', (req: Request, res: Response) => {
-  try {
-    const { componentType } = req.params;
-
-    console.log(`📋 Building form for component: ${componentType}`);
-
-    // Validate component type exists
-    if (!propertyMapper.isValidComponentType(componentType)) {
-      return res.status(404).json({
-        success: false,
-        error: `Unknown component type: ${componentType}`
-      });
-    }
-
-    // Build form configuration
-    const formConfig = formBuilder.buildForm(componentType);
-
-    if (!formConfig) {
-      return res.status(500).json({
-        success: false,
-        error: `Failed to build form for component type: ${componentType}`
-      });
-    }
-
-    res.json({
-      success: true,
-      data: formConfig
-    });
-
-  } catch (error) {
-    console.error('❌ Error building form config:', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
 
 // Serve the main plugin UI
 router.get('/plugin-ui', (req: Request, res: Response) => {
@@ -202,158 +20,184 @@ router.get('/plugin-ui', (req: Request, res: Response) => {
   }
 });
 
-// Serve static CSS
-router.get('/figma/styles.css', (req: Request, res: Response) => {
-  const cssPath = path.join(__dirname, '../../views/figma/styles.css');
-  res.sendFile(cssPath);
-});
-
-// Serve static JS
-router.get('/figma/script.js', (req: Request, res: Response) => {
-  const jsPath = path.join(__dirname, '../../views/figma/script.js');
-  res.sendFile(jsPath);
-});
-
-// Helper function to update screenRoutes.tsx
-async function updateScreenRoutes(
-  moduleId: string,
-  moduleName: string,
-  targetSection?: string,
-  routerName?: string,
-  basePath?: string
-): Promise<void> {
-  const projectRoot = basePath || process.env.PROJECT_ROOT_PATH;
-  if (!projectRoot) {
-    console.log('⚠️  PROJECT_ROOT_PATH not set, skipping route update');
-    return;
-  }
-
-  const routerModuleName = routerName || process.env.ROUTER_MODULE_NAME || 'assist-router';
-  const screenRoutesPath = path.join(projectRoot, 'src', 'modules', 'core', routerModuleName, 'screenRoutes.tsx');
-
-  console.log(`🧭 Using router module: ${routerModuleName}`);
-  console.log(`📄 Screen routes path: ${screenRoutesPath}`);
-
+// Get available journey options
+router.get('/journey-options', (req: Request, res: Response) => {
   try {
-    // Check if screenRoutes.tsx exists
-    if (!await fs.pathExists(screenRoutesPath)) {
-      console.log(`⚠️  screenRoutes.tsx not found at ${screenRoutesPath}, skipping route update`);
-      return;
-    }
+    console.log('📋 Getting available journey options');
 
-    // Read existing file
-    const content = await fs.readFile(screenRoutesPath, 'utf-8');
+    const journeyOptions = formBuilder.getAvailableJourneyOptions();
 
-    // Extract existing imports (everything between first import and export interface)
-    const importMatches = content.match(/^import .+ from .+;$/gm) || [];
-    const existingImports = new Set(importMatches);
-
-    // Extract existing routes from the array
-    const routeArrayMatch = content.match(/export const screenRoutes: ScreenRoute\[\] = \[([\s\S]*?)\];/);
-    if (!routeArrayMatch) {
-      throw new Error('Could not find screenRoutes array in file');
-    }
-
-    const routesContent = routeArrayMatch[1];
-    const routeMatches = routesContent.match(/{\s*id:\s*'([^']+)'[^}]+}/g) || [];
-
-    // Parse existing routes
-    const existingRoutes: Array<{ id: string, name: string, component: string }> = [];
-    for (const routeMatch of routeMatches) {
-      const idMatch = routeMatch.match(/id:\s*'([^']+)'/);
-      const nameMatch = routeMatch.match(/name:\s*'([^']+)'/);
-      const componentMatch = routeMatch.match(/component:\s*(\w+)/);
-
-      if (idMatch && nameMatch && componentMatch) {
-        existingRoutes.push({
-          id: idMatch[1],
-          name: nameMatch[1],
-          component: componentMatch[1]
-        });
-      }
-    }
-
-    // Generate new import statement
-    const newImport = `import ${moduleName} from '../../feature/${moduleId}';`;
-
-    // Add new import if it doesn't exist
-    if (!existingImports.has(newImport)) {
-      existingImports.add(newImport);
-      console.log(`✅ Will add import for ${moduleName}`);
-    } else {
-      console.log(`⚠️  Import for ${moduleName} already exists`);
-    }
-
-    // Determine route details
-    const routeId = targetSection || moduleId;
-    const routeName = targetSection ? targetSection.split('-').map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ') : moduleName;
-
-    // Add or update the route
-    const newRoute = { id: routeId, name: routeName, component: moduleName };
-    const existingRouteIndex = existingRoutes.findIndex(route => route.id === routeId);
-
-    if (existingRouteIndex >= 0) {
-      // Update existing route
-      existingRoutes[existingRouteIndex] = newRoute;
-      console.log(`✅ Will update existing route for ${routeId} with ${moduleName} component`);
-    } else {
-      // Add new route
-      existingRoutes.push(newRoute);
-      console.log(`✅ Will add new route for ${routeId} with ${moduleName} component`);
-    }
-
-    // Generate the complete file content
-    const sortedImports = Array.from(existingImports);
-    const fileContent = `// template/modules/core/${routerModuleName}/screenRoutes.tsx
-${sortedImports.join('\n')}
-
-export interface ScreenRoute {
-  id: string;
-  name: string;
-  component: React.ComponentType<{ screenWidth: number }>;
-}
-
-export const screenRoutes: ScreenRoute[] = [
-${existingRoutes.map(route => `  { id: '${route.id}', name: '${route.name}', component: ${route.component} },`).join('\n')}
-  // Plugin will add new routes here
-];
-`;
-
-    // Write the complete file
-    await fs.writeFile(screenRoutesPath, fileContent);
-    console.log(`✅ Successfully updated screenRoutes.tsx with proper formatting`);
+    res.json({
+      success: true,
+      data: journeyOptions
+    });
 
   } catch (error) {
-    console.error('❌ Error updating screenRoutes.tsx:', error);
-    throw error;
+    console.error('Error getting journey options:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
-}
+});
 
-function generateModuleIndex(moduleName: string, moduleId: string): string {
-  return `// Generated by DN Figma Bridge
-import React from 'react';
-import { ScreenBuilder, type ScreenConfig } from '@dankupfer/dn-components';
-import screenData from './screenData.json';
+// Get form configuration for a specific journey option
+router.get('/form-config/:journeyOption', (req: Request, res: Response) => {
+  try {
+    const { journeyOption } = req.params;
+    console.log('📋 Getting form config for journey option:', journeyOption);
 
-interface ${moduleName}Props {
-  screenWidth: number;
-}
+    const formConfig = formBuilder.buildForm(journeyOption);
 
-const ${moduleName}: React.FC<${moduleName}Props> = ({ screenWidth }) => {
-  const config = screenData as ScreenConfig;
-  
-  return (
-    <ScreenBuilder 
-      config={config} 
-      screenWidth={screenWidth} 
-    />
-  );
-};
+    if (!formConfig) {
+      return res.status(404).json({
+        success: false,
+        error: `Unknown journey option: ${journeyOption}`
+      });
+    }
 
-export default ${moduleName};
-`;
-}
+    res.json({
+      success: true,
+      data: formConfig
+    });
+
+  } catch (error) {
+    console.error('Error building form:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get field definitions
+router.get('/field-definitions', (req: Request, res: Response) => {
+  try {
+    console.log('📋 Getting field definitions');
+
+    const fieldDefinitions = formBuilder.getFieldDefinitions();
+
+    res.json({
+      success: true,
+      data: fieldDefinitions
+    });
+
+  } catch (error) {
+    console.error('Error getting field definitions:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Create module from Figma selection
+router.post('/create-module', async (req: Request, res: Response) => {
+  try {
+    const {
+      moduleName,
+      moduleId,
+      screenData,
+      frameType,
+      folderPath,
+      targetSection,
+      routerName
+    } = req.body;
+
+    console.log('📦 Creating module:', moduleName);
+
+    // TODO: Implement module creation logic
+    // This will write files to the React Native project
+
+    res.json({
+      success: true,
+      message: `Module ${moduleName} created successfully`,
+      files: [`src/modules/${moduleId}/index.tsx`, `src/modules/${moduleId}/screenData.json`],
+      moduleId,
+      moduleName
+    });
+
+  } catch (error) {
+    console.error('Error creating module:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Generate customer data
+router.post('/generate-customer', async (req: Request, res: Response) => {
+  try {
+    const customerData = req.body;
+    console.log('👤 Generating customer:', customerData.customerName);
+
+    const result = await generateCustomerWithAI(customerData);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        data: {
+          customerId: result.customerId,
+          customerName: result.customerName,
+          filePath: result.filePath
+        }
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error || 'Failed to generate customer'
+      });
+    }
+
+  } catch (error) {
+    console.error('Error generating customer:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get component definitions (for Figma component generation)
+router.get('/definitions/:type', (req: Request, res: Response) => {
+  try {
+    const { type } = req.params;
+    console.log(`📋 Getting ${type} definitions`);
+
+    let definitionsPath: string;
+
+    switch (type) {
+      case 'journeys':
+        definitionsPath = path.join(__dirname, '../../figma-api/definitions/journeys.json');
+        break;
+      case 'components':
+        definitionsPath = path.join(__dirname, '../../figma-api/definitions/components.json');
+        break;
+      case 'frames':
+        definitionsPath = path.join(__dirname, '../../figma-api/definitions/frames.json');
+        break;
+      default:
+        return res.status(400).json({
+          success: false,
+          error: `Unknown definition type: ${type}`
+        });
+    }
+
+    const definitions = JSON.parse(fs.readFileSync(definitionsPath, 'utf8'));
+
+    res.json({
+      success: true,
+      data: definitions
+    });
+
+  } catch (error) {
+    console.error('Error getting definitions:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
 
 export default router;
