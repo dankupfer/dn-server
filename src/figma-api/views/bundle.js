@@ -185,7 +185,7 @@ File: ${data.filePath}`, "success");
       throw error;
     }
   }
-  async function fetchFieldDefinitions() {
+  async function fetchcommonDefinitions() {
     const response = await fetch(`${API_BASE_URL}/field-definitions`);
     const result = await response.json();
     if (!result.success) {
@@ -195,8 +195,8 @@ File: ${data.filePath}`, "success");
   }
 
   // src/figma-api/views/scripts/configure.conditional.ts
-  function shouldDisableField(fieldName, dependentFieldValue, fieldDefinitions2) {
-    const fieldDef = fieldDefinitions2?.[fieldName];
+  function shouldDisableField(fieldName, dependentFieldValue, commonDefinitions2) {
+    const fieldDef = commonDefinitions2?.[fieldName];
     if (!fieldDef || !fieldDef.conditionalRules) return false;
     const disableWhen = fieldDef.conditionalRules.disableWhen;
     if (!disableWhen) return false;
@@ -207,8 +207,8 @@ File: ${data.filePath}`, "success");
     }
     return false;
   }
-  function setupConditionalFieldListeners(currentSelection2, fieldDefinitions2, autoSaveCallback) {
-    const componentName = currentSelection2?.componentName;
+  function setupConditionalFieldListeners(currentSelection3, commonDefinitions2, autoSaveCallback) {
+    const componentName = currentSelection3?.componentName;
     let sectionHomeCheckboxId;
     let sectionHomeInputGroupId;
     let sectionTypeSelectId;
@@ -234,8 +234,8 @@ File: ${data.filePath}`, "success");
         toggleSectionHomeOptions(
           conditionalContainerId,
           sectionHomeCheckboxId,
-          fieldDefinitions2,
-          currentSelection2
+          commonDefinitions2,
+          currentSelection3
         );
         autoSaveCallback();
       });
@@ -246,14 +246,14 @@ File: ${data.filePath}`, "success");
           sectionTypeSelectId,
           sectionHomeCheckboxId,
           sectionHomeInputGroupId,
-          fieldDefinitions2
+          commonDefinitions2
         );
         updateSectionHomeOptions(
           sectionTypeSelectId,
           conditionalContainerId,
           sectionHomeOptionSelectId,
-          fieldDefinitions2,
-          currentSelection2
+          commonDefinitions2,
+          currentSelection3
         );
         autoSaveCallback();
       });
@@ -262,22 +262,22 @@ File: ${data.filePath}`, "success");
       sectionTypeSelectId,
       sectionHomeCheckboxId,
       sectionHomeInputGroupId,
-      fieldDefinitions2
+      commonDefinitions2
     );
     toggleSectionHomeOptions(
       conditionalContainerId,
       sectionHomeCheckboxId,
-      fieldDefinitions2,
-      currentSelection2
+      commonDefinitions2,
+      currentSelection3
     );
   }
-  function applyConditionalRules(sectionTypeSelectId, sectionHomeCheckboxId, sectionHomeInputGroupId, fieldDefinitions2) {
+  function applyConditionalRules(sectionTypeSelectId, sectionHomeCheckboxId, sectionHomeInputGroupId, commonDefinitions2) {
     const sectionTypeSelect = document.getElementById(sectionTypeSelectId);
     const sectionHomeCheckbox = document.getElementById(sectionHomeCheckboxId);
     const sectionHomeInputGroup = document.getElementById(sectionHomeInputGroupId);
     if (!sectionTypeSelect || !sectionHomeCheckbox || !sectionHomeInputGroup) return;
     const sectionTypeValue = sectionTypeSelect.value;
-    const shouldDisable = shouldDisableField("sectionHome", sectionTypeValue, fieldDefinitions2);
+    const shouldDisable = shouldDisableField("sectionHome", sectionTypeValue, commonDefinitions2);
     if (shouldDisable) {
       sectionHomeCheckbox.disabled = true;
       sectionHomeCheckbox.checked = false;
@@ -294,7 +294,7 @@ File: ${data.filePath}`, "success");
       sectionHomeInputGroup.style.pointerEvents = "auto";
     }
   }
-  function toggleSectionHomeOptions(conditionalContainerId, checkboxId, fieldDefinitions2, currentSelection2) {
+  function toggleSectionHomeOptions(conditionalContainerId, checkboxId, commonDefinitions2, currentSelection3) {
     const sectionHomeCheckbox = document.getElementById(checkboxId);
     const conditionalContainer = document.getElementById(conditionalContainerId);
     if (!conditionalContainer) return;
@@ -306,19 +306,19 @@ File: ${data.filePath}`, "success");
         sectionTypeId,
         conditionalContainerId,
         selectId,
-        fieldDefinitions2,
-        currentSelection2
+        commonDefinitions2,
+        currentSelection3
       );
     } else {
       conditionalContainer.style.display = "none";
     }
   }
-  function updateSectionHomeOptions(sectionTypeSelectId, conditionalContainerId, selectId, fieldDefinitions2, currentSelection2) {
+  function updateSectionHomeOptions(sectionTypeSelectId, conditionalContainerId, selectId, commonDefinitions2, currentSelection3) {
     const sectionTypeSelect = document.getElementById(sectionTypeSelectId);
     const optionSelect = document.getElementById(selectId);
     if (!sectionTypeSelect || !optionSelect) return;
     const sectionType = sectionTypeSelect.value;
-    const fieldDef = fieldDefinitions2?.sectionHome;
+    const fieldDef = commonDefinitions2?.sectionHome;
     if (!fieldDef || !fieldDef.conditionalOptions) return;
     const options = fieldDef.conditionalOptions[sectionType] || [];
     optionSelect.innerHTML = "";
@@ -328,13 +328,13 @@ File: ${data.filePath}`, "success");
       optionElement.textContent = option;
       optionSelect.appendChild(optionElement);
     });
-    if (currentSelection2?.properties.sectionHomeOption) {
-      optionSelect.value = currentSelection2.properties.sectionHomeOption;
+    if (currentSelection3?.properties.sectionHomeOption) {
+      optionSelect.value = currentSelection3.properties.sectionHomeOption;
     }
   }
 
   // src/figma-api/views/scripts/configure.builders.ts
-  async function buildFormForComponent(selection, fieldDefinitions2) {
+  async function buildFormForComponent(selection, commonDefinitions2) {
     const { componentName, properties } = selection;
     let html = `<div class="section">`;
     html += `<h2>${componentName}</h2>`;
@@ -356,15 +356,15 @@ File: ${data.filePath}`, "success");
     } else if (componentName === "App_frame") {
       html += buildAppFrameForm(properties);
     } else if (componentName === "ScreenBuilder_frame") {
-      html += buildScreenBuilderForm(properties, fieldDefinitions2);
+      html += buildScreenBuilderForm(properties, commonDefinitions2);
     } else {
       html += `<p>No configurable properties for this component.</p>`;
     }
     html += `</div>`;
     return html;
   }
-  function buildFieldFromDefinition(fieldName, fieldId, currentValue, fieldDefinitions2, overrides) {
-    const fieldDef = fieldDefinitions2?.[fieldName] || {};
+  function buildFieldFromDefinition(fieldName, fieldId, currentValue, commonDefinitions2, overrides) {
+    const fieldDef = commonDefinitions2?.[fieldName] || {};
     const label = overrides?.label || fieldDef.label || fieldName;
     const description = overrides?.description || fieldDef.description || "";
     const defaultValue = overrides?.defaultValue || fieldDef.defaultValue || "";
@@ -497,18 +497,18 @@ File: ${data.filePath}`, "success");
     `;
     return html;
   }
-  function buildScreenBuilderForm(properties, fieldDefinitions2) {
+  function buildScreenBuilderForm(properties, commonDefinitions2) {
     let html = "";
-    html += buildFieldFromDefinition("id", "config-id", properties.id, fieldDefinitions2, { label: "Screen ID" });
-    html += buildFieldFromDefinition("section_type", "config-section_type", properties.section_type, fieldDefinitions2);
-    html += buildFieldFromDefinition("sectionHome", "config-sectionHome", properties.sectionHome, fieldDefinitions2);
+    html += buildFieldFromDefinition("id", "config-id", properties.id, commonDefinitions2, { label: "Screen ID" });
+    html += buildFieldFromDefinition("section_type", "config-section_type", properties.section_type, commonDefinitions2);
+    html += buildFieldFromDefinition("sectionHome", "config-sectionHome", properties.sectionHome, commonDefinitions2);
     return html;
   }
 
   // src/figma-api/views/scripts/configure.autosave.ts
-  function autoSave(currentSelection2) {
-    if (!currentSelection2) return;
-    const componentName = currentSelection2.componentName;
+  function autoSave(currentSelection3) {
+    if (!currentSelection3) return;
+    const componentName = currentSelection3.componentName;
     const updatedProperties = {};
     if (componentName === "App_frame") {
       updatedProperties.brand = document.getElementById("config-brand")?.value;
@@ -557,12 +557,12 @@ File: ${data.filePath}`, "success");
     });
     showSaveFeedback();
   }
-  function handleJourneyOptionChange(currentSelection2, updateConfigFormCallback) {
-    if (!currentSelection2) return;
+  function handleJourneyOptionChange(currentSelection3, updateConfigFormCallback) {
+    if (!currentSelection3) return;
     const newOption = document.getElementById("config-journeyOption")?.value;
     console.log("Journey option changed to:", newOption);
-    currentSelection2.properties.journeyOption = newOption;
-    autoSave(currentSelection2);
+    currentSelection3.properties.journeyOption = newOption;
+    autoSave(currentSelection3);
     console.log("Rebuilding form...");
     updateConfigFormCallback();
   }
@@ -575,12 +575,12 @@ File: ${data.filePath}`, "success");
 
   // src/figma-api/views/scripts/configure.ts
   var currentSelection = null;
-  var fieldDefinitions = null;
+  var commonDefinitions = null;
   async function initConfigureTab() {
     console.log("Configure tab initialized");
     try {
-      fieldDefinitions = await fetchFieldDefinitions();
-      console.log("\u2705 Field definitions loaded:", fieldDefinitions);
+      commonDefinitions = await fetchcommonDefinitions();
+      console.log("\u2705 Field definitions loaded:", commonDefinitions);
     } catch (error) {
       console.error("\u274C Error loading field definitions:", error);
     }
@@ -604,9 +604,9 @@ File: ${data.filePath}`, "success");
     }
     noSelection.style.display = "none";
     configForm.style.display = "block";
-    const formHTML = await buildFormForComponent(currentSelection, fieldDefinitions);
+    const formHTML = await buildFormForComponent(currentSelection, commonDefinitions);
     configForm.innerHTML = formHTML;
-    setupConditionalFieldListeners(currentSelection, fieldDefinitions, autoSave2);
+    setupConditionalFieldListeners(currentSelection, commonDefinitions, autoSave2);
   }
   function autoSave2() {
     autoSave(currentSelection);
@@ -621,11 +621,201 @@ File: ${data.filePath}`, "success");
   window.handleJourneyOptionChange = handleJourneyOptionChange2;
   window.handleClearPluginData = handleClearPluginData2;
 
+  // src/figma-api/views/scripts/export.ts
+  var currentExportSelection = { type: "none" };
+  var currentSelection2 = null;
+  function initExportTab() {
+    console.log("Export tab initialized");
+  }
+  function updateExportSelection(selection) {
+    console.log("\u{1F504} updateExportSelection called with:", selection);
+    currentSelection2 = selection;
+    if (!selection || !selection.componentName) {
+      currentExportSelection = { type: "none" };
+      console.log('\u{1F4ED} No selection - setting type to "none"');
+    } else {
+      const isComponent = ["Journey", "ScreenBuilder_frame", "App_frame"].includes(selection.componentName);
+      currentExportSelection = {
+        type: isComponent ? "component" : "item",
+        componentName: selection.componentName
+      };
+      console.log("\u{1F4E6} Selection type:", currentExportSelection.type, "Component:", selection.componentName);
+    }
+    updateExportForm();
+  }
+  function updateExportForm() {
+    console.log("\u{1F3A8} updateExportForm called, selection type:", currentExportSelection.type);
+    const exportContainer = document.getElementById("export-form");
+    if (!exportContainer) {
+      console.log("\u26A0\uFE0F export-form container not found");
+      return;
+    }
+    console.log("\u2705 export-form container found, building form...");
+    let html = "";
+    if (currentExportSelection.type === "none") {
+      html = buildFullAppExportForm();
+    } else if (currentExportSelection.type === "component") {
+      html = buildSingleComponentExportForm(currentExportSelection.componentName);
+    } else if (currentExportSelection.type === "item") {
+      html = buildItemWarning(currentExportSelection.componentName);
+    }
+    exportContainer.innerHTML = html;
+  }
+  function buildFullAppExportForm() {
+    return `
+        <div class="section">
+            <h2>Export Full App</h2>
+            <p class="description">Export complete app configuration from all Journey and ScreenBuilder frames on the canvas.</p>
+            
+            <div class="input-group">
+                <label for="export-path">Export Path</label>
+                <small class="description">Absolute path where fullAppConfig.json will be saved<br/><br/>(default to Desktop if left empty)</small>
+                <input 
+                    type="text" 
+                    id="export-path" 
+                    placeholder="/Users/username/projects/my-app"
+                    value=""
+                >
+            </div>
+            
+            <div class="button-group">
+                <button class="primary" onclick="handleFullAppExport()">
+                    Export Full App Config
+                </button>
+            </div>
+            
+            <div class="info-box">
+                <strong>What gets exported:</strong>
+                <ul>
+                    <li>App configuration (from App_frame)</li>
+                    <li>All Journey components with their properties</li>
+                    <li>All ScreenBuilder frames with their properties</li>
+                </ul>
+            </div>
+        </div>
+    `;
+  }
+  function buildSingleComponentExportForm(componentName) {
+    const componentId = currentSelection2?.properties?.id || currentSelection2?.properties?.prop0 || "unknown";
+    const sectionHome = currentSelection2?.properties?.sectionHome || false;
+    const sectionHomeOption = currentSelection2?.properties?.sectionHomeOption || "N/A";
+    const sectionType = currentSelection2?.properties?.section_type || currentSelection2?.properties?.prop1 || "N/A";
+    return `
+        <div class="section">
+            <h2>Export Single Component</h2>
+            <p class="description">Export the selected ${componentName} to your React Native app.</p>
+            
+            <div class="component-info">
+                <h3>Component Details</h3>
+                <table class="info-table">
+                    <tr>
+                        <td><strong>Component:</strong></td>
+                        <td>${componentName}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>ID:</strong></td>
+                        <td>${componentId}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Section Type:</strong></td>
+                        <td>${sectionType}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Is Home Tab:</strong></td>
+                        <td>${sectionHome ? "Yes" : "No"}</td>
+                    </tr>
+                    ${sectionHome ? `
+                    <tr>
+                        <td><strong>Home Tab:</strong></td>
+                        <td>${sectionHomeOption}</td>
+                    </tr>
+                    ` : ""}
+                </table>
+            </div>
+            
+            <div class="button-group">
+                <button class="primary" onclick="handleSingleComponentExport()">
+                    Export Component to App
+                </button>
+            </div>
+            
+            <div class="info-box">
+                <strong>What happens:</strong>
+                <ul>
+                    <li>Component configuration will be sent to bridge server</li>
+                    <li>Server will generate React Native files</li>
+                    <li>Files will be added to your app project</li>
+                    <li>Navigation will be automatically configured</li>
+                </ul>
+            </div>
+        </div>
+    `;
+  }
+  function buildItemWarning(componentName) {
+    return `
+        <div class="section">
+            <h2>Export Not Available</h2>
+            
+            <div class="warning-box">
+                <strong>\u26A0\uFE0F Cannot export individual items</strong>
+                <p>You have selected a ${componentName} item component.</p>
+                <p>To export:</p>
+                <ul>
+                    <li><strong>Deselect all</strong> to export the full app configuration</li>
+                    <li><strong>Select a Journey or ScreenBuilder frame</strong> to export that component</li>
+                </ul>
+            </div>
+        </div>
+    `;
+  }
+  function handleFullAppExport() {
+    const exportPath = document.getElementById("export-path")?.value;
+    if (!exportPath || exportPath.trim() === "") {
+      alert("Please enter an export path");
+      return;
+    }
+    console.log("\u{1F680} Exporting full app to:", exportPath);
+    sendToPlugin({
+      type: "export-full-app",
+      exportPath
+    });
+  }
+  function handleSingleComponentExport() {
+    if (!currentSelection2 || !currentSelection2.componentName) {
+      alert("No component selected");
+      return;
+    }
+    console.log("\u{1F680} Exporting single component:", currentSelection2);
+    sendToPlugin({
+      type: "export-single-component",
+      componentData: {
+        componentName: currentSelection2.componentName,
+        properties: currentSelection2.properties
+      }
+    });
+  }
+  function handleFullAppExportComplete(data) {
+    alert(`\u2705 Full app config exported!
+
+Saved to: ${data.filePath}
+
+Screens exported: ${data.screenCount}`);
+  }
+  function handleSingleComponentExportComplete(data) {
+    alert(`\u2705 Component exported!
+
+Module: ${data.moduleName}
+Files: ${data.files?.length || 0}`);
+  }
+  window.handleFullAppExport = handleFullAppExport;
+  window.handleSingleComponentExport = handleSingleComponentExport;
+
   // src/figma-api/views/scripts/main.ts
   function init() {
     console.log("Figma Plugin UI initialized");
     initGenerateTab();
     initConfigureTab();
+    initExportTab();
     setupTabButtons();
     const closeButton = document.getElementById("close");
     if (closeButton) {
@@ -658,8 +848,13 @@ File: ${data.filePath}`, "success");
       selectedTab.classList.add("active");
     }
     targetButton.classList.add("active");
-    if (tabName === "configure") {
+    if (tabName === "configure" || tabName === "export") {
       sendToPlugin({ type: "get-selection" });
+    }
+    if (tabName === "export") {
+      setTimeout(() => {
+        updateExportSelection(window.lastSelection || null);
+      }, 0);
     }
   }
   function setupMessageListener() {
@@ -680,13 +875,21 @@ File: ${data.filePath}`, "success");
           console.log("\u{1F514} selection-changed received:", msg.data);
           console.log("   componentName:", msg.data?.componentName);
           console.log("   properties:", msg.data?.properties);
+          window.lastSelection = msg.data;
           updateSelection(msg.data);
+          updateExportSelection(msg.data);
           break;
         case "properties-updated":
           showFeedback("\u2705 Properties updated successfully!", "success");
           break;
         case "plugin-data-cleared":
           showFeedback(`\u2705 Cleared plugin data from ${msg.data.count} component(s)`, "success");
+          break;
+        case "full-app-exported":
+          handleFullAppExportComplete(msg.data);
+          break;
+        case "single-component-exported":
+          handleSingleComponentExportComplete(msg.data);
           break;
         case "error":
           handleCustomerError();

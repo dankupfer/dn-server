@@ -76,11 +76,11 @@ router.get('/field-definitions', (req: Request, res: Response) => {
   try {
     console.log('📋 Getting field definitions');
 
-    const fieldDefinitions = formBuilder.getFieldDefinitions();
+    const commonDefinitions = formBuilder.getcommonDefinitions();
 
     res.json({
       success: true,
-      data: fieldDefinitions
+      data: commonDefinitions
     });
 
   } catch (error) {

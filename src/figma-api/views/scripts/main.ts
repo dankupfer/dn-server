@@ -3,6 +3,7 @@
 
 import { initGenerateTab, handleComponentsCreated, handleFilesGenerated, handleCustomerGenerated, handleCustomerError } from './generate';
 import { initConfigureTab, updateSelection, autoSave } from './configure';
+import { initExportTab, updateExportSelection, handleFullAppExportComplete, handleSingleComponentExportComplete } from './export';
 import { showFeedback, sendToPlugin } from './utils';
 
 /**
@@ -14,6 +15,7 @@ function init() {
     // Initialize all tabs
     initGenerateTab();
     initConfigureTab();
+    initExportTab();
 
     // Set up tab buttons
     setupTabButtons();
@@ -70,9 +72,17 @@ function switchTab(tabName: string, targetButton: HTMLElement) {
     // Activate selected button
     targetButton.classList.add('active');
 
-    // Request selection update when switching to configure tab
-    if (tabName === 'configure') {
+    // Request selection update and trigger tab-specific actions
+    if (tabName === 'configure' || tabName === 'export') {
         sendToPlugin({ type: 'get-selection' });
+    }
+    
+    // Trigger export form update when switching to export tab
+    if (tabName === 'export') {
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+            updateExportSelection((window as any).lastSelection || null);
+        }, 0);
     }
 }
 
@@ -101,7 +111,11 @@ function setupMessageListener() {
                 console.log('🔔 selection-changed received:', msg.data);
                 console.log('   componentName:', msg.data?.componentName);
                 console.log('   properties:', msg.data?.properties);
+                // Store selection globally for tab switching
+                (window as any).lastSelection = msg.data;
+                // Update both configure and export tabs with selection
                 updateSelection(msg.data);
+                updateExportSelection(msg.data);
                 break;
 
             case 'properties-updated':
@@ -110,6 +124,14 @@ function setupMessageListener() {
 
             case 'plugin-data-cleared':
                 showFeedback(`✅ Cleared plugin data from ${msg.data.count} component(s)`, 'success');
+                break;
+
+            case 'full-app-exported':
+                handleFullAppExportComplete(msg.data);
+                break;
+
+            case 'single-component-exported':
+                handleSingleComponentExportComplete(msg.data);
                 break;
 
             case 'error':

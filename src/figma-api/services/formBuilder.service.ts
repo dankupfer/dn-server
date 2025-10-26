@@ -71,14 +71,14 @@ interface FieldDefinition {
     conditionalOptions?: Record<string, string[]>;
 }
 
-interface FieldDefinitions {
+interface commonDefinitions {
     [fieldName: string]: FieldDefinition;
 }
 
 class FormBuilderService {
     private componentDefinitions: ComponentDefinitions | null = null;
     private journeyDefinitions: JourneyDefinitions | null = null;
-    private fieldDefinitions: FieldDefinitions | null = null;  // ← Add this
+    private commonDefinitions: commonDefinitions | null = null;  // ← Add this
 
     constructor() {
         this.loadDefinitions();
@@ -97,8 +97,8 @@ class FormBuilderService {
             const journeysPath = path.join(definitionsPath, 'journeys.json');
             this.journeyDefinitions = JSON.parse(fs.readFileSync(journeysPath, 'utf8'));
 
-            const fieldDefinitionsPath = path.join(definitionsPath, 'fieldDefinitions.json');  // ← Add this
-            this.fieldDefinitions = JSON.parse(fs.readFileSync(fieldDefinitionsPath, 'utf8'));  // ← Add this
+            const commonDefinitionsPath = path.join(definitionsPath, 'commonDefinitions.json');  // ← Add this
+            this.commonDefinitions = JSON.parse(fs.readFileSync(commonDefinitionsPath, 'utf8'));  // ← Add this
 
             console.log('✅ Form builder loaded definitions successfully');
         } catch (error) {
@@ -114,11 +114,11 @@ class FormBuilderService {
  * @returns Field configuration with type and options
  */
     private getFieldConfig(fieldName: string): FieldConfiguration {
-        if (!this.fieldDefinitions) {
+        if (!this.commonDefinitions) {
             return { type: 'text' };
         }
 
-        const fieldDef = this.fieldDefinitions[fieldName];
+        const fieldDef = this.commonDefinitions[fieldName];
         if (!fieldDef) {
             return { type: 'text' };
         }
@@ -133,11 +133,11 @@ class FormBuilderService {
  * Get field definitions
  * @returns Field definitions object
  */
-    getFieldDefinitions(): FieldDefinitions {
-        if (!this.fieldDefinitions) {
+    getcommonDefinitions(): commonDefinitions {
+        if (!this.commonDefinitions) {
             throw new Error('Field definitions not loaded');
         }
-        return this.fieldDefinitions;
+        return this.commonDefinitions;
     }
 
     /**
@@ -203,7 +203,7 @@ class FormBuilderService {
         for (const [genericKey, propConfig] of Object.entries(commonProps)) {
             const config = propConfig as any;
             const semanticName = config.maps_to;
-            const fieldDef = this.fieldDefinitions?.[semanticName];
+            const fieldDef = this.commonDefinitions?.[semanticName];
 
             if (fieldDef) {
                 fields.push({
@@ -224,8 +224,8 @@ class FormBuilderService {
             const config = propConfig as any;
             const semanticName = config.maps_to;
 
-            // Check for inline type first, then fallback to fieldDefinitions
-            const fieldDef = this.fieldDefinitions?.[semanticName];
+            // Check for inline type first, then fallback to commonDefinitions
+            const fieldDef = this.commonDefinitions?.[semanticName];
             const fieldType = config.type || fieldDef?.type || 'text';
 
             fields.push({

@@ -1,7 +1,7 @@
 // src/figma-api/views/scripts/configure.ts
 // Configure tab - main orchestrator for component configuration
 
-import { fetchFieldDefinitions } from './api';
+import { fetchcommonDefinitions } from './api';
 
 // Import all functions from the new modular files
 import {
@@ -49,7 +49,7 @@ interface ComponentSelection {
 
 // Module state
 let currentSelection: ComponentSelection | null = null;
-let fieldDefinitions: any = null;
+let commonDefinitions: any = null;
 
 /**
  * Initialize configure tab
@@ -59,8 +59,8 @@ export async function initConfigureTab() {
 
     // Load field definitions
     try {
-        fieldDefinitions = await fetchFieldDefinitions();
-        console.log('✅ Field definitions loaded:', fieldDefinitions);
+        commonDefinitions = await fetchcommonDefinitions();
+        console.log('✅ Field definitions loaded:', commonDefinitions);
     } catch (error) {
         console.error('❌ Error loading field definitions:', error);
     }
@@ -99,11 +99,11 @@ async function updateConfigForm() {
     configForm.style.display = 'block';
 
     // Build form based on component type
-    const formHTML = await buildFormForComponent(currentSelection, fieldDefinitions);
+    const formHTML = await buildFormForComponent(currentSelection, commonDefinitions);
     configForm.innerHTML = formHTML;
 
     // Add event listeners for conditional fields
-    setupConditionalFieldListeners(currentSelection, fieldDefinitions, autoSave);
+    setupConditionalFieldListeners(currentSelection, commonDefinitions, autoSave);
 }
 
 /**

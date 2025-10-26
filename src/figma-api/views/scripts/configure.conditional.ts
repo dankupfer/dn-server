@@ -12,9 +12,9 @@ interface ComponentSelection {
 export function shouldDisableField(
     fieldName: string,
     dependentFieldValue: any,
-    fieldDefinitions: any
+    commonDefinitions: any
 ): boolean {
-    const fieldDef = fieldDefinitions?.[fieldName];
+    const fieldDef = commonDefinitions?.[fieldName];
     if (!fieldDef || !fieldDef.conditionalRules) return false;
 
     const disableWhen = fieldDef.conditionalRules.disableWhen;
@@ -35,7 +35,7 @@ export function shouldDisableField(
  */
 export function setupConditionalFieldListeners(
     currentSelection: ComponentSelection | null,
-    fieldDefinitions: any,
+    commonDefinitions: any,
     autoSaveCallback: () => void
 ) {
     const componentName = currentSelection?.componentName;
@@ -71,7 +71,7 @@ export function setupConditionalFieldListeners(
             toggleSectionHomeOptions(
                 conditionalContainerId,
                 sectionHomeCheckboxId,
-                fieldDefinitions,
+                commonDefinitions,
                 currentSelection
             );
             autoSaveCallback();
@@ -85,7 +85,7 @@ export function setupConditionalFieldListeners(
                 sectionTypeSelectId,
                 sectionHomeCheckboxId,
                 sectionHomeInputGroupId,
-                fieldDefinitions
+                commonDefinitions
             );
 
             // Update dropdown options
@@ -93,7 +93,7 @@ export function setupConditionalFieldListeners(
                 sectionTypeSelectId,
                 conditionalContainerId,
                 sectionHomeOptionSelectId,
-                fieldDefinitions,
+                commonDefinitions,
                 currentSelection
             );
 
@@ -106,14 +106,14 @@ export function setupConditionalFieldListeners(
         sectionTypeSelectId,
         sectionHomeCheckboxId,
         sectionHomeInputGroupId,
-        fieldDefinitions
+        commonDefinitions
     );
 
     // Initial render of conditional field
     toggleSectionHomeOptions(
         conditionalContainerId,
         sectionHomeCheckboxId,
-        fieldDefinitions,
+        commonDefinitions,
         currentSelection
     );
 }
@@ -125,7 +125,7 @@ export function applyConditionalRules(
     sectionTypeSelectId: string,
     sectionHomeCheckboxId: string,
     sectionHomeInputGroupId: string,
-    fieldDefinitions: any
+    commonDefinitions: any
 ) {
     const sectionTypeSelect = document.getElementById(sectionTypeSelectId) as HTMLSelectElement;
     const sectionHomeCheckbox = document.getElementById(sectionHomeCheckboxId) as HTMLInputElement;
@@ -134,7 +134,7 @@ export function applyConditionalRules(
     if (!sectionTypeSelect || !sectionHomeCheckbox || !sectionHomeInputGroup) return;
 
     const sectionTypeValue = sectionTypeSelect.value;
-    const shouldDisable = shouldDisableField('sectionHome', sectionTypeValue, fieldDefinitions);
+    const shouldDisable = shouldDisableField('sectionHome', sectionTypeValue, commonDefinitions);
 
     if (shouldDisable) {
         // Disable and uncheck the checkbox
@@ -165,7 +165,7 @@ export function applyConditionalRules(
 export function toggleSectionHomeOptions(
     conditionalContainerId: string,
     checkboxId: string,
-    fieldDefinitions: any,
+    commonDefinitions: any,
     currentSelection: ComponentSelection | null
 ) {
     const sectionHomeCheckbox = document.getElementById(checkboxId) as HTMLInputElement;
@@ -185,7 +185,7 @@ export function toggleSectionHomeOptions(
             sectionTypeId,
             conditionalContainerId,
             selectId,
-            fieldDefinitions,
+            commonDefinitions,
             currentSelection
         );
     } else {
@@ -200,7 +200,7 @@ export function updateSectionHomeOptions(
     sectionTypeSelectId: string,
     conditionalContainerId: string,
     selectId: string,
-    fieldDefinitions: any,
+    commonDefinitions: any,
     currentSelection: ComponentSelection | null
 ) {
     const sectionTypeSelect = document.getElementById(sectionTypeSelectId) as HTMLSelectElement;
@@ -209,7 +209,7 @@ export function updateSectionHomeOptions(
     if (!sectionTypeSelect || !optionSelect) return;
 
     const sectionType = sectionTypeSelect.value;
-    const fieldDef = fieldDefinitions?.sectionHome;
+    const fieldDef = commonDefinitions?.sectionHome;
 
     if (!fieldDef || !fieldDef.conditionalOptions) return;
 

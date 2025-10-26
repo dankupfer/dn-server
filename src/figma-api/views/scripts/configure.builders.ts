@@ -13,7 +13,7 @@ interface ComponentSelection {
  */
 export async function buildFormForComponent(
     selection: ComponentSelection,
-    fieldDefinitions: any
+    commonDefinitions: any
 ): Promise<string> {
     const { componentName, properties } = selection;
 
@@ -50,7 +50,7 @@ export async function buildFormForComponent(
         html += buildAppFrameForm(properties);
     }
     else if (componentName === 'ScreenBuilder_frame') {
-        html += buildScreenBuilderForm(properties, fieldDefinitions);
+        html += buildScreenBuilderForm(properties, commonDefinitions);
     }
     else {
         html += `<p>No configurable properties for this component.</p>`;
@@ -71,11 +71,11 @@ export function buildFieldFromDefinition(
     fieldName: string,
     fieldId: string,
     currentValue: any,
-    fieldDefinitions: any,
+    commonDefinitions: any,
     overrides?: { label?: string, description?: string, defaultValue?: any }
 ): string {
     // Get field definition or use overrides
-    const fieldDef = fieldDefinitions?.[fieldName] || {};
+    const fieldDef = commonDefinitions?.[fieldName] || {};
     const label = overrides?.label || fieldDef.label || fieldName;
     const description = overrides?.description || fieldDef.description || '';
     const defaultValue = overrides?.defaultValue || fieldDef.defaultValue || '';
@@ -261,11 +261,11 @@ export function buildAppFrameForm(properties: Record<string, any>): string {
  */
 export function buildScreenBuilderForm(
     properties: Record<string, any>,
-    fieldDefinitions: any
+    commonDefinitions: any
 ): string {
     let html = '';
-    html += buildFieldFromDefinition('id', 'config-id', properties.id, fieldDefinitions, { label: 'Screen ID' });
-    html += buildFieldFromDefinition('section_type', 'config-section_type', properties.section_type, fieldDefinitions);
-    html += buildFieldFromDefinition('sectionHome', 'config-sectionHome', properties.sectionHome, fieldDefinitions);
+    html += buildFieldFromDefinition('id', 'config-id', properties.id, commonDefinitions, { label: 'Screen ID' });
+    html += buildFieldFromDefinition('section_type', 'config-section_type', properties.section_type, commonDefinitions);
+    html += buildFieldFromDefinition('sectionHome', 'config-sectionHome', properties.sectionHome, commonDefinitions);
     return html;
 }

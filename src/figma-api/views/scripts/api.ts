@@ -77,7 +77,7 @@ export async function fetchFormConfig(journeyOption: string): Promise<FormConfig
 /**
  * Fetch field definitions from server
  */
-export async function fetchFieldDefinitions(): Promise<any> {
+export async function fetchcommonDefinitions(): Promise<any> {
     const response = await fetch(`${API_BASE_URL}/field-definitions`);
     const result = await response.json();
 
