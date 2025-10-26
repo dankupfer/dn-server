@@ -1,4 +1,4 @@
-// src/figma-api/views/scripts/configure.builders.ts
+// src/views/figma/scripts/configure.builders.ts
 // Form building functions for component configuration
 
 import { fetchJourneyOptions, fetchFormConfig } from './api';
@@ -13,7 +13,7 @@ interface ComponentSelection {
  */
 export async function buildFormForComponent(
     selection: ComponentSelection,
-    commonDefinitions: any
+    fieldDefinitions: any
 ): Promise<string> {
     const { componentName, properties } = selection;
 
@@ -50,7 +50,10 @@ export async function buildFormForComponent(
         html += buildAppFrameForm(properties);
     }
     else if (componentName === 'ScreenBuilder_frame') {
-        html += buildScreenBuilderForm(properties, commonDefinitions);
+        html += buildScreenBuilderForm(properties, fieldDefinitions);
+    }
+    else if (componentName === 'Modal_frame') {
+        html += buildModalForm(properties, fieldDefinitions);
     }
     else {
         html += `<p>No configurable properties for this component.</p>`;
@@ -71,11 +74,11 @@ export function buildFieldFromDefinition(
     fieldName: string,
     fieldId: string,
     currentValue: any,
-    commonDefinitions: any,
+    fieldDefinitions: any,
     overrides?: { label?: string, description?: string, defaultValue?: any }
 ): string {
     // Get field definition or use overrides
-    const fieldDef = commonDefinitions?.[fieldName] || {};
+    const fieldDef = fieldDefinitions?.[fieldName] || {};
     const label = overrides?.label || fieldDef.label || fieldName;
     const description = overrides?.description || fieldDef.description || '';
     const defaultValue = overrides?.defaultValue || fieldDef.defaultValue || '';
@@ -182,7 +185,7 @@ export function buildDynamicFields(fields: any[], properties: Record<string, any
  * Build Journey Option selector
  */
 export async function buildJourneyOptionSelector(
-    properties: Record<string, any>,
+    properties: Record<string, any>, 
     currentOption: string
 ): Promise<string> {
     try {
@@ -219,6 +222,15 @@ export async function buildJourneyOptionSelector(
  */
 export function buildAppFrameForm(properties: Record<string, any>): string {
     let html = '';
+
+    // App Name field (first - most important)
+    html += `
+        <div class="input-group">
+            <label for="config-appName">App Name</label>
+            <small class="description">Name of your application (used for project folder and package.json)</small>
+            <input type="text" id="config-appName" value="${properties.appName || ''}" onchange="autoSave()" placeholder="myApp">
+        </div>
+    `;
 
     // Brand field
     html += `
@@ -261,11 +273,25 @@ export function buildAppFrameForm(properties: Record<string, any>): string {
  */
 export function buildScreenBuilderForm(
     properties: Record<string, any>,
-    commonDefinitions: any
+    fieldDefinitions: any
 ): string {
     let html = '';
-    html += buildFieldFromDefinition('id', 'config-id', properties.id, commonDefinitions, { label: 'Screen ID' });
-    html += buildFieldFromDefinition('section_type', 'config-section_type', properties.section_type, commonDefinitions);
-    html += buildFieldFromDefinition('sectionHome', 'config-sectionHome', properties.sectionHome, commonDefinitions);
+    html += buildFieldFromDefinition('id', 'config-id', properties.id, fieldDefinitions, { label: 'Screen ID' });
+    html += buildFieldFromDefinition('section_type', 'config-section_type', properties.section_type, fieldDefinitions);
+    html += buildFieldFromDefinition('sectionHome', 'config-sectionHome', properties.sectionHome, fieldDefinitions);
+    return html;
+}
+
+/**
+ * Build form for Modal_frame component
+ */
+export function buildModalForm(
+    properties: Record<string, any>,
+    fieldDefinitions: any
+): string {
+    let html = '';
+    html += buildFieldFromDefinition('id', 'config-id', properties.id, fieldDefinitions, { label: 'Modal ID' });
+    html += buildFieldFromDefinition('section_type', 'config-section_type', properties.section_type, fieldDefinitions);
+    html += buildFieldFromDefinition('sectionHome', 'config-sectionHome', properties.sectionHome, fieldDefinitions);
     return html;
 }

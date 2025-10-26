@@ -3,7 +3,7 @@
 
 import { initGenerateTab, handleComponentsCreated, handleFilesGenerated, handleCustomerGenerated, handleCustomerError } from './generate';
 import { initConfigureTab, updateSelection, autoSave } from './configure';
-import { initExportTab, updateExportSelection, handleFullAppExportComplete, handleSingleComponentExportComplete } from './export';
+import { initExportTab, updateExportSelection, updateAppFrameConfig, handleFullAppExportComplete, handleSingleComponentExportComplete } from './export';
 import { showFeedback, sendToPlugin } from './utils';
 
 /**
@@ -79,10 +79,16 @@ function switchTab(tabName: string, targetButton: HTMLElement) {
     
     // Trigger export form update when switching to export tab
     if (tabName === 'export') {
-        // Small delay to ensure DOM is ready
+        // Request fresh App_frame config every time we switch to Export tab
+        sendToPlugin({ type: 'get-app-frame-config' });
+        
+        // Import updateExportSelection at module level to access it here
+        // For now, trigger it with stored selection or null
+        const lastSelection = (window as any).lastSelection || null;
+        // Use setTimeout to ensure DOM is ready
         setTimeout(() => {
-            updateExportSelection((window as any).lastSelection || null);
-        }, 0);
+            updateExportSelection(lastSelection);
+        }, 10);
     }
 }
 
@@ -116,6 +122,11 @@ function setupMessageListener() {
                 // Update both configure and export tabs with selection
                 updateSelection(msg.data);
                 updateExportSelection(msg.data);
+                break;
+
+            case 'app-frame-config':
+                console.log('🎯 app-frame-config received:', msg.data);
+                updateAppFrameConfig(msg.data);
                 break;
 
             case 'properties-updated':

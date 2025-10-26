@@ -1,4 +1,4 @@
-// src/figma-api/views/scripts/configure.autosave.ts
+// src/views/figma/scripts/configure.autosave.ts
 // Auto-save and data handling logic
 
 import { showSaveFeedback, sendToPlugin } from './utils';
@@ -19,6 +19,7 @@ export function autoSave(currentSelection: ComponentSelection | null) {
 
     // Collect values based on component type
     if (componentName === 'App_frame') {
+        updatedProperties.appName = (document.getElementById('config-appName') as HTMLInputElement)?.value;
         updatedProperties.brand = (document.getElementById('config-brand') as HTMLSelectElement)?.value;
         updatedProperties.mode = (document.getElementById('config-mode') as HTMLSelectElement)?.value;
         updatedProperties.apiBase = (document.getElementById('config-apiBase') as HTMLInputElement)?.value;
@@ -51,7 +52,7 @@ export function autoSave(currentSelection: ComponentSelection | null) {
                 updatedProperties.sectionHomeOption = sectionHomeOptionSelect.value;
             }
         }
-    } else if (componentName === 'ScreenBuilder_frame') {
+    } else if (componentName === 'ScreenBuilder_frame' || componentName === 'Modal_frame') {
         updatedProperties.id = (document.getElementById('config-id') as HTMLInputElement)?.value;
         updatedProperties.section_type = (document.getElementById('config-section_type') as HTMLSelectElement)?.value;
         updatedProperties.sectionHome = (document.getElementById('config-sectionHome') as HTMLInputElement)?.checked;

@@ -334,7 +334,7 @@ File: ${data.filePath}`, "success");
   }
 
   // src/figma-api/views/scripts/configure.builders.ts
-  async function buildFormForComponent(selection, commonDefinitions2) {
+  async function buildFormForComponent(selection, fieldDefinitions) {
     const { componentName, properties } = selection;
     let html = `<div class="section">`;
     html += `<h2>${componentName}</h2>`;
@@ -356,15 +356,17 @@ File: ${data.filePath}`, "success");
     } else if (componentName === "App_frame") {
       html += buildAppFrameForm(properties);
     } else if (componentName === "ScreenBuilder_frame") {
-      html += buildScreenBuilderForm(properties, commonDefinitions2);
+      html += buildScreenBuilderForm(properties, fieldDefinitions);
+    } else if (componentName === "Modal_frame") {
+      html += buildModalForm(properties, fieldDefinitions);
     } else {
       html += `<p>No configurable properties for this component.</p>`;
     }
     html += `</div>`;
     return html;
   }
-  function buildFieldFromDefinition(fieldName, fieldId, currentValue, commonDefinitions2, overrides) {
-    const fieldDef = commonDefinitions2?.[fieldName] || {};
+  function buildFieldFromDefinition(fieldName, fieldId, currentValue, fieldDefinitions, overrides) {
+    const fieldDef = fieldDefinitions?.[fieldName] || {};
     const label = overrides?.label || fieldDef.label || fieldName;
     const description = overrides?.description || fieldDef.description || "";
     const defaultValue = overrides?.defaultValue || fieldDef.defaultValue || "";
@@ -470,6 +472,13 @@ File: ${data.filePath}`, "success");
     let html = "";
     html += `
         <div class="input-group">
+            <label for="config-appName">App Name</label>
+            <small class="description">Name of your application (used for project folder and package.json)</small>
+            <input type="text" id="config-appName" value="${properties.appName || ""}" onchange="autoSave()" placeholder="myApp">
+        </div>
+    `;
+    html += `
+        <div class="input-group">
             <label for="config-brand">Brand</label>
             <small class="description">Brand theme to use (BrandA, BrandB)</small>
             <select id="config-brand" onchange="autoSave()">
@@ -497,11 +506,18 @@ File: ${data.filePath}`, "success");
     `;
     return html;
   }
-  function buildScreenBuilderForm(properties, commonDefinitions2) {
+  function buildScreenBuilderForm(properties, fieldDefinitions) {
     let html = "";
-    html += buildFieldFromDefinition("id", "config-id", properties.id, commonDefinitions2, { label: "Screen ID" });
-    html += buildFieldFromDefinition("section_type", "config-section_type", properties.section_type, commonDefinitions2);
-    html += buildFieldFromDefinition("sectionHome", "config-sectionHome", properties.sectionHome, commonDefinitions2);
+    html += buildFieldFromDefinition("id", "config-id", properties.id, fieldDefinitions, { label: "Screen ID" });
+    html += buildFieldFromDefinition("section_type", "config-section_type", properties.section_type, fieldDefinitions);
+    html += buildFieldFromDefinition("sectionHome", "config-sectionHome", properties.sectionHome, fieldDefinitions);
+    return html;
+  }
+  function buildModalForm(properties, fieldDefinitions) {
+    let html = "";
+    html += buildFieldFromDefinition("id", "config-id", properties.id, fieldDefinitions, { label: "Modal ID" });
+    html += buildFieldFromDefinition("section_type", "config-section_type", properties.section_type, fieldDefinitions);
+    html += buildFieldFromDefinition("sectionHome", "config-sectionHome", properties.sectionHome, fieldDefinitions);
     return html;
   }
 
@@ -511,6 +527,7 @@ File: ${data.filePath}`, "success");
     const componentName = currentSelection3.componentName;
     const updatedProperties = {};
     if (componentName === "App_frame") {
+      updatedProperties.appName = document.getElementById("config-appName")?.value;
       updatedProperties.brand = document.getElementById("config-brand")?.value;
       updatedProperties.mode = document.getElementById("config-mode")?.value;
       updatedProperties.apiBase = document.getElementById("config-apiBase")?.value;
@@ -538,7 +555,7 @@ File: ${data.filePath}`, "success");
           updatedProperties.sectionHomeOption = sectionHomeOptionSelect.value;
         }
       }
-    } else if (componentName === "ScreenBuilder_frame") {
+    } else if (componentName === "ScreenBuilder_frame" || componentName === "Modal_frame") {
       updatedProperties.id = document.getElementById("config-id")?.value;
       updatedProperties.section_type = document.getElementById("config-section_type")?.value;
       updatedProperties.sectionHome = document.getElementById("config-sectionHome")?.checked;
@@ -624,17 +641,24 @@ File: ${data.filePath}`, "success");
   // src/figma-api/views/scripts/export.ts
   var currentExportSelection = { type: "none" };
   var currentSelection2 = null;
+  var appFrameConfig = null;
   function initExportTab() {
     console.log("Export tab initialized");
+    sendToPlugin({ type: "get-app-frame-config" });
+  }
+  function updateAppFrameConfig(config) {
+    console.log("\u{1F3AF} App_frame config updated:", config);
+    appFrameConfig = config;
+    updateExportForm();
   }
   function updateExportSelection(selection) {
     console.log("\u{1F504} updateExportSelection called with:", selection);
     currentSelection2 = selection;
-    if (!selection || !selection.componentName) {
+    if (!selection || !selection.componentName || selection.componentName === "App_frame") {
       currentExportSelection = { type: "none" };
-      console.log('\u{1F4ED} No selection - setting type to "none"');
+      console.log('\u{1F4ED} No selection or App_frame - setting type to "none"');
     } else {
-      const isComponent = ["Journey", "ScreenBuilder_frame", "App_frame"].includes(selection.componentName);
+      const isComponent = ["Journey", "ScreenBuilder_frame"].includes(selection.componentName);
       currentExportSelection = {
         type: isComponent ? "component" : "item",
         componentName: selection.componentName
@@ -662,25 +686,88 @@ File: ${data.filePath}`, "success");
     exportContainer.innerHTML = html;
   }
   function buildFullAppExportForm() {
+    if (!appFrameConfig) {
+      return `
+            <div class="section">
+                <h2>Export Full App</h2>
+                
+                <div class="warning-box">
+                    <strong>\u26A0\uFE0F App_frame Required</strong>
+                    <p>Please create an App_frame component on your canvas before exporting.</p>
+                    <p>The App_frame is required to configure your application settings.</p>
+                </div>
+            </div>
+        `;
+    }
+    if (!appFrameConfig.appName || appFrameConfig.appName.trim() === "") {
+      return `
+            <div class="section">
+                <h2>Export Full App</h2>
+                
+                <div class="warning-box">
+                    <strong>\u26A0\uFE0F App Name Required</strong>
+                    <p>Please configure the App Name in your App_frame component first.</p>
+                    <ol style="margin: 8px 0 0 20px; padding: 0;">
+                        <li>Select the App_frame on your canvas</li>
+                        <li>Go to the Configure tab</li>
+                        <li>Enter an App Name</li>
+                        <li>Return here to export</li>
+                    </ol>
+                </div>
+            </div>
+        `;
+    }
+    const hasExported = appFrameConfig.exportState?.hasExported || false;
+    const exportedName = appFrameConfig.exportState?.exportedWithAppName;
+    const nameChanged = hasExported && exportedName !== appFrameConfig.appName;
     return `
         <div class="section">
             <h2>Export Full App</h2>
             <p class="description">Export complete app configuration from all Journey and ScreenBuilder frames on the canvas.</p>
             
+            <div class="component-info">
+                <h3>Project Configuration</h3>
+                <table class="info-table">
+                    <tr>
+                        <td><strong>App Name:</strong></td>
+                        <td>${appFrameConfig.appName}</td>
+                    </tr>
+                    ${hasExported ? `
+                    <tr>
+                        <td><strong>Last Exported:</strong></td>
+                        <td>${new Date(appFrameConfig.exportState.lastExportDate).toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Export Path:</strong></td>
+                        <td style="font-size: 11px;">${appFrameConfig.exportState.exportPath}</td>
+                    </tr>
+                    ` : ""}
+                </table>
+            </div>
+
+            ${nameChanged ? `
+            <div class="warning-box" style="margin-bottom: 16px;">
+                <strong>\u26A0\uFE0F App Name Changed</strong>
+                <p>App name was changed from "${exportedName}" to "${appFrameConfig.appName}".</p>
+                <p>Re-exporting will create a new project folder. Component exports are disabled until full export completes.</p>
+            </div>
+            ` : ""}
+            
             <div class="input-group">
                 <label for="export-path">Export Path</label>
-                <small class="description">Absolute path where fullAppConfig.json will be saved<br/><br/>(default to Desktop if left empty)</small>
+                <small class="description">Directory where project folder will be created</small>
                 <input 
                     type="text" 
                     id="export-path" 
-                    placeholder="/Users/username/projects/my-app"
-                    value=""
+                    placeholder="/Users/username/projects"
+                    value="${appFrameConfig.exportState?.exportPath || ""}"
                 >
+                <small class="description">Project will be created at: {path}/${appFrameConfig.appName}/</small>
             </div>
             
             <div class="button-group">
                 <button class="primary" onclick="handleFullAppExport()">
-                    Export Full App Config
+                    ${hasExported && !nameChanged ? "Re-export" : "Export"} Full App Config
                 </button>
             </div>
             
@@ -690,6 +777,7 @@ File: ${data.filePath}`, "success");
                     <li>App configuration (from App_frame)</li>
                     <li>All Journey components with their properties</li>
                     <li>All ScreenBuilder frames with their properties</li>
+                    <li>Creates project structure: ${appFrameConfig.appName}/fullAppConfig.json</li>
                 </ul>
             </div>
         </div>
@@ -700,6 +788,11 @@ File: ${data.filePath}`, "success");
     const sectionHome = currentSelection2?.properties?.sectionHome || false;
     const sectionHomeOption = currentSelection2?.properties?.sectionHomeOption || "N/A";
     const sectionType = currentSelection2?.properties?.section_type || currentSelection2?.properties?.prop1 || "N/A";
+    const hasExported = appFrameConfig?.exportState?.hasExported || false;
+    const exportedName = appFrameConfig?.exportState?.exportedWithAppName;
+    const currentName = appFrameConfig?.appName;
+    const nameChanged = hasExported && exportedName !== currentName;
+    const canExport = hasExported && !nameChanged && appFrameConfig;
     return `
         <div class="section">
             <h2>Export Single Component</h2>
@@ -732,13 +825,26 @@ File: ${data.filePath}`, "success");
                     ` : ""}
                 </table>
             </div>
+
+            ${!canExport ? `
+            <div class="warning-box">
+                <strong>\u26A0\uFE0F ${!hasExported ? "Full App Export Required" : "App Name Changed"}</strong>
+                <p>${!hasExported ? "Please export the full app configuration before exporting individual components." : `App name changed from "${exportedName}" to "${currentName}". Please re-export the full app first.`}</p>
+            </div>
+            ` : `
+            <div class="info-box" style="margin-top: 16px;">
+                <strong>Export Target:</strong>
+                <p style="margin: 4px 0 0 0; font-size: 11px;">${appFrameConfig.exportState.exportPath}/${currentName}/fullAppConfig.json</p>
+            </div>
+            `}
             
             <div class="button-group">
-                <button class="primary" onclick="handleSingleComponentExport()">
+                <button class="primary" onclick="handleSingleComponentExport()" ${!canExport ? "disabled" : ""}>
                     Export Component to App
                 </button>
             </div>
             
+            ${canExport ? `
             <div class="info-box">
                 <strong>What happens:</strong>
                 <ul>
@@ -748,6 +854,7 @@ File: ${data.filePath}`, "success");
                     <li>Navigation will be automatically configured</li>
                 </ul>
             </div>
+            ` : ""}
         </div>
     `;
   }
@@ -852,9 +959,11 @@ Files: ${data.files?.length || 0}`);
       sendToPlugin({ type: "get-selection" });
     }
     if (tabName === "export") {
+      sendToPlugin({ type: "get-app-frame-config" });
+      const lastSelection = window.lastSelection || null;
       setTimeout(() => {
-        updateExportSelection(window.lastSelection || null);
-      }, 0);
+        updateExportSelection(lastSelection);
+      }, 10);
     }
   }
   function setupMessageListener() {
@@ -878,6 +987,10 @@ Files: ${data.files?.length || 0}`);
           window.lastSelection = msg.data;
           updateSelection(msg.data);
           updateExportSelection(msg.data);
+          break;
+        case "app-frame-config":
+          console.log("\u{1F3AF} app-frame-config received:", msg.data);
+          updateAppFrameConfig(msg.data);
           break;
         case "properties-updated":
           showFeedback("\u2705 Properties updated successfully!", "success");

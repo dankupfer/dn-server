@@ -8,9 +8,20 @@ interface ExportSelection {
     componentName?: string;
 }
 
+interface AppFrameConfig {
+    appName: string;
+    exportState?: {
+        exportPath: string;
+        hasExported: boolean;
+        lastExportDate: string;
+        exportedWithAppName: string;
+    };
+}
+
 // Module state
 let currentExportSelection: ExportSelection = { type: 'none' };
 let currentSelection: any = null;
+let appFrameConfig: AppFrameConfig | null = null;
 
 /**
  * Initialize export tab
@@ -18,8 +29,19 @@ let currentSelection: any = null;
 export function initExportTab() {
     console.log('Export tab initialized');
     
-    // Don't update form on init - wait for tab to be active
-    // updateExportForm will be called when selection changes
+    // Request App_frame config
+    sendToPlugin({ type: 'get-app-frame-config' });
+}
+
+/**
+ * Update App_frame configuration
+ */
+export function updateAppFrameConfig(config: AppFrameConfig | null) {
+    console.log('🎯 App_frame config updated:', config);
+    appFrameConfig = config;
+    
+    // Trigger form update if on export tab
+    updateExportForm();
 }
 
 /**
@@ -31,12 +53,13 @@ export function updateExportSelection(selection: any) {
     // Store selection in module state
     currentSelection = selection;
     
-    if (!selection || !selection.componentName) {
+    // App_frame should trigger full app export (same as no selection)
+    if (!selection || !selection.componentName || selection.componentName === 'App_frame') {
         currentExportSelection = { type: 'none' };
-        console.log('📭 No selection - setting type to "none"');
+        console.log('📭 No selection or App_frame - setting type to "none"');
     } else {
         // Determine if it's a frame/journey (component) or an item
-        const isComponent = ['Journey', 'ScreenBuilder_frame', 'App_frame'].includes(selection.componentName);
+        const isComponent = ['Journey', 'ScreenBuilder_frame'].includes(selection.componentName);
         
         currentExportSelection = {
             type: isComponent ? 'component' : 'item',
@@ -83,25 +106,93 @@ function updateExportForm() {
  * Build full app export form (when nothing is selected)
  */
 function buildFullAppExportForm(): string {
+    // Check if App_frame exists
+    if (!appFrameConfig) {
+        return `
+            <div class="section">
+                <h2>Export Full App</h2>
+                
+                <div class="warning-box">
+                    <strong>⚠️ App_frame Required</strong>
+                    <p>Please create an App_frame component on your canvas before exporting.</p>
+                    <p>The App_frame is required to configure your application settings.</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Check if appName is configured
+    if (!appFrameConfig.appName || appFrameConfig.appName.trim() === '') {
+        return `
+            <div class="section">
+                <h2>Export Full App</h2>
+                
+                <div class="warning-box">
+                    <strong>⚠️ App Name Required</strong>
+                    <p>Please configure the App Name in your App_frame component first.</p>
+                    <ol style="margin: 8px 0 0 20px; padding: 0;">
+                        <li>Select the App_frame on your canvas</li>
+                        <li>Go to the Configure tab</li>
+                        <li>Enter an App Name</li>
+                        <li>Return here to export</li>
+                    </ol>
+                </div>
+            </div>
+        `;
+    }
+
+    const hasExported = appFrameConfig.exportState?.hasExported || false;
+    const exportedName = appFrameConfig.exportState?.exportedWithAppName;
+    const nameChanged = hasExported && exportedName !== appFrameConfig.appName;
+
     return `
         <div class="section">
             <h2>Export Full App</h2>
             <p class="description">Export complete app configuration from all Journey and ScreenBuilder frames on the canvas.</p>
             
+            <div class="component-info">
+                <h3>Project Configuration</h3>
+                <table class="info-table">
+                    <tr>
+                        <td><strong>App Name:</strong></td>
+                        <td>${appFrameConfig.appName}</td>
+                    </tr>
+                    ${hasExported ? `
+                    <tr>
+                        <td><strong>Last Exported:</strong></td>
+                        <td>${new Date(appFrameConfig.exportState!.lastExportDate).toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Export Path:</strong></td>
+                        <td style="font-size: 11px;">${appFrameConfig.exportState!.exportPath}</td>
+                    </tr>
+                    ` : ''}
+                </table>
+            </div>
+
+            ${nameChanged ? `
+            <div class="warning-box" style="margin-bottom: 16px;">
+                <strong>⚠️ App Name Changed</strong>
+                <p>App name was changed from "${exportedName}" to "${appFrameConfig.appName}".</p>
+                <p>Re-exporting will create a new project folder. Component exports are disabled until full export completes.</p>
+            </div>
+            ` : ''}
+            
             <div class="input-group">
                 <label for="export-path">Export Path</label>
-                <small class="description">Absolute path where fullAppConfig.json will be saved<br/><br/>(default to Desktop if left empty)</small>
+                <small class="description">Directory where project folder will be created</small>
                 <input 
                     type="text" 
                     id="export-path" 
-                    placeholder="/Users/username/projects/my-app"
-                    value=""
+                    placeholder="/Users/username/projects"
+                    value="${appFrameConfig.exportState?.exportPath || ''}"
                 >
+                <small class="description">Project will be created at: {path}/${appFrameConfig.appName}/</small>
             </div>
             
             <div class="button-group">
                 <button class="primary" onclick="handleFullAppExport()">
-                    Export Full App Config
+                    ${hasExported && !nameChanged ? 'Re-export' : 'Export'} Full App Config
                 </button>
             </div>
             
@@ -111,6 +202,7 @@ function buildFullAppExportForm(): string {
                     <li>App configuration (from App_frame)</li>
                     <li>All Journey components with their properties</li>
                     <li>All ScreenBuilder frames with their properties</li>
+                    <li>Creates project structure: ${appFrameConfig.appName}/fullAppConfig.json</li>
                 </ul>
             </div>
         </div>
@@ -131,6 +223,13 @@ function buildSingleComponentExportForm(componentName: string): string {
                        currentSelection?.properties?.prop1 || 
                        'N/A';
     
+    // Check if component export is allowed
+    const hasExported = appFrameConfig?.exportState?.hasExported || false;
+    const exportedName = appFrameConfig?.exportState?.exportedWithAppName;
+    const currentName = appFrameConfig?.appName;
+    const nameChanged = hasExported && exportedName !== currentName;
+    const canExport = hasExported && !nameChanged && appFrameConfig;
+
     return `
         <div class="section">
             <h2>Export Single Component</h2>
@@ -163,13 +262,29 @@ function buildSingleComponentExportForm(componentName: string): string {
                     ` : ''}
                 </table>
             </div>
+
+            ${!canExport ? `
+            <div class="warning-box">
+                <strong>⚠️ ${!hasExported ? 'Full App Export Required' : 'App Name Changed'}</strong>
+                <p>${!hasExported 
+                    ? 'Please export the full app configuration before exporting individual components.'
+                    : `App name changed from "${exportedName}" to "${currentName}". Please re-export the full app first.`
+                }</p>
+            </div>
+            ` : `
+            <div class="info-box" style="margin-top: 16px;">
+                <strong>Export Target:</strong>
+                <p style="margin: 4px 0 0 0; font-size: 11px;">${appFrameConfig!.exportState!.exportPath}/${currentName}/fullAppConfig.json</p>
+            </div>
+            `}
             
             <div class="button-group">
-                <button class="primary" onclick="handleSingleComponentExport()">
+                <button class="primary" onclick="handleSingleComponentExport()" ${!canExport ? 'disabled' : ''}>
                     Export Component to App
                 </button>
             </div>
             
+            ${canExport ? `
             <div class="info-box">
                 <strong>What happens:</strong>
                 <ul>
@@ -179,6 +294,7 @@ function buildSingleComponentExportForm(componentName: string): string {
                     <li>Navigation will be automatically configured</li>
                 </ul>
             </div>
+            ` : ''}
         </div>
     `;
 }

@@ -5,6 +5,12 @@
     "height": 852,
     "backgroundColor": "#E3F2FD",
     "properties": {
+      "appName": {
+        "type": "TEXT",
+        "defaultValue": "",
+        "label": "App Name",
+        "description": "Name of your application (used for project folder and package.json)"
+      },
       "brand": {
         "type": "TEXT",
         "defaultValue": "BrandA",
