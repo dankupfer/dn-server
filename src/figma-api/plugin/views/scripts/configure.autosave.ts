@@ -44,12 +44,13 @@ export function autoSave(currentSelection: ComponentSelection | null) {
             }
         }
 
-        // Save sectionHomeOption if sectionHome is checked (prop2 = sectionHome)
-        const sectionHomeCheckbox = document.getElementById('config-prop2') as HTMLInputElement;
-        if (sectionHomeCheckbox?.checked && !sectionHomeCheckbox.disabled) {
-            const sectionHomeOptionSelect = document.getElementById('config-prop2-option') as HTMLSelectElement;
+        // Save sectionHomeOption if sectionHome (prop4) is checked
+        const sectionHomeCheckbox = document.getElementById('config-prop4') as HTMLInputElement;
+        if (sectionHomeCheckbox?.checked) {
+            const sectionHomeOptionSelect = document.getElementById('config-prop4-option') as HTMLSelectElement;
             if (sectionHomeOptionSelect) {
                 updatedProperties.sectionHomeOption = sectionHomeOptionSelect.value;
+                console.log('📝 Saving sectionHomeOption:', sectionHomeOptionSelect.value);
             }
         }
     } else if (componentName === 'ScreenBuilder_frame' || componentName === 'Modal_frame') {

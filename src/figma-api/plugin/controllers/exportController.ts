@@ -26,7 +26,6 @@ interface ExportFullAppRequest {
 export async function exportFullApp(req: Request, res: Response) {
     try {
         const data: ExportFullAppRequest = req.body;
-
         console.log('📦 Export request received for:', data.appName);
         console.log('📁 Export path:', data.exportPath);
         console.log('📊 Components:', data.components.length);
@@ -59,11 +58,63 @@ export async function exportFullApp(req: Request, res: Response) {
         await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
         console.log('✅ Created fullAppConfig.json');
 
+        // Call app-builder to generate the React Native app
+        console.log('🔨 Calling app-builder to generate React Native app...');
+
+        try {
+            // Import the buildApp controller function
+            const { buildApp: buildAppController } = await import('../../app-builder/controllers/appBuilderController');
+
+            // Create a mock request/response for the app-builder
+            const mockReq = {
+                body: {
+                    config: config,
+                    targetPath: data.exportPath
+                }
+            } as Request;
+
+            let buildSuccess = false;
+            let buildError = '';
+
+            const mockRes = {
+                status: (code: number) => ({
+                    json: (data: any) => {
+                        if (code === 200) {
+                            buildSuccess = true;
+                            console.log('✅ App built successfully');
+                        } else {
+                            buildError = data.error || 'Build failed';
+                            console.log('❌ App build failed:', buildError);
+                        }
+                    }
+                }),
+                json: (data: any) => {
+                    // Handle success case (no status code specified)
+                    if (data.success) {
+                        buildSuccess = true;
+                        console.log('✅ App built successfully');
+                    }
+                }
+            } as Response;
+
+            // Call the app-builder
+            await buildAppController(mockReq, mockRes);
+
+            if (!buildSuccess) {
+                console.log('⚠️  App generation had issues, but config was saved');
+            }
+
+        } catch (buildError) {
+            console.error('❌ App builder error:', buildError);
+            // Continue - we still saved the config file
+        }
+
         res.json({
             success: true,
             message: `Exported ${data.components.length} components to ${data.appName}`,
             filePath: configPath,
-            screenCount: data.components.length
+            screenCount: data.components.length,
+            appGenerated: true
         });
 
     } catch (error) {

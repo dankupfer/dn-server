@@ -553,11 +553,12 @@ File: ${data.filePath}`, "success");
           }
         }
       }
-      const sectionHomeCheckbox = document.getElementById("config-prop2");
-      if (sectionHomeCheckbox?.checked && !sectionHomeCheckbox.disabled) {
-        const sectionHomeOptionSelect = document.getElementById("config-prop2-option");
+      const sectionHomeCheckbox = document.getElementById("config-prop4");
+      if (sectionHomeCheckbox?.checked) {
+        const sectionHomeOptionSelect = document.getElementById("config-prop4-option");
         if (sectionHomeOptionSelect) {
           updatedProperties.sectionHomeOption = sectionHomeOptionSelect.value;
+          console.log("\u{1F4DD} Saving sectionHomeOption:", sectionHomeOptionSelect.value);
         }
       }
     } else if (componentName === "ScreenBuilder_frame" || componentName === "Modal_frame") {
