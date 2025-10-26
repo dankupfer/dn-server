@@ -215,11 +215,11 @@ File: ${data.filePath}`, "success");
     let conditionalContainerId;
     let sectionHomeOptionSelectId;
     if (componentName === "Journey") {
-      sectionHomeCheckboxId = "config-prop2";
-      sectionHomeInputGroupId = "input-group-prop2";
-      sectionTypeSelectId = "config-prop1";
-      conditionalContainerId = "config-prop2-conditional";
-      sectionHomeOptionSelectId = "config-prop2-option";
+      sectionHomeCheckboxId = "config-prop4";
+      sectionHomeInputGroupId = "input-group-prop4";
+      sectionTypeSelectId = "config-prop3";
+      conditionalContainerId = "config-prop4-conditional";
+      sectionHomeOptionSelectId = "config-prop4-option";
     } else {
       sectionHomeCheckboxId = "config-sectionHome";
       sectionHomeInputGroupId = "input-group-sectionHome";
@@ -301,7 +301,7 @@ File: ${data.filePath}`, "success");
     if (sectionHomeCheckbox && sectionHomeCheckbox.checked && !sectionHomeCheckbox.disabled) {
       conditionalContainer.style.display = "block";
       const selectId = conditionalContainerId.replace("-conditional", "-option");
-      const sectionTypeId = checkboxId.replace("sectionHome", "section_type").replace("prop2", "prop1");
+      const sectionTypeId = checkboxId.replace("sectionHome", "section_type").replace("prop4", "prop3");
       updateSectionHomeOptions(
         sectionTypeId,
         conditionalContainerId,
@@ -435,6 +435,7 @@ File: ${data.filePath}`, "success");
       } else if (field.type === "select" && field.options) {
         html += `<select id="config-${field.genericKey}" onchange="autoSave()">`;
         field.options.forEach((option) => {
+          console.log(option);
           html += `<option value="${option}" ${value === option ? "selected" : ""}>${option}</option>`;
         });
         html += `</select>`;
@@ -509,6 +510,8 @@ File: ${data.filePath}`, "success");
   function buildScreenBuilderForm(properties, fieldDefinitions) {
     let html = "";
     html += buildFieldFromDefinition("id", "config-id", properties.id, fieldDefinitions, { label: "Screen ID" });
+    html += buildFieldFromDefinition("name", "config-name", properties.name, fieldDefinitions);
+    html += buildFieldFromDefinition("title", "config-title", properties.title, fieldDefinitions);
     html += buildFieldFromDefinition("section_type", "config-section_type", properties.section_type, fieldDefinitions);
     html += buildFieldFromDefinition("sectionHome", "config-sectionHome", properties.sectionHome, fieldDefinitions);
     return html;
@@ -516,6 +519,8 @@ File: ${data.filePath}`, "success");
   function buildModalForm(properties, fieldDefinitions) {
     let html = "";
     html += buildFieldFromDefinition("id", "config-id", properties.id, fieldDefinitions, { label: "Modal ID" });
+    html += buildFieldFromDefinition("name", "config-name", properties.name, fieldDefinitions);
+    html += buildFieldFromDefinition("title", "config-title", properties.title, fieldDefinitions);
     html += buildFieldFromDefinition("section_type", "config-section_type", properties.section_type, fieldDefinitions);
     html += buildFieldFromDefinition("sectionHome", "config-sectionHome", properties.sectionHome, fieldDefinitions);
     return html;

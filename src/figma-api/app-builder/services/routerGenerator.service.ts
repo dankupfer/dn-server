@@ -29,7 +29,7 @@ import { generateImportPath } from './moduleGenerator.service';
  */
 export async function generateRouters(
     appId: string,
-    categorized: CategorisedComponents,
+    categorised: CategorisedComponents,
     basePath: string
 ): Promise<RouterGenerationResult> {
     const routers: GeneratedRouter[] = [];
@@ -53,7 +53,7 @@ export async function generateRouters(
     try {
         const carouselRouter = await generateCarouselRouter(
             appId,
-            categorized.carouselRoutes,
+            categorised.carouselRoutes,
             routerBasePath
         );
         routers.push(carouselRouter);
@@ -68,7 +68,7 @@ export async function generateRouters(
     try {
         const bottomNavRouter = await generateBottomNavRouter(
             appId,
-            [...categorized.bottomNavTabs, ...categorized.bottomNavModals],
+            [...categorised.bottomNavTabs, ...categorised.bottomNavModals],
             routerBasePath
         );
         routers.push(bottomNavRouter);
@@ -83,7 +83,7 @@ export async function generateRouters(
     try {
         const childRouter = await generateChildRouter(
             appId,
-            categorized.childRoutes,
+            categorised.childRoutes,
             routerBasePath
         );
         routers.push(childRouter);
@@ -265,6 +265,7 @@ import React from 'react';
 export interface CarouselRoute {
   id: string;
   name: string;
+  title?: string;
   component: React.ComponentType<{ screenWidth: number }>;
 }
 
@@ -276,7 +277,8 @@ export const carouselRoutes: CarouselRoute[] = [
         routes.forEach((route, index) => {
             const componentName = imports[index].componentName;
             const comma = index < routes.length - 1 ? ',' : '';
-            content += `  { id: '${route.routeId}', name: '${route.name}', component: ${componentName} }${comma}\n`;
+            const titleProp = route.title ? `, title: '${route.title}'` : '';
+            content += `  { id: '${route.routeId}', name: '${route.name}'${titleProp}, component: ${componentName} }${comma}\n`;
         });
     } else {
         content += `  // No carousel routes defined\n`;
@@ -309,6 +311,7 @@ import React from 'react';
 export interface BottomNavRoute {
   id: string;
   name: string;
+  title?: string;
   type: 'tab' | 'modal';
   component: React.ComponentType<{ screenWidth: number }>;
 }
@@ -327,7 +330,8 @@ export const bottomNavRoutes: BottomNavRoute[] = [
             const importIndex = routes.indexOf(route);
             const componentName = imports[importIndex].componentName;
             const comma = index < tabs.length - 1 || modals.length > 0 ? ',' : '';
-            content += `  { id: '${route.routeId}', name: '${route.name}', type: 'tab', component: ${componentName} }${comma}\n`;
+            const titleProp = route.title ? `, title: '${route.title}'` : '';
+            content += `  { id: '${route.routeId}', name: '${route.name}'${titleProp}, type: 'tab', component: ${componentName} }${comma}\n`;
         });
     }
 
@@ -340,7 +344,8 @@ export const bottomNavRoutes: BottomNavRoute[] = [
             const importIndex = routes.indexOf(route);
             const componentName = imports[importIndex].componentName;
             const comma = index < modals.length - 1 ? ',' : '';
-            content += `  { id: '${route.routeId}', name: '${route.name}', type: 'modal', component: ${componentName} }${comma}\n`;
+            const titleProp = route.title ? `, title: '${route.title}'` : '';
+            content += `  { id: '${route.routeId}', name: '${route.name}'${titleProp}, type: 'modal', component: ${componentName} }${comma}\n`;
         });
     }
 
@@ -375,6 +380,7 @@ import React from 'react';
 export interface ChildRoute {
   id: string;
   name: string;
+  title?: string;
   type: 'slide' | 'modal' | 'full';
   component: React.ComponentType<{ screenWidth: number }>;
 }
@@ -388,7 +394,8 @@ export const childRoutes: ChildRoute[] = [
             const componentName = imports[index].componentName;
             const type = route.type || 'slide'; // Default to 'slide'
             const comma = index < routes.length - 1 ? ',' : '';
-            content += `  { id: '${route.routeId}', name: '${route.name}', type: '${type}', component: ${componentName} }${comma}\n`;
+            const titleProp = route.title ? `, title: '${route.title}'` : '';
+            content += `  { id: '${route.routeId}', name: '${route.name}'${titleProp}, type: '${type}', component: ${componentName} }${comma}\n`;
         });
     } else {
         content += `  // No child routes defined\n`;

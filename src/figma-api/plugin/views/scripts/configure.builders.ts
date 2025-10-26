@@ -132,6 +132,7 @@ export function buildFieldFromDefinition(
  * Build dynamic form fields from server configuration
  */
 export function buildDynamicFields(fields: any[], properties: Record<string, any>): string {
+    // console.log('🔨 buildDynamicFields called with', fields.length, 'fields');
     let html = '';
 
     fields.forEach(field => {
@@ -168,8 +169,10 @@ export function buildDynamicFields(fields: any[], properties: Record<string, any
                 `;
             }
         } else if (field.type === 'select' && field.options) {
+            
             html += `<select id="config-${field.genericKey}" onchange="autoSave()">`;
             field.options.forEach((option: string) => {
+                console.log(option)
                 html += `<option value="${option}" ${value === option ? 'selected' : ''}>${option}</option>`;
             });
             html += `</select>`;
@@ -185,7 +188,7 @@ export function buildDynamicFields(fields: any[], properties: Record<string, any
  * Build Journey Option selector
  */
 export async function buildJourneyOptionSelector(
-    properties: Record<string, any>, 
+    properties: Record<string, any>,
     currentOption: string
 ): Promise<string> {
     try {
@@ -277,6 +280,8 @@ export function buildScreenBuilderForm(
 ): string {
     let html = '';
     html += buildFieldFromDefinition('id', 'config-id', properties.id, fieldDefinitions, { label: 'Screen ID' });
+    html += buildFieldFromDefinition('name', 'config-name', properties.name, fieldDefinitions);  // ← ADD
+    html += buildFieldFromDefinition('title', 'config-title', properties.title, fieldDefinitions);  // ← ADD
     html += buildFieldFromDefinition('section_type', 'config-section_type', properties.section_type, fieldDefinitions);
     html += buildFieldFromDefinition('sectionHome', 'config-sectionHome', properties.sectionHome, fieldDefinitions);
     return html;
@@ -291,6 +296,8 @@ export function buildModalForm(
 ): string {
     let html = '';
     html += buildFieldFromDefinition('id', 'config-id', properties.id, fieldDefinitions, { label: 'Modal ID' });
+    html += buildFieldFromDefinition('name', 'config-name', properties.name, fieldDefinitions);  // ← ADD
+    html += buildFieldFromDefinition('title', 'config-title', properties.title, fieldDefinitions);  // ← ADD
     html += buildFieldFromDefinition('section_type', 'config-section_type', properties.section_type, fieldDefinitions);
     html += buildFieldFromDefinition('sectionHome', 'config-sectionHome', properties.sectionHome, fieldDefinitions);
     return html;

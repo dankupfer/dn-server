@@ -48,12 +48,12 @@ export function setupConditionalFieldListeners(
     let sectionHomeOptionSelectId: string;
 
     if (componentName === 'Journey') {
-        // Journey uses generic prop IDs
-        sectionHomeCheckboxId = 'config-prop2';  // prop2 maps to sectionHome
-        sectionHomeInputGroupId = 'input-group-prop2';
-        sectionTypeSelectId = 'config-prop1';    // prop1 maps to section_type
-        conditionalContainerId = 'config-prop2-conditional';
-        sectionHomeOptionSelectId = 'config-prop2-option';
+        // Journey uses generic prop IDs - UPDATED MAPPINGS
+        sectionHomeCheckboxId = 'config-prop4';  // ✅ prop4 now maps to sectionHome
+        sectionHomeInputGroupId = 'input-group-prop4';
+        sectionTypeSelectId = 'config-prop3';    // ✅ prop3 now maps to section_type
+        conditionalContainerId = 'config-prop4-conditional';
+        sectionHomeOptionSelectId = 'config-prop4-option';
     } else {
         // ScreenBuilder use semantic IDs
         sectionHomeCheckboxId = 'config-sectionHome';
@@ -179,7 +179,7 @@ export function toggleSectionHomeOptions(
 
         // Determine the select ID based on container ID
         const selectId = conditionalContainerId.replace('-conditional', '-option');
-        const sectionTypeId = checkboxId.replace('sectionHome', 'section_type').replace('prop2', 'prop1');
+        const sectionTypeId = checkboxId.replace('sectionHome', 'section_type').replace('prop4', 'prop3');
 
         updateSectionHomeOptions(
             sectionTypeId,

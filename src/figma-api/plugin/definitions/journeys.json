@@ -10,15 +10,21 @@
         "maps_to": "id"
       },
       "prop1": {
-        "maps_to": "section_type"
+        "maps_to": "name"
       },
       "prop2": {
+        "maps_to": "title"
+      },
+      "prop3": {
+        "maps_to": "section_type"
+      },
+      "prop4": {
         "maps_to": "sectionHome"
       }
     },
     "optionConfigurations": {
       "CoreJourney": {
-        "prop3": {
+        "prop5": {
           "maps_to": "customer-id",
           "type": "text",
           "label": "Customer ID",
@@ -27,14 +33,14 @@
         }
       },
       "AssistJourney": {
-        "prop4": {
+        "prop6": {
           "maps_to": "tts",
           "type": "checkbox",
           "label": "Enable TTS",
           "description": "Enable text-to-speech for voice interactions",
           "defaultValue": false
         },
-        "prop5": {
+        "prop7": {
           "maps_to": "gemini",
           "type": "checkbox",
           "label": "Enable Gemini",

@@ -48,6 +48,12 @@
         "label": "Screen ID",
         "description": "Unique identifier for this screen"
       },
+      "title": {
+        "type": "TEXT",
+        "defaultValue": "",
+        "label": "Title",
+        "description": "Full title for headers (optional, defaults to name)"
+      },
       "section_type": {
         "type": "TEXT",
         "defaultValue": "slide-panel",

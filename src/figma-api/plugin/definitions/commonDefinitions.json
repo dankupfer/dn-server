@@ -1,4 +1,16 @@
 {
+  "name": {
+    "type": "text",
+    "label": "Name",
+    "description": "Short label for navigation (e.g., 'Payments', 'Home')",
+    "defaultValue": ""
+  },
+  "title": {
+    "type": "text",
+    "label": "Title",
+    "description": "Full title for headers (optional, defaults to name if empty)",
+    "defaultValue": ""
+  },
   "section_type": {
     "type": "select",
     "label": "Section Type",

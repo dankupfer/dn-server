@@ -179,13 +179,13 @@ router.get('/definitions/:type', (req: Request, res: Response) => {
 
     switch (type) {
       case 'journeys':
-        definitionsPath = path.join(__dirname, '../../figma-api/definitions/journeys.json');
+        definitionsPath = path.join(__dirname, '../figma-api/plugin/definitions/journeys.json');
         break;
       case 'components':
-        definitionsPath = path.join(__dirname, '../../figma-api/definitions/components.json');
+        definitionsPath = path.join(__dirname, '../figma-api/plugin/definitions/components.json');
         break;
       case 'frames':
-        definitionsPath = path.join(__dirname, '../../figma-api/definitions/frames.json');
+        definitionsPath = path.join(__dirname, '../figma-api/plugin/definitions/frames.json');
         break;
       default:
         return res.status(400).json({
