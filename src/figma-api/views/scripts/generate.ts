@@ -1,4 +1,4 @@
-// src/views/figma/scripts/generate.ts
+// src/figma-api/views/scripts/generate.ts
 // Generate tab - ScreenBuilder and CustomerBuilder logic
 
 import { showFeedback, sendToPlugin } from './utils';

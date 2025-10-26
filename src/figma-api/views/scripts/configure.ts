@@ -1,4 +1,4 @@
-// src/views/figma/scripts/configure.ts
+// src/figma-api/views/scripts/configure.ts
 // Configure tab - main orchestrator for component configuration
 
 import { fetchFieldDefinitions } from './api';

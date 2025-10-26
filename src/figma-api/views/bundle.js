@@ -1,6 +1,6 @@
 "use strict";
 (() => {
-  // src/views/figma/scripts/utils.ts
+  // src/figma-api/views/scripts/utils.ts
   function showFeedback(message, type = "info") {
     const output = document.getElementById("output");
     if (!output) return;
@@ -22,7 +22,7 @@
     parent.postMessage({ pluginMessage: message }, "*");
   }
 
-  // src/views/figma/scripts/generate.ts
+  // src/figma-api/views/scripts/generate.ts
   function initGenerateTab() {
     const today = /* @__PURE__ */ new Date();
     const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
@@ -154,7 +154,7 @@ File: ${data.filePath}`, "success");
     }
   }
 
-  // src/views/figma/scripts/api.ts
+  // src/figma-api/views/scripts/api.ts
   var API_BASE_URL = "http://localhost:3001/api/figma";
   async function fetchJourneyOptions() {
     try {
@@ -194,7 +194,7 @@ File: ${data.filePath}`, "success");
     return result.data;
   }
 
-  // src/views/figma/scripts/configure.conditional.ts
+  // src/figma-api/views/scripts/configure.conditional.ts
   function shouldDisableField(fieldName, dependentFieldValue, fieldDefinitions2) {
     const fieldDef = fieldDefinitions2?.[fieldName];
     if (!fieldDef || !fieldDef.conditionalRules) return false;
@@ -333,7 +333,7 @@ File: ${data.filePath}`, "success");
     }
   }
 
-  // src/views/figma/scripts/configure.builders.ts
+  // src/figma-api/views/scripts/configure.builders.ts
   async function buildFormForComponent(selection, fieldDefinitions2) {
     const { componentName, properties } = selection;
     let html = `<div class="section">`;
@@ -505,7 +505,7 @@ File: ${data.filePath}`, "success");
     return html;
   }
 
-  // src/views/figma/scripts/configure.autosave.ts
+  // src/figma-api/views/scripts/configure.autosave.ts
   function autoSave(currentSelection2) {
     if (!currentSelection2) return;
     const componentName = currentSelection2.componentName;
@@ -573,7 +573,7 @@ File: ${data.filePath}`, "success");
     sendToPlugin({ type: "clear-plugin-data" });
   }
 
-  // src/views/figma/scripts/configure.ts
+  // src/figma-api/views/scripts/configure.ts
   var currentSelection = null;
   var fieldDefinitions = null;
   async function initConfigureTab() {
@@ -621,7 +621,7 @@ File: ${data.filePath}`, "success");
   window.handleJourneyOptionChange = handleJourneyOptionChange2;
   window.handleClearPluginData = handleClearPluginData2;
 
-  // src/views/figma/scripts/main.ts
+  // src/figma-api/views/scripts/main.ts
   function init() {
     console.log("Figma Plugin UI initialized");
     initGenerateTab();

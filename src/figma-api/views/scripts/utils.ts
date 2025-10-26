@@ -1,4 +1,4 @@
-// src/views/figma/scripts/utils.ts
+// src/figma-api/views/scripts/utils.ts
 // Shared utility functions
 
 /**

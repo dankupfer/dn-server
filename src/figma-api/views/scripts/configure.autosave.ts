@@ -1,4 +1,4 @@
-// src/views/figma/scripts/configure.autosave.ts
+// src/figma-api/views/scripts/configure.autosave.ts
 // Auto-save and data handling logic
 
 import { showSaveFeedback, sendToPlugin } from './utils';

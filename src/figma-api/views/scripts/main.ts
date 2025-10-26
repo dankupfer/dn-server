@@ -1,4 +1,4 @@
-// src/views/figma/scripts/main.ts
+// src/figma-api/views/scripts/main.ts
 // Main entry point - tab switching, initialization, message handling
 
 import { initGenerateTab, handleComponentsCreated, handleFilesGenerated, handleCustomerGenerated, handleCustomerError } from './generate';

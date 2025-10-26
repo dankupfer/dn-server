@@ -1,4 +1,4 @@
-// src/views/figma/scripts/configure.builders.ts
+// src/figma-api/views/scripts/configure.builders.ts
 // Form building functions for component configuration
 
 import { fetchJourneyOptions, fetchFormConfig } from './api';

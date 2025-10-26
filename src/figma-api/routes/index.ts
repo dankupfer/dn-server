@@ -1,8 +1,9 @@
+// src/figma-api/routes/index.ts
 import express, { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
-import { FigmaController } from '../../controllers/figmaController';
-import formBuilder from '../../figma-api/services/formBuilder.service';
+import { FigmaController } from '../controllers/figmaController';
+import formBuilder from '../services/formBuilder.service';
 import { generateCustomerWithAI } from '../../services/ai/customerGenerator';
 
 const router = express.Router();

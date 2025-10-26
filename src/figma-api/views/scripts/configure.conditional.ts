@@ -1,4 +1,4 @@
-// src/views/figma/scripts/configure.conditional.ts
+// src/figma-api/views/scripts/configure.conditional.ts
 // Conditional field logic for dynamic form behavior
 
 interface ComponentSelection {

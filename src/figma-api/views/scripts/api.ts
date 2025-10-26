@@ -1,4 +1,4 @@
-// src/views/figma/scripts/api.ts
+// src/figma-api/views/scripts/api.ts
 // Handles all API calls to the server
 
 const API_BASE_URL = 'http://localhost:3001/api/figma';

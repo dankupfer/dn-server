@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export class FigmaController {
-    private viewsPath = path.join(process.cwd(), 'src', 'views', 'figma');
+    private viewsPath = path.join(process.cwd(), 'src', 'figma-api', 'views');
 
     constructor() {
         console.log('🔍 FigmaController initialized');
