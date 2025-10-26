@@ -20,6 +20,7 @@ import {
 // Import services
 import { parseAppConfig, validateNormalisedComponents, generateParseSummary } from '../services/parser.service';
 import { categoriseComponents, validateCategorisation, sortRoutes, generateCategorisationReport } from '../services/categoriser.service';
+import { copyBaseTemplate, generateTemplateCopySummary } from '../services/templateCopy.service';
 import { generateModules, generateModuleSummary, validateGeneratedModules } from '../services/moduleGenerator.service';
 import { generateRouters, generateRouterSummary, validateGeneratedRouters } from '../services/routerGenerator.service';
 import { getAllRoutes } from '../services/categoriser.service';
@@ -109,7 +110,7 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
         console.log('');
 
         // ========================================
-        // PHASE 2: CategorisE
+        // PHASE 2: CATEGORISE
         // ========================================
         console.log(`📊 Phase 2: Categorising components...`);
         const categoriseResult = categoriseComponents(parseResult.normalised);
@@ -156,9 +157,35 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
         );
 
         // ========================================
-        // PHASE 3: GENERATE MODULES
+        // PHASE 3: COPY BASE TEMPLATE
         // ========================================
-        console.log(`🔨 Phase 3: Generating modules...`);
+        console.log(`📋 Phase 3: Copying base template...`);
+
+        if (options?.dryRun) {
+            console.log(`  ⚠️  DRY RUN MODE - Would copy template files\n`);
+        } else {
+            const templateResult = await copyBaseTemplate(config.appName, appPath);
+
+            if (!templateResult.success) {
+                console.log(`❌ Template copy failed\n`);
+                const errorResponse: AppBuilderErrorResponse = {
+                    success: false,
+                    error: 'Template copy failed',
+                    details: templateResult.errors.join(', '),
+                    timestamp: new Date().toISOString()
+                };
+                res.status(500).json(errorResponse);
+                return;
+            }
+
+            console.log(`✓ Template copy successful`);
+            console.log(generateTemplateCopySummary(templateResult));
+        }
+
+        // ========================================
+        // PHASE 4: GENERATE MODULES
+        // ========================================
+        console.log(`🔨 Phase 4: Generating modules...`);
 
         if (options?.dryRun) {
             console.log(`  ⚠️  DRY RUN MODE - No files will be written\n`);
@@ -201,9 +228,9 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
         }
 
         // ========================================
-        // PHASE 4: GENERATE ROUTERS
+        // PHASE 5: GENERATE ROUTERS
         // ========================================
-        console.log(`🗺️  Phase 4: Generating router files...`);
+        console.log(`🗺️  Phase 5: Generating router files...`);
 
         if (options?.dryRun) {
             console.log(`  Would generate 3 router files\n`);
@@ -239,7 +266,7 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
         }
 
         // ========================================
-        // PHASE 5: BUILD SUMMARY
+        // PHASE 6: BUILD SUMMARY
         // ========================================
         const endTime = Date.now();
         const duration = ((endTime - startTime) / 1000).toFixed(2);

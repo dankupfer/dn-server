@@ -10,6 +10,8 @@
     "start": "npm run build && node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "type-check": "tsc --noEmit",
+    "sync-template": "node src/figma-api/app-builder/scripts/sync-template.js",
+    "test:app-builder": "bash src/figma-api/app-builder/scripts/test-app-builder.sh",
     "deploy": "./deploy.sh"
   },
   "keywords": [

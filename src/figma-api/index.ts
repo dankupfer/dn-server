@@ -1,4 +1,4 @@
-// src/figma-api/routes/index.ts
+// src/figma-api/index.ts
 import express, { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';

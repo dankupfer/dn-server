@@ -1,0 +1,76 @@
+{
+  "scrollable": true,
+  "style": {},
+  "components": [
+    {
+      "type": "SectionHeader",
+      "props": {
+        "id": "2038:297",
+        "title": "Everyday"
+      },
+      "style": {
+        "marginBottom": 16
+      }
+    },
+    {
+      "type": "AccountCard",
+      "props": {
+        "id": "2038:299",
+        "balance": 836.5,
+        "subtitle": "30-95-74 / 46557160",
+        "title": "Club Lloydsyy",
+        "variant": "detailed",
+        "onPress": "() => console.log('Club Lloyds pressed')"
+      },
+      "style": {
+        "marginBottom": 16
+      }
+    },
+    {
+      "type": "CreditCard",
+      "props": {
+        "id": "2038:303",
+        "balance": 4935.05,
+        "subtitle": "**** **** **** 9053",
+        "title": "Lloyds Bank Cashback Credit Card"
+      },
+      "style": {
+        "marginBottom": 16
+      }
+    },
+    {
+      "type": "SectionHeader",
+      "props": {
+        "id": "2038:319",
+        "title": "Another Section"
+      },
+      "style": {
+        "marginBottom": 16
+      }
+    },
+    {
+      "type": "CreditCard",
+      "props": {
+        "id": "2255:37",
+        "balance": 4935.05,
+        "subtitle": "**** **** **** 9053",
+        "title": "Lloyds Bank Cashback Credit Card"
+      },
+      "style": {
+        "marginBottom": 16
+      }
+    },
+    {
+      "type": "CreditCard",
+      "props": {
+        "id": "2255:41",
+        "balance": 4935.05,
+        "subtitle": "**** **** **** 9053",
+        "title": "Lloyds Bank Cashback Credit Card"
+      },
+      "style": {
+        "marginBottom": 16
+      }
+    }
+  ]
+}

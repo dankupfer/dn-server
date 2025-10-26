@@ -36,7 +36,7 @@ export async function generateRouters(
     const errors: string[] = [];
 
     // Router output path
-    const routerBasePath = path.join(basePath, 'src', 'modules', 'core', 'assist-router');
+    const routerBasePath = path.join(basePath, 'src', 'modules', 'core', 'figma-router');
 
     try {
         await ensureDirectoryExists(routerBasePath);
