@@ -18,7 +18,7 @@ import {
     GeneratedModule,
     GeneratedFile,
     ModuleGenerationResult,
-    NormalizedComponent
+    NormalisedComponent
 } from '../types/appBuilder.types';
 
 /**
@@ -268,7 +268,7 @@ async function generateConfigFile(config: ModuleConfig): Promise<GeneratedFile> 
 /**
  * Generate Journey config.json content
  */
-function generateJourneyConfig(component: NormalizedComponent): string {
+function generateJourneyConfig(component: NormalisedComponent): string {
     const journeyConfig = component.journeyConfig;
 
     if (!journeyConfig) {
@@ -306,7 +306,7 @@ function generateJourneyConfig(component: NormalizedComponent): string {
  * Generate ScreenBuilder screenData.json content
  * Placeholder structure - actual screen data would come from Figma
  */
-function generateScreenBuilderConfig(component: NormalizedComponent): string {
+function generateScreenBuilderConfig(component: NormalisedComponent): string {
     // TODO: In future, this should extract actual screen data from Figma
     // For now, create a placeholder structure
 

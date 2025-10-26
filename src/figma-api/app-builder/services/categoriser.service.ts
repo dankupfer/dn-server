@@ -3,7 +3,7 @@
 /**
  * CATEGORISER SERVICE
  * 
- * Categorises normalized components into routing groups:
+ * Categorises normalised components into routing groups:
  * - Carousel routes (main-carousel home sections)
  * - Bottom nav tabs (slide-panel home sections)
  * - Bottom nav modals (modal home sections)
@@ -13,7 +13,7 @@
  */
 
 import {
-  NormalizedComponent,
+  NormalisedComponent,
   CategorisedComponents,
   RouteComponent,
   CategorisationResult,
@@ -22,10 +22,10 @@ import {
 
 /**
  * Main categorisation function
- * Takes normalized components and groups them by routing type
+ * Takes normalised components and groups them by routing type
  */
 export function categoriseComponents(
-  components: NormalizedComponent[]
+  components: NormalisedComponent[]
 ): CategorisationResult {
   const warnings: string[] = [];
   
@@ -89,7 +89,7 @@ export function categoriseComponents(
  * Categorise a home component into the appropriate collection
  */
 function categoriseHomeComponent(
-  component: NormalizedComponent,
+  component: NormalisedComponent,
   carouselMap: Map<string, RouteComponent>,
   bottomNavTabMap: Map<string, RouteComponent>,
   bottomNavModalMap: Map<string, RouteComponent>,
@@ -145,7 +145,7 @@ function categoriseHomeComponent(
  * Create a carousel route component
  */
 function createCarouselRoute(
-  component: NormalizedComponent,
+  component: NormalisedComponent,
   homeSection: string
 ): RouteComponent {
   return {
@@ -160,7 +160,7 @@ function createCarouselRoute(
  * Create a bottom nav route component (tab or modal)
  */
 function createBottomNavRoute(
-  component: NormalizedComponent,
+  component: NormalisedComponent,
   homeSection: string,
   type: 'tab' | 'modal'
 ): RouteComponent {
@@ -176,7 +176,7 @@ function createBottomNavRoute(
 /**
  * Create a child route component
  */
-function createChildRoute(component: NormalizedComponent): RouteComponent {
+function createChildRoute(component: NormalisedComponent): RouteComponent {
   // Determine type based on section_type
   let type: 'slide' | 'modal' | 'full' = 'slide'; // default
   

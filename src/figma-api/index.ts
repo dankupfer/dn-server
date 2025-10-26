@@ -2,18 +2,21 @@
 import express, { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
-import { FigmaController } from '../controllers/figmaController';
-import formBuilder from '../services/formBuilder.service';
-import { generateCustomerWithAI } from '../../services/ai/customerGenerator';
-import { exportFullApp, exportSingleComponent } from '../controllers/exportController';
-import appBuilderRoutes from '../app-builder/routes';
+import { FigmaController } from './plugin/controllers/figmaController';
+import formBuilder from './plugin/services/formBuilder.service';
+import { generateCustomerWithAI } from '../services/ai/customerGenerator';
+import { exportFullApp, exportSingleComponent } from './plugin/controllers/exportController';
+import appBuilderRoutes from './app-builder/routes';
 
 const router = express.Router();
 const figmaController = new FigmaController();
 
+// APP-BUILDER
+router.use('/app-builder', appBuilderRoutes);
+
+// PLUGIN
 router.post('/export-full-app', exportFullApp);
 router.post('/export-single-component', exportSingleComponent);
-router.use('/app-builder', appBuilderRoutes);
 
 // Serve the main plugin UI
 router.get('/plugin-ui', (req: Request, res: Response) => {

@@ -10,7 +10,7 @@ import { showFeedback, sendToPlugin } from './utils';
  * Initialize the application
  */
 function init() {
-    console.log('Figma Plugin UI initialized');
+    console.log('Figma Plugin UI initialised');
 
     // Initialize all tabs
     initGenerateTab();

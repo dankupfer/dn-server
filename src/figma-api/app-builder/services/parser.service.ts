@@ -10,7 +10,7 @@
 import {
     FullAppConfig,
     FigmaComponent,
-    NormalizedComponent,
+    NormalisedComponent,
     ParseResult,
     ValidationError,
     JourneyConfig,
@@ -21,7 +21,7 @@ import {
 
 /**
  * Main parser function
- * Takes raw fullAppConfig and returns validated, normalized components
+ * Takes raw fullAppConfig and returns validated, normalised components
  */
 export function parseAppConfig(rawConfig: any): ParseResult {
     const errors: ValidationError[] = [];
@@ -41,7 +41,7 @@ export function parseAppConfig(rawConfig: any): ParseResult {
     validateAppFrame(config.appFrame, errors);
 
     // Step 3: Normalize components
-    const normalized = normalizeComponents(config.components, errors);
+    const normalised = normalizeComponents(config.components, errors);
 
     // Step 4: Check for critical errors
     const hasCriticalErrors = errors.some(e => e.type === 'error');
@@ -49,7 +49,7 @@ export function parseAppConfig(rawConfig: any): ParseResult {
     return {
         success: !hasCriticalErrors,
         config,
-        normalized,
+        normalised,
         errors
     };
 }
@@ -138,16 +138,16 @@ function validateAppFrame(appFrame: any, errors: ValidationError[]): void {
 function normalizeComponents(
     components: FigmaComponent[],
     errors: ValidationError[]
-): NormalizedComponent[] {
-    const normalized: NormalizedComponent[] = [];
+): NormalisedComponent[] {
+    const normalised: NormalisedComponent[] = [];
     const seenIds = new Set<string>();
 
     for (const component of components) {
         try {
-            const normalizedComponent = normalizeComponent(component, errors, seenIds);
-            if (normalizedComponent) {
-                normalized.push(normalizedComponent);
-                seenIds.add(normalizedComponent.id);
+            const normalisedComponent = normalizeComponent(component, errors, seenIds);
+            if (normalisedComponent) {
+                normalised.push(normalisedComponent);
+                seenIds.add(normalisedComponent.id);
             }
         } catch (error) {
             errors.push({
@@ -158,7 +158,7 @@ function normalizeComponents(
         }
     }
 
-    return normalized;
+    return normalised;
 }
 
 /**
@@ -168,7 +168,7 @@ function normalizeComponent(
     component: FigmaComponent,
     errors: ValidationError[],
     seenIds: Set<string>
-): NormalizedComponent | null {
+): NormalisedComponent | null {
     const props = component.properties;
 
     // Extract and validate ID
@@ -203,8 +203,8 @@ function normalizeComponent(
         homeSection = extractHomeSection(props, errors, component.nodeId);
     }
 
-    // Build normalized component
-    const normalized: NormalizedComponent = {
+    // Build normalised component
+    const normalised: NormalisedComponent = {
         id,
         componentType: component.componentName,
         nodeId: component.nodeId,
@@ -218,12 +218,12 @@ function normalizeComponent(
     if (component.componentName === 'Journey') {
         const journeyConfig = extractJourneyConfig(props, errors, component.nodeId);
         if (journeyConfig) {
-            normalized.journeyType = journeyConfig.journeyType;
-            normalized.journeyConfig = journeyConfig;
+            normalised.journeyType = journeyConfig.journeyType;
+            normalised.journeyConfig = journeyConfig;
         }
     }
 
-    return normalized;
+    return normalised;
 }
 
 /**
@@ -312,9 +312,9 @@ function extractHomeSection(
     }
 
     // Normalize to lowercase and trim
-    const normalized = rawValue.toLowerCase().trim();
+    const normalised = rawValue.toLowerCase().trim();
 
-    if (!normalized) {
+    if (!normalised) {
         errors.push({
             type: 'error',
             message: 'sectionHomeOption cannot be empty',
@@ -323,7 +323,7 @@ function extractHomeSection(
         return undefined;
     }
 
-    return normalized;
+    return normalised;
 }
 
 /**
@@ -387,10 +387,10 @@ function coerceToBoolean(value: any): boolean {
 }
 
 /**
- * Validate normalized components for business logic
+ * Validate normalised components for business logic
  */
-export function validateNormalizedComponents(
-    components: NormalizedComponent[]
+export function validateNormalisedComponents(
+    components: NormalisedComponent[]
 ): ValidationError[] {
     const errors: ValidationError[] = [];
 
@@ -451,12 +451,12 @@ export function cleanProperties(props: ComponentProperties): ComponentProperties
 /**
  * Generate a summary of parsed components
  */
-export function generateParseSummary(normalized: NormalizedComponent[]): string {
-    const total = normalized.length;
-    const journeys = normalized.filter(c => c.componentType === 'Journey').length;
-    const screenBuilders = normalized.filter(c => c.componentType === 'ScreenBuilder_frame').length;
-    const homes = normalized.filter(c => c.isHome).length;
-    const children = normalized.filter(c => !c.isHome).length;
+export function generateParseSummary(normalised: NormalisedComponent[]): string {
+    const total = normalised.length;
+    const journeys = normalised.filter(c => c.componentType === 'Journey').length;
+    const screenBuilders = normalised.filter(c => c.componentType === 'ScreenBuilder_frame').length;
+    const homes = normalised.filter(c => c.isHome).length;
+    const children = normalised.filter(c => !c.isHome).length;
 
     return `Parsed ${total} components: ${journeys} Journeys, ${screenBuilders} ScreenBuilders. ${homes} home sections, ${children} child screens.`;
 }

@@ -82,19 +82,19 @@ export type JourneyType =
     | 'AssistJourney';
 
 // ============================================================================
-// NORMALIZED TYPES (after parsing)
+// NORMALISED TYPES (after parsing)
 // ============================================================================
 
 /**
- * Normalized component after parsing and validation
+ * Normalised component after parsing and validation
  */
-export interface NormalizedComponent {
+export interface NormalisedComponent {
     id: string;
     componentType: 'ScreenBuilder_frame' | 'Journey';
     nodeId: string;
     sectionType: SectionType;
     isHome: boolean;
-    homeSection?: string;           // Normalized lowercase (summary, everyday, etc.)
+    homeSection?: string;           // Normalised lowercase (summary, everyday, etc.)
     properties: ComponentProperties;
 
     // Journey-specific
@@ -134,9 +134,9 @@ export interface CategorisedComponents {
  */
 export interface RouteComponent {
     id: string;
-    routeId: string;              // Used in router files (normalized)
+    routeId: string;              // Used in router files (normalised)
     name: string;                 // Display name
-    component: NormalizedComponent;
+    component: NormalisedComponent;
     type?: 'tab' | 'modal' | 'slide' | 'full';  // For bottomNav and child routes
 }
 
@@ -215,7 +215,7 @@ export interface GeneratedRouter {
 export interface ParseResult {
     success: boolean;
     config?: FullAppConfig;
-    normalized?: NormalizedComponent[];
+    normalised?: NormalisedComponent[];
     errors: ValidationError[];
 }
 
@@ -425,21 +425,21 @@ export interface RouterRouteData {
 /**
  * Type guard for Journey components
  */
-export function isJourneyComponent(component: NormalizedComponent): boolean {
+export function isJourneyComponent(component: NormalisedComponent): boolean {
     return component.componentType === 'Journey';
 }
 
 /**
  * Type guard for ScreenBuilder components
  */
-export function isScreenBuilderComponent(component: NormalizedComponent): boolean {
+export function isScreenBuilderComponent(component: NormalisedComponent): boolean {
     return component.componentType === 'ScreenBuilder_frame';
 }
 
 /**
  * Type guard for home components
  */
-export function isHomeComponent(component: NormalizedComponent): boolean {
+export function isHomeComponent(component: NormalisedComponent): boolean {
     return component.isHome === true;
 }
 

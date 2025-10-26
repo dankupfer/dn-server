@@ -18,7 +18,7 @@ import {
 } from '../types/appBuilder.types';
 
 // Import services
-import { parseAppConfig, validateNormalizedComponents, generateParseSummary } from '../services/parser.service';
+import { parseAppConfig, validateNormalisedComponents, generateParseSummary } from '../services/parser.service';
 import { categoriseComponents, validateCategorisation, sortRoutes, generateCategorisationReport } from '../services/categoriser.service';
 import { generateModules, generateModuleSummary, validateGeneratedModules } from '../services/moduleGenerator.service';
 import { generateRouters, generateRouterSummary, validateGeneratedRouters } from '../services/routerGenerator.service';
@@ -68,7 +68,7 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
         console.log(`📋 Phase 1: Parsing configuration...`);
         const parseResult = parseAppConfig(config);
 
-        if (!parseResult.success || !parseResult.normalized) {
+        if (!parseResult.success || !parseResult.normalised) {
             console.log(`❌ Parse failed\n`);
             const errorResponse: AppBuilderErrorResponse = {
                 success: false,
@@ -82,10 +82,10 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
         }
 
         console.log(`✓ Parse successful`);
-        console.log(`  ${generateParseSummary(parseResult.normalized)}`);
+        console.log(`  ${generateParseSummary(parseResult.normalised)}`);
 
-        // Additional validation on normalized components
-        const additionalErrors = validateNormalizedComponents(parseResult.normalized);
+        // Additional validation on normalised components
+        const additionalErrors = validateNormalisedComponents(parseResult.normalised);
         const allValidationErrors = [...parseResult.errors, ...additionalErrors];
 
         if (allValidationErrors.filter(e => e.type === 'error').length > 0) {
@@ -112,7 +112,7 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
         // PHASE 2: CategorisE
         // ========================================
         console.log(`📊 Phase 2: Categorising components...`);
-        const categoriseResult = categoriseComponents(parseResult.normalized);
+        const categoriseResult = categoriseComponents(parseResult.normalised);
 
         if (!categoriseResult.success || !categoriseResult.categorised) {
             console.log(`❌ Categorisation failed\n`);
@@ -246,7 +246,7 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
 
         const summary: BuildSummary = {
             appName: config.appName,
-            totalComponents: parseResult.normalized.length,
+            totalComponents: parseResult.normalised.length,
             carouselRoutes: categoriseResult.categorised.carouselRoutes.length,
             bottomNavRoutes: categoriseResult.categorised.bottomNavTabs.length +
                 categoriseResult.categorised.bottomNavModals.length,
@@ -357,7 +357,7 @@ export function validateConfig(req: Request, res: Response): void {
         // Parse and validate
         const parseResult = parseAppConfig(config);
 
-        if (!parseResult.success || !parseResult.normalized) {
+        if (!parseResult.success || !parseResult.normalised) {
             res.status(200).json({
                 valid: false,
                 errors: parseResult.errors,
@@ -367,7 +367,7 @@ export function validateConfig(req: Request, res: Response): void {
         }
 
         // Additional validation
-        const additionalErrors = validateNormalizedComponents(parseResult.normalized);
+        const additionalErrors = validateNormalisedComponents(parseResult.normalised);
         const allErrors = [...parseResult.errors, ...additionalErrors];
 
         const hasErrors = allErrors.filter(e => e.type === 'error').length > 0;
@@ -375,7 +375,7 @@ export function validateConfig(req: Request, res: Response): void {
 
         res.status(200).json({
             valid: !hasErrors,
-            summary: generateParseSummary(parseResult.normalized),
+            summary: generateParseSummary(parseResult.normalised),
             errors: allErrors.filter(e => e.type === 'error'),
             warnings: warnings,
             timestamp: new Date().toISOString()
