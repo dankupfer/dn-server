@@ -1,6 +1,6 @@
 "use strict";
 (() => {
-  // src/figma-api/views/scripts/utils.ts
+  // src/figma-api/plugin/views/scripts/utils.ts
   function showFeedback(message, type = "info") {
     const output = document.getElementById("output");
     if (!output) return;
@@ -22,7 +22,7 @@
     parent.postMessage({ pluginMessage: message }, "*");
   }
 
-  // src/figma-api/views/scripts/generate.ts
+  // src/figma-api/plugin/views/scripts/generate.ts
   function initGenerateTab() {
     const today = /* @__PURE__ */ new Date();
     const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
@@ -154,7 +154,7 @@ File: ${data.filePath}`, "success");
     }
   }
 
-  // src/figma-api/views/scripts/api.ts
+  // src/figma-api/plugin/views/scripts/api.ts
   var API_BASE_URL = "http://localhost:3001/api/figma";
   async function fetchJourneyOptions() {
     try {
@@ -194,7 +194,7 @@ File: ${data.filePath}`, "success");
     return result.data;
   }
 
-  // src/figma-api/views/scripts/configure.conditional.ts
+  // src/figma-api/plugin/views/scripts/configure.conditional.ts
   function shouldDisableField(fieldName, dependentFieldValue, commonDefinitions2) {
     const fieldDef = commonDefinitions2?.[fieldName];
     if (!fieldDef || !fieldDef.conditionalRules) return false;
@@ -333,7 +333,7 @@ File: ${data.filePath}`, "success");
     }
   }
 
-  // src/figma-api/views/scripts/configure.builders.ts
+  // src/figma-api/plugin/views/scripts/configure.builders.ts
   async function buildFormForComponent(selection, fieldDefinitions) {
     const { componentName, properties } = selection;
     let html = `<div class="section">`;
@@ -521,7 +521,7 @@ File: ${data.filePath}`, "success");
     return html;
   }
 
-  // src/figma-api/views/scripts/configure.autosave.ts
+  // src/figma-api/plugin/views/scripts/configure.autosave.ts
   function autoSave(currentSelection3) {
     if (!currentSelection3) return;
     const componentName = currentSelection3.componentName;
@@ -590,7 +590,7 @@ File: ${data.filePath}`, "success");
     sendToPlugin({ type: "clear-plugin-data" });
   }
 
-  // src/figma-api/views/scripts/configure.ts
+  // src/figma-api/plugin/views/scripts/configure.ts
   var currentSelection = null;
   var commonDefinitions = null;
   async function initConfigureTab() {
@@ -638,7 +638,7 @@ File: ${data.filePath}`, "success");
   window.handleJourneyOptionChange = handleJourneyOptionChange2;
   window.handleClearPluginData = handleClearPluginData2;
 
-  // src/figma-api/views/scripts/export.ts
+  // src/figma-api/plugin/views/scripts/export.ts
   var currentExportSelection = { type: "none" };
   var currentSelection2 = null;
   var appFrameConfig = null;
@@ -910,17 +910,18 @@ Saved to: ${data.filePath}
 Screens exported: ${data.screenCount}`);
   }
   function handleSingleComponentExportComplete(data) {
+    console.log(data);
     alert(`\u2705 Component exported!
 
-Module: ${data.moduleName}
-Files: ${data.files?.length || 0}`);
+Component: ${data.componentName}
+Config updated successfully!`);
   }
   window.handleFullAppExport = handleFullAppExport;
   window.handleSingleComponentExport = handleSingleComponentExport;
 
-  // src/figma-api/views/scripts/main.ts
+  // src/figma-api/plugin/views/scripts/main.ts
   function init() {
-    console.log("Figma Plugin UI initialized");
+    console.log("Figma Plugin UI initialised");
     initGenerateTab();
     initConfigureTab();
     initExportTab();

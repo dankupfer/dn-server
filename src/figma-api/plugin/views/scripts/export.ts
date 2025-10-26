@@ -371,7 +371,9 @@ export function handleFullAppExportComplete(data: any) {
  * Handle single component export complete message from plugin
  */
 export function handleSingleComponentExportComplete(data: any) {
-    alert(`✅ Component exported!\n\nModule: ${data.moduleName}\nFiles: ${data.files?.length || 0}`);
+    console.log(data)
+    // alert(data);
+    alert(`✅ Component exported!\n\nComponent: ${data.componentName}\nConfig updated successfully!`);
 }
 
 // Make functions available globally for onclick handlers
