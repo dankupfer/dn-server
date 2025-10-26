@@ -760,14 +760,15 @@ File: ${data.filePath}`, "success");
                     type="text" 
                     id="export-path" 
                     placeholder="/Users/username/projects"
-                    value="${appFrameConfig.exportState?.exportPath || ""}"
+                    value_to_replace_and_test_later="${appFrameConfig.exportState?.exportPath || "~/Desktop"}"
+                    value="${appFrameConfig.exportState?.exportPath || "/Users/dankupfer/Documents/dev/dn-server"}"
                 >
                 <small class="description">Project will be created at: {path}/${appFrameConfig.appName}/</small>
             </div>
             
             <div class="button-group">
                 <button class="primary" onclick="handleFullAppExport()">
-                    ${hasExported && !nameChanged ? "Re-export" : "Export"} Full App Config
+                    ${hasExported && !nameChanged ? "Re-export" : "Export"} Full App Configii!!
                 </button>
             </div>
             

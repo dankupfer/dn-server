@@ -28,7 +28,7 @@ let appFrameConfig: AppFrameConfig | null = null;
  */
 export function initExportTab() {
     console.log('Export tab initialized');
-    
+
     // Request App_frame config
     sendToPlugin({ type: 'get-app-frame-config' });
 }
@@ -39,7 +39,7 @@ export function initExportTab() {
 export function updateAppFrameConfig(config: AppFrameConfig | null) {
     console.log('🎯 App_frame config updated:', config);
     appFrameConfig = config;
-    
+
     // Trigger form update if on export tab
     updateExportForm();
 }
@@ -49,10 +49,10 @@ export function updateAppFrameConfig(config: AppFrameConfig | null) {
  */
 export function updateExportSelection(selection: any) {
     console.log('🔄 updateExportSelection called with:', selection);
-    
+
     // Store selection in module state
     currentSelection = selection;
-    
+
     // App_frame should trigger full app export (same as no selection)
     if (!selection || !selection.componentName || selection.componentName === 'App_frame') {
         currentExportSelection = { type: 'none' };
@@ -60,14 +60,14 @@ export function updateExportSelection(selection: any) {
     } else {
         // Determine if it's a frame/journey (component) or an item
         const isComponent = ['Journey', 'ScreenBuilder_frame'].includes(selection.componentName);
-        
+
         currentExportSelection = {
             type: isComponent ? 'component' : 'item',
             componentName: selection.componentName
         };
         console.log('📦 Selection type:', currentExportSelection.type, 'Component:', selection.componentName);
     }
-    
+
     // Always try to update form - updateExportForm will check if container exists
     updateExportForm();
 }
@@ -77,17 +77,17 @@ export function updateExportSelection(selection: any) {
  */
 function updateExportForm() {
     console.log('🎨 updateExportForm called, selection type:', currentExportSelection.type);
-    
+
     const exportContainer = document.getElementById('export-form');
     if (!exportContainer) {
         console.log('⚠️ export-form container not found');
         return;
     }
-    
+
     console.log('✅ export-form container found, building form...');
-    
+
     let html = '';
-    
+
     if (currentExportSelection.type === 'none') {
         // No selection - show full app export form
         html = buildFullAppExportForm();
@@ -98,7 +98,7 @@ function updateExportForm() {
         // Item selected - show warning
         html = buildItemWarning(currentExportSelection.componentName!);
     }
-    
+
     exportContainer.innerHTML = html;
 }
 
@@ -185,14 +185,15 @@ function buildFullAppExportForm(): string {
                     type="text" 
                     id="export-path" 
                     placeholder="/Users/username/projects"
-                    value="${appFrameConfig.exportState?.exportPath || ''}"
+                    value_to_replace_and_test_later="${appFrameConfig.exportState?.exportPath || '~/Desktop'}"
+                    value="${appFrameConfig.exportState?.exportPath || '/Users/dankupfer/Documents/dev/dn-server'}"
                 >
                 <small class="description">Project will be created at: {path}/${appFrameConfig.appName}/</small>
             </div>
             
             <div class="button-group">
                 <button class="primary" onclick="handleFullAppExport()">
-                    ${hasExported && !nameChanged ? 'Re-export' : 'Export'} Full App Config
+                    ${hasExported && !nameChanged ? 'Re-export' : 'Export'} Full App Configii!!
                 </button>
             </div>
             
@@ -214,15 +215,15 @@ function buildFullAppExportForm(): string {
  */
 function buildSingleComponentExportForm(componentName: string): string {
     // Get component info from current selection
-    const componentId = currentSelection?.properties?.id || 
-                       currentSelection?.properties?.prop0 || 
-                       'unknown';
+    const componentId = currentSelection?.properties?.id ||
+        currentSelection?.properties?.prop0 ||
+        'unknown';
     const sectionHome = currentSelection?.properties?.sectionHome || false;
     const sectionHomeOption = currentSelection?.properties?.sectionHomeOption || 'N/A';
-    const sectionType = currentSelection?.properties?.section_type || 
-                       currentSelection?.properties?.prop1 || 
-                       'N/A';
-    
+    const sectionType = currentSelection?.properties?.section_type ||
+        currentSelection?.properties?.prop1 ||
+        'N/A';
+
     // Check if component export is allowed
     const hasExported = appFrameConfig?.exportState?.hasExported || false;
     const exportedName = appFrameConfig?.exportState?.exportedWithAppName;
@@ -266,10 +267,10 @@ function buildSingleComponentExportForm(componentName: string): string {
             ${!canExport ? `
             <div class="warning-box">
                 <strong>⚠️ ${!hasExported ? 'Full App Export Required' : 'App Name Changed'}</strong>
-                <p>${!hasExported 
-                    ? 'Please export the full app configuration before exporting individual components.'
-                    : `App name changed from "${exportedName}" to "${currentName}". Please re-export the full app first.`
-                }</p>
+                <p>${!hasExported
+                ? 'Please export the full app configuration before exporting individual components.'
+                : `App name changed from "${exportedName}" to "${currentName}". Please re-export the full app first.`
+            }</p>
             </div>
             ` : `
             <div class="info-box" style="margin-top: 16px;">
@@ -325,14 +326,14 @@ function buildItemWarning(componentName: string): string {
  */
 export function handleFullAppExport() {
     const exportPath = (document.getElementById('export-path') as HTMLInputElement)?.value;
-    
+
     if (!exportPath || exportPath.trim() === '') {
         alert('Please enter an export path');
         return;
     }
-    
+
     console.log('🚀 Exporting full app to:', exportPath);
-    
+
     sendToPlugin({
         type: 'export-full-app',
         exportPath
@@ -347,9 +348,9 @@ export function handleSingleComponentExport() {
         alert('No component selected');
         return;
     }
-    
+
     console.log('🚀 Exporting single component:', currentSelection);
-    
+
     sendToPlugin({
         type: 'export-single-component',
         componentData: {

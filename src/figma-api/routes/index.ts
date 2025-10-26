@@ -5,9 +5,15 @@ import path from 'path';
 import { FigmaController } from '../controllers/figmaController';
 import formBuilder from '../services/formBuilder.service';
 import { generateCustomerWithAI } from '../../services/ai/customerGenerator';
+import { exportFullApp, exportSingleComponent } from '../controllers/exportController';
+import appBuilderRoutes from '../app-builder/routes';
 
 const router = express.Router();
 const figmaController = new FigmaController();
+
+router.post('/export-full-app', exportFullApp);
+router.post('/export-single-component', exportSingleComponent);
+router.use('/app-builder', appBuilderRoutes);
 
 // Serve the main plugin UI
 router.get('/plugin-ui', (req: Request, res: Response) => {
