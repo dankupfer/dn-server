@@ -128,8 +128,7 @@ export interface JourneyConfig {
  */
 export interface CategorisedComponents {
   carouselRoutes: RouteComponent[];
-  bottomNavTabs: RouteComponent[];
-  bottomNavModals: RouteComponent[];
+  bottomNavRoutes: RouteComponent[];  // Combined tabs and modals in order
   childRoutes: RouteComponent[];
 }
 
@@ -250,8 +249,7 @@ export interface CategorisationResult {
 export interface CategorisationSummary {
   totalComponents: number;
   carouselRoutes: number;
-  bottomNavTabs: number;
-  bottomNavModals: number;
+  bottomNavRoutes: number;  // Combined count
   childRoutes: number;
   duplicatesHandled: number;
 }
@@ -316,7 +314,7 @@ export interface BuildSummary {
   appName: string;
   totalComponents: number;
   carouselRoutes: number;
-  bottomNavRoutes: number;
+  bottomNavRoutes: number;  // Combined count
   childRoutes: number;
   generatedFiles: number;
   warnings: string[];

@@ -106,14 +106,14 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
   // Figma journey handlers
   const handleOpenFigma = () => {
     setIsFigmaOpen(true);
-    
+
     // Animate main content left
     RNAnimated.timing(slideAnim, {
       toValue: -screenWidth,
       duration: 300,
       useNativeDriver: true,
     }).start();
-    
+
     // Animate FigmaJourney in from right
     RNAnimated.timing(figmaSlideAnim, {
       toValue: 0,
@@ -129,7 +129,7 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
       duration: 300,
       useNativeDriver: true,
     }).start();
-    
+
     // Animate FigmaJourney out to right
     RNAnimated.timing(figmaSlideAnim, {
       toValue: screenWidth,
@@ -146,7 +146,7 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
 
     // Find the active tab route
     const activeRoute = bottomNavTabs.find(r => r.id === activeBottomSection);
-    const title = activeRoute?.id === 'home' 
+    const title = activeRoute?.id === 'home'
       ? `${userData.greeting}, ${userData.name}`
       : activeRoute?.name || 'App';
 
@@ -288,7 +288,7 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
 
   // Render main content based on active bottom section
   const renderMainContent = () => {
-    // If active section is 'home', show carousel
+    // HOME section = show the carousel
     if (activeBottomSection === 'home') {
       return (
         <View style={{ marginTop: HEADER_HEIGHT, flex: 1 }}>
@@ -331,7 +331,7 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
 
     // Otherwise, render the active bottom nav tab
     const activeTabRoute = bottomNavTabs.find(r => r.id === activeBottomSection);
-    
+
     if (activeTabRoute) {
       const Component = activeTabRoute.component;
       return (
@@ -383,7 +383,7 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
   const navigateToChild = (childId: string) => {
     console.log(`Navigating to child: ${childId}`);
     const childRoute = childRoutes.find(r => r.id === childId);
-    
+
     if (!childRoute) {
       console.warn(`Child route not found: ${childId}`);
       return;
@@ -414,7 +414,7 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
 
   const goBack = () => {
     console.log('Going back from child route');
-    
+
     // Animate out
     RNAnimated.timing(childSlideAnim, {
       toValue: screenWidth,
@@ -442,13 +442,13 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
         animationType="slide"
         onRequestClose={handleOverlayClose}
       >
-        <View style={{ 
-          flex: 1, 
-          backgroundColor: theme.colors.page.background 
+        <View style={{
+          flex: 1,
+          backgroundColor: theme.colors.page.background
         }}>
-          <View style={{ 
-            height: 40, 
-            alignItems: 'center', 
+          <View style={{
+            height: 40,
+            alignItems: 'center',
             justifyContent: 'center',
             borderBottomWidth: 1,
             borderBottomColor: theme.colors.border.default,
@@ -548,26 +548,22 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
 
   // Render bottom navigation
   const renderBottomNavigation = () => {
-    // Build bottom nav items from routes
-    const tabItems = bottomNavTabs.map(route => ({
+    // Build bottom nav items respecting the order from bottomNavRoutes
+    const allItems = bottomNavRoutes.map(route => ({
       id: route.id,
       label: route.name,
-      iconDefault: 'components|bottom_navigation|tab_1_default', // TODO: Make this configurable
-      iconActive: 'components|bottom_navigation|tab_1_default',
+      iconDefault: route.type === 'tab'
+        ? 'components|bottom_navigation|tab_1_default'
+        : 'components|bottom_navigation|tab_3_default',
+      iconActive: route.type === 'tab'
+        ? 'components|bottom_navigation|tab_1_default'
+        : 'components|bottom_navigation|tab_3_default',
       onPress: () => console.log(`${route.name} pressed`)
     }));
 
-    const modalItems = bottomNavModals.map(route => ({
-      id: route.id,
-      label: route.name,
-      iconDefault: 'components|bottom_navigation|tab_3_default', // TODO: Make this configurable
-      iconActive: 'components|bottom_navigation|tab_3_default',
-      onPress: () => console.log(`${route.name} pressed`)
-    }));
-
-    const allItems = [...tabItems, ...modalItems];
-    const tabIds = bottomNavTabs.map(r => r.id);
-    const modalIds = bottomNavModals.map(r => r.id);
+    // Extract IDs in order
+    const tabIds = bottomNavRoutes.filter(r => r.type === 'tab').map(r => r.id);
+    const modalIds = bottomNavRoutes.filter(r => r.type === 'modal').map(r => r.id);
 
     return (
       <BottomNav
@@ -594,7 +590,7 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
           >
             {/* HeaderManager - inside animated view */}
             <HeaderManager animationDuration={300} debug={false} />
-            
+
             {/* Main Content - changes based on bottom navigation */}
             {renderMainContent()}
 

@@ -68,7 +68,7 @@ export async function generateRouters(
     try {
         const bottomNavRouter = await generateBottomNavRouter(
             appId,
-            [...categorised.bottomNavTabs, ...categorised.bottomNavModals],
+            categorised.bottomNavRoutes,  // Single combined array
             routerBasePath
         );
         routers.push(bottomNavRouter);
@@ -313,45 +313,20 @@ export interface BottomNavRoute {
   name: string;
   title?: string;
   type: 'tab' | 'modal';
-  component: React.ComponentType<{ screenWidth: number }>;
+  component?: React.ComponentType<{ screenWidth: number }>; // Made optional for 'home'
 }
 
 export const bottomNavRoutes: BottomNavRoute[] = [
+  { id: 'home', name: 'Home', title: 'Home', type: 'tab' }, // No component - shows carousel
 `;
 
-    // Separate tabs and modals for clearer organisation
-    const tabs = routes.filter(r => r.type === 'tab');
-    const modals = routes.filter(r => r.type === 'modal');
-
-    // Add tabs
-    if (tabs.length > 0) {
-        content += `  // Bottom navigation tabs\n`;
-        tabs.forEach((route, index) => {
-            const importIndex = routes.indexOf(route);
-            const componentName = imports[importIndex].componentName;
-            const comma = index < tabs.length - 1 || modals.length > 0 ? ',' : '';
-            const titleProp = route.title ? `, title: '${route.title}'` : '';
-            content += `  { id: '${route.routeId}', name: '${route.name}'${titleProp}, type: 'tab', component: ${componentName} }${comma}\n`;
-        });
-    }
-
-    // Add modals
-    if (modals.length > 0) {
-        if (tabs.length > 0) {
-            content += `  \n  // Modal overlays\n`;
-        }
-        modals.forEach((route, index) => {
-            const importIndex = routes.indexOf(route);
-            const componentName = imports[importIndex].componentName;
-            const comma = index < modals.length - 1 ? ',' : '';
-            const titleProp = route.title ? `, title: '${route.title}'` : '';
-            content += `  { id: '${route.routeId}', name: '${route.name}'${titleProp}, type: 'modal', component: ${componentName} }${comma}\n`;
-        });
-    }
-
-    if (routes.length === 0) {
-        content += `  // No bottom nav routes defined\n`;
-    }
+    // Add all routes in order (respecting the array order from Figma)
+    routes.forEach((route, index) => {
+        const componentName = imports[index].componentName;
+        const comma = index < routes.length - 1 ? ',' : '';
+        const titleProp = route.title ? `, title: '${route.title}'` : '';
+        content += `  { id: '${route.routeId}', name: '${route.name}'${titleProp}, type: '${route.type}', component: ${componentName} }${comma}\n`;
+    });
 
     content += `];\n`;
 

@@ -195,8 +195,6 @@ File: ${data.filePath}`, "success");
       );
       journeyOption = journeyOptionKey ? properties[journeyOptionKey] : void 0;
     }
-    console.log("\u{1F50D} journeyOption value:", journeyOption);
-    console.log("\u{1F50D} All property keys:", Object.keys(properties));
     try {
       const formConfig = await fetchFormConfig({
         componentName,
@@ -431,7 +429,6 @@ File: ${data.filePath}`, "success");
     }
     currentSelection3.properties.journeyOption = newConfiguration;
     autoSave(currentSelection3);
-    console.log("\u{1F528} Rebuilding form for new configuration...");
     updateConfigFormCallback();
   }
   function handleClearPluginData() {
@@ -473,11 +470,9 @@ File: ${data.filePath}`, "success");
       configForm = newConfigForm;
       configForm.addEventListener("change", async (e) => {
         const target = e.target;
-        console.log("\u{1F514} Change event triggered by:", target.id);
         if (target.id.startsWith("config-")) {
           const fieldKey = target.id.replace("config-", "");
           if (fieldKey === "journeyOption") {
-            console.log("\u23ED\uFE0F Skipping journeyOption - has its own handler");
             return;
           }
           const isConditionalDropdown = fieldKey.endsWith("-option");
@@ -527,7 +522,6 @@ File: ${data.filePath}`, "success");
     updateExportForm();
   }
   function updateExportSelection(selection) {
-    console.log("\u{1F504} updateExportSelection called with:", selection);
     currentSelection2 = selection;
     if (!selection || !selection.componentName || selection.componentName === "App_frame") {
       currentExportSelection = { type: "none" };
@@ -538,18 +532,15 @@ File: ${data.filePath}`, "success");
         type: isComponent ? "component" : "item",
         componentName: selection.componentName
       };
-      console.log("\u{1F4E6} Selection type:", currentExportSelection.type, "Component:", selection.componentName);
     }
     updateExportForm();
   }
   function updateExportForm() {
-    console.log("\u{1F3A8} updateExportForm called, selection type:", currentExportSelection.type);
     const exportContainer = document.getElementById("export-form");
     if (!exportContainer) {
       console.log("\u26A0\uFE0F export-form container not found");
       return;
     }
-    console.log("\u2705 export-form container found, building form...");
     let html = "";
     if (currentExportSelection.type === "none") {
       html = buildFullAppExportForm();
@@ -858,9 +849,6 @@ Config updated successfully!`);
           handleCustomerGenerated(msg.data);
           break;
         case "selection-changed":
-          console.log("\u{1F514} selection-changed received:", msg.data);
-          console.log("   componentName:", msg.data?.componentName);
-          console.log("   properties:", msg.data?.properties);
           window.lastSelection = msg.data;
           updateSelection(msg.data);
           updateExportSelection(msg.data);

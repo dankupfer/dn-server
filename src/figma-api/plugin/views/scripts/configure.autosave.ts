@@ -85,7 +85,6 @@ export function handleConfigurationChange(
     autoSave(currentSelection);
 
     // NOW rebuild - currentSelection has the updated value
-    console.log('🔨 Rebuilding form for new configuration...');
     updateConfigFormCallback();
 }
 

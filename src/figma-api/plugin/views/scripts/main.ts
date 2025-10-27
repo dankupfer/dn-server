@@ -114,9 +114,6 @@ function setupMessageListener() {
                 break;
 
             case 'selection-changed':
-                console.log('🔔 selection-changed received:', msg.data);
-                console.log('   componentName:', msg.data?.componentName);
-                console.log('   properties:', msg.data?.properties);
                 // Store selection globally for tab switching
                 (window as any).lastSelection = msg.data;
                 // Update both configure and export tabs with selection

@@ -47,8 +47,6 @@ export function updateAppFrameConfig(config: AppFrameConfig | null) {
  * Update export selection when Figma selection changes
  */
 export function updateExportSelection(selection: any) {
-    console.log('🔄 updateExportSelection called with:', selection);
-
     // Store selection in module state
     currentSelection = selection;
 
@@ -64,7 +62,6 @@ export function updateExportSelection(selection: any) {
             type: isComponent ? 'component' : 'item',
             componentName: selection.componentName
         };
-        console.log('📦 Selection type:', currentExportSelection.type, 'Component:', selection.componentName);
     }
 
     // Always try to update form - updateExportForm will check if container exists
@@ -75,15 +72,11 @@ export function updateExportSelection(selection: any) {
  * Update the export form based on current selection
  */
 function updateExportForm() {
-    console.log('🎨 updateExportForm called, selection type:', currentExportSelection.type);
-
     const exportContainer = document.getElementById('export-form');
     if (!exportContainer) {
         console.log('⚠️ export-form container not found');
         return;
     }
-
-    console.log('✅ export-form container found, building form...');
 
     let html = '';
 

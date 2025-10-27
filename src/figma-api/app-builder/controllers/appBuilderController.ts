@@ -143,14 +143,10 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
             categoriseResult.categorised.carouselRoutes,
             'carousel'
         );
-        categoriseResult.categorised.bottomNavTabs = sortRoutes(
-            [...categoriseResult.categorised.bottomNavTabs, ...categoriseResult.categorised.bottomNavModals],
+        categoriseResult.categorised.bottomNavRoutes = sortRoutes(
+            categoriseResult.categorised.bottomNavRoutes,
             'bottomNav'
-        ).filter(r => r.type === 'tab');
-        categoriseResult.categorised.bottomNavModals = sortRoutes(
-            [...categoriseResult.categorised.bottomNavTabs, ...categoriseResult.categorised.bottomNavModals],
-            'bottomNav'
-        ).filter(r => r.type === 'modal');
+        );
         categoriseResult.categorised.childRoutes = sortRoutes(
             categoriseResult.categorised.childRoutes,
             'child'
@@ -275,8 +271,7 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
             appName: config.appName,
             totalComponents: parseResult.normalised.length,
             carouselRoutes: categoriseResult.categorised.carouselRoutes.length,
-            bottomNavRoutes: categoriseResult.categorised.bottomNavTabs.length +
-                categoriseResult.categorised.bottomNavModals.length,
+            bottomNavRoutes: categoriseResult.categorised.bottomNavRoutes.length,
             childRoutes: categoriseResult.categorised.childRoutes.length,
             generatedFiles: allRoutes.length * 2 + 3, // modules (2 files each) + 3 router files
             warnings: [

@@ -61,9 +61,6 @@ export async function buildFormForComponent(
         journeyOption = journeyOptionKey ? properties[journeyOptionKey] : undefined;
     }
 
-    console.log('🔍 journeyOption value:', journeyOption);
-    console.log('🔍 All property keys:', Object.keys(properties));
-
     try {
         // Fetch form configuration from server
         const formConfig: FormConfig = await fetchFormConfig({

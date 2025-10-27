@@ -31,8 +31,7 @@ export function categoriseComponents(
 
     // Initialize collections
     const carouselMap = new Map<string, RouteComponent>();
-    const bottomNavTabMap = new Map<string, RouteComponent>();
-    const bottomNavModalMap = new Map<string, RouteComponent>();
+    const bottomNavMap = new Map<string, RouteComponent>(); // Single map for all bottom nav
     const childRoutes: RouteComponent[] = [];
 
     let duplicatesHandled = 0;
@@ -44,8 +43,7 @@ export function categoriseComponents(
             const result = categoriseHomeComponent(
                 component,
                 carouselMap,
-                bottomNavTabMap,
-                bottomNavModalMap,
+                bottomNavMap,
                 warnings
             );
 
@@ -59,11 +57,10 @@ export function categoriseComponents(
         }
     }
 
-    // Convert maps to arrays (maintains last-one-wins order)
+    // Convert maps to arrays (maintains insertion order)
     const categorised: CategorisedComponents = {
         carouselRoutes: Array.from(carouselMap.values()),
-        bottomNavTabs: Array.from(bottomNavTabMap.values()),
-        bottomNavModals: Array.from(bottomNavModalMap.values()),
+        bottomNavRoutes: Array.from(bottomNavMap.values()),
         childRoutes
     };
 
@@ -71,8 +68,7 @@ export function categoriseComponents(
     const summary: CategorisationSummary = {
         totalComponents: components.length,
         carouselRoutes: categorised.carouselRoutes.length,
-        bottomNavTabs: categorised.bottomNavTabs.length,
-        bottomNavModals: categorised.bottomNavModals.length,
+        bottomNavRoutes: categorised.bottomNavRoutes.length,
         childRoutes: categorised.childRoutes.length,
         duplicatesHandled
     };
@@ -91,8 +87,7 @@ export function categoriseComponents(
 function categoriseHomeComponent(
     component: NormalisedComponent,
     carouselMap: Map<string, RouteComponent>,
-    bottomNavTabMap: Map<string, RouteComponent>,
-    bottomNavModalMap: Map<string, RouteComponent>,
+    bottomNavMap: Map<string, RouteComponent>,
     warnings: string[]
 ): { isDuplicate: boolean } {
     const homeSection = component.homeSection!; // Already validated in parser
@@ -112,24 +107,24 @@ function categoriseHomeComponent(
 
         case 'slide-panel':
             // Bottom nav tab
-            if (bottomNavTabMap.has(homeSection)) {
+            if (bottomNavMap.has(homeSection)) {
                 warnings.push(
                     `Duplicate bottom nav tab '${homeSection}': Component '${component.id}' overriding previous component`
                 );
                 isDuplicate = true;
             }
-            bottomNavTabMap.set(homeSection, createBottomNavRoute(component, homeSection, 'tab'));
+            bottomNavMap.set(homeSection, createBottomNavRoute(component, homeSection, 'tab'));
             break;
 
         case 'modal':
             // Bottom nav modal
-            if (bottomNavModalMap.has(homeSection)) {
+            if (bottomNavMap.has(homeSection)) {
                 warnings.push(
                     `Duplicate modal '${homeSection}': Component '${component.id}' overriding previous component`
                 );
                 isDuplicate = true;
             }
-            bottomNavModalMap.set(homeSection, createBottomNavRoute(component, homeSection, 'modal'));
+            bottomNavMap.set(homeSection, createBottomNavRoute(component, homeSection, 'modal'));
             break;
 
         default:
@@ -241,22 +236,12 @@ export function validateCategorisation(
         }
     }
 
-    // Validate bottom nav tabs have valid section names
-    const validBottomNavTabs = ['home', 'apply', 'cards'];
-    for (const route of categorised.bottomNavTabs) {
-        if (!validBottomNavTabs.includes(route.routeId)) {
+    // Validate bottom nav routes (tabs and modals combined)
+    const validBottomNavSections = ['home', 'apply', 'cards', 'payments', 'search'];
+    for (const route of categorised.bottomNavRoutes) {
+        if (!validBottomNavSections.includes(route.routeId)) {
             errors.push(
-                `Invalid bottom nav tab '${route.routeId}' in component '${route.id}'. Valid options: ${validBottomNavTabs.join(', ')}`
-            );
-        }
-    }
-
-    // Validate modals have valid section names
-    const validModalSections = ['payments', 'search'];
-    for (const route of categorised.bottomNavModals) {
-        if (!validModalSections.includes(route.routeId)) {
-            errors.push(
-                `Invalid modal section '${route.routeId}' in component '${route.id}'. Valid options: ${validModalSections.join(', ')}`
+                `Invalid bottom nav section '${route.routeId}' in component '${route.id}'. Valid options: ${validBottomNavSections.join(', ')}`
             );
         }
     }
@@ -266,9 +251,9 @@ export function validateCategorisation(
         errors.push('Warning: No carousel routes defined. App may not have main content.');
     }
 
-    // Warn if no bottom nav tabs
-    if (categorised.bottomNavTabs.length === 0) {
-        errors.push('Warning: No bottom nav tabs defined. App may not have bottom navigation.');
+    // Warn if no bottom nav routes
+    if (categorised.bottomNavRoutes.length === 0) {
+        errors.push('Warning: No bottom nav routes defined. App may not have bottom navigation.');
     }
 
     return errors;
@@ -291,19 +276,9 @@ export function sortRoutes(routes: RouteComponent[], type: 'carousel' | 'bottomN
             return indexA - indexB;
         });
     } else if (type === 'bottomNav') {
-        // Bottom nav order: home, apply, cards, then modals (payments, search)
-        const tabOrder = ['home', 'apply', 'cards'];
-        const modalOrder = ['payments', 'search'];
-        const allOrder = [...tabOrder, ...modalOrder];
-
-        return routes.sort((a, b) => {
-            const indexA = allOrder.indexOf(a.routeId);
-            const indexB = allOrder.indexOf(b.routeId);
-            if (indexA === -1 && indexB === -1) return 0;
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
-        });
+        // Bottom nav: preserve Figma order (don't sort)
+        // The order comes from the Figma layers panel
+        return routes;
     } else {
         // Child routes: alphabetical by ID
         return routes.sort((a, b) => a.id.localeCompare(b.id));
@@ -334,22 +309,12 @@ export function generateCategorisationReport(result: CategorisationResult): stri
     }
     report += `\n`;
 
-    // Bottom nav tabs
-    report += `Bottom Nav Tabs (${summary.bottomNavTabs}):\n`;
-    if (categorised.bottomNavTabs.length > 0) {
-        categorised.bottomNavTabs.forEach(route => {
-            report += `  - ${route.routeId}: ${route.component.componentType} (${route.id})\n`;
-        });
-    } else {
-        report += `  (none)\n`;
-    }
-    report += `\n`;
-
-    // Bottom nav modals
-    report += `Bottom Nav Modals (${summary.bottomNavModals}):\n`;
-    if (categorised.bottomNavModals.length > 0) {
-        categorised.bottomNavModals.forEach(route => {
-            report += `  - ${route.routeId}: ${route.component.componentType} (${route.id})\n`;
+    // Bottom nav routes (combined)
+    report += `Bottom Nav Routes (${summary.bottomNavRoutes}):\n`;
+    if (categorised.bottomNavRoutes.length > 0) {
+        categorised.bottomNavRoutes.forEach(route => {
+            const typeLabel = route.type === 'modal' ? 'modal' : 'tab';
+            report += `  - ${route.routeId} (${typeLabel}): ${route.component.componentType} (${route.id})\n`;
         });
     } else {
         report += `  (none)\n`;
@@ -396,13 +361,9 @@ export function findRouteById(
     const carouselRoute = categorised.carouselRoutes.find(r => r.id === id);
     if (carouselRoute) return carouselRoute;
 
-    // Check bottom nav tabs
-    const tabRoute = categorised.bottomNavTabs.find(r => r.id === id);
-    if (tabRoute) return tabRoute;
-
-    // Check bottom nav modals
-    const modalRoute = categorised.bottomNavModals.find(r => r.id === id);
-    if (modalRoute) return modalRoute;
+    // Check bottom nav routes (combined tabs and modals)
+    const bottomNavRoute = categorised.bottomNavRoutes.find(r => r.id === id);
+    if (bottomNavRoute) return bottomNavRoute;
 
     // Check child routes
     const childRoute = categorised.childRoutes.find(r => r.id === id);
@@ -417,8 +378,7 @@ export function findRouteById(
 export function getAllRoutes(categorised: CategorisedComponents): RouteComponent[] {
     return [
         ...categorised.carouselRoutes,
-        ...categorised.bottomNavTabs,
-        ...categorised.bottomNavModals,
+        ...categorised.bottomNavRoutes,
         ...categorised.childRoutes
     ];
 }

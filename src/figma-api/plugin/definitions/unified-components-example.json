@@ -13,7 +13,7 @@
         "type": "text",
         "label": "App Name",
         "description": "Name of the application",
-        "defaultValue": "",
+        "defaultValue": "rn-starter-app",
         "required": true,
         "placeholder": "my-app"
       },
@@ -190,7 +190,7 @@
         "key": "name",
         "type": "text",
         "label": "Journey Name",
-        "description": "Short label for navigation (e.g., 'Payments', 'Home')",
+        "description": "Human-readable name",
         "defaultValue": "",
         "required": true,
         "placeholder": "My Journey",
@@ -200,7 +200,7 @@
         "key": "title",
         "type": "text",
         "label": "Journey Title",
-        "description": "Full title for headers (optional, defaults to name if empty)",
+        "description": "Title displayed to user",
         "defaultValue": "",
         "required": true,
         "placeholder": "Journey Title",
@@ -273,13 +273,32 @@
         "description": "Standard customer journey flow",
         "fields": [
           {
-            "key": "defaultCustomer",
-            "type": "text",
-            "label": "Default customer",
-            "description": "Choose the default customer for the beggining of the journey",
+            "key": "feature1",
+            "type": "checkbox",
+            "label": "Enable Feature 1",
+            "description": "Core feature toggle",
             "defaultValue": false,
             "required": false,
             "maps_to": "prop5"
+          },
+          {
+            "key": "feature2",
+            "type": "checkbox",
+            "label": "Enable Feature 2",
+            "description": "Additional core feature",
+            "defaultValue": false,
+            "required": false,
+            "maps_to": "prop6"
+          },
+          {
+            "key": "coreOption",
+            "type": "text",
+            "label": "Core Option",
+            "description": "Core-specific configuration",
+            "defaultValue": "",
+            "required": false,
+            "placeholder": "Core option value",
+            "maps_to": "prop7"
           }
         ]
       },
@@ -288,22 +307,56 @@
         "description": "Customer assistance and support flow",
         "fields": [
           {
-            "key": "tts",
-            "type": "checkbox",
-            "label": "Enable TTS (text-to-speech)",
-            "description": "Enable text-to-speech for voice interactions",
-            "defaultValue": false,
-            "required": false,
+            "key": "assistType",
+            "type": "select",
+            "label": "Assist Type",
+            "description": "Type of assistance offered",
+            "defaultValue": "chat",
+            "required": true,
+            "options": [
+              "chat",
+              "phone",
+              "video",
+              "email"
+            ],
             "maps_to": "prop5"
           },
           {
-            "key": "gemini",
+            "key": "autoResponse",
             "type": "checkbox",
-            "label": "Enable Gemini",
-            "description": "Use Gemini AI instead of mock mode",
-            "defaultValue": false,
+            "label": "Enable Auto-Response",
+            "description": "Automated initial response",
+            "defaultValue": true,
             "required": false,
+            "maps_to": "prop6"
+          },
+          {
+            "key": "escalationPath",
+            "type": "text",
+            "label": "Escalation Path",
+            "description": "Path for escalating issues",
+            "defaultValue": "",
+            "required": false,
+            "placeholder": "/escalation/support",
             "maps_to": "prop7"
+          },
+          {
+            "key": "knowledgeBase",
+            "type": "checkbox",
+            "label": "Link Knowledge Base",
+            "description": "Include KB articles",
+            "defaultValue": true,
+            "required": false,
+            "maps_to": "prop8"
+          },
+          {
+            "key": "knowledgeBase",
+            "type": "checkbox",
+            "label": "Link Knowledge Base",
+            "description": "Include KB articles",
+            "defaultValue": true,
+            "required": false,
+            "maps_to": "prop8"
           }
         ]
       }

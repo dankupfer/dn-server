@@ -73,14 +73,11 @@ async function updateConfigForm() {
         configForm.addEventListener('change', async (e) => {
             const target = e.target as HTMLElement;
 
-            console.log('🔔 Change event triggered by:', target.id);
-
             if (target.id.startsWith('config-')) {
                 const fieldKey = target.id.replace('config-', '');
 
                 // Skip configuration selector - it has its own handler
                 if (fieldKey === 'journeyOption') {
-                    console.log('⏭️ Skipping journeyOption - has its own handler');
                     return;
                 }
 
