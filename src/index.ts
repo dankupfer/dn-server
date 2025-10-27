@@ -4,7 +4,7 @@ import express from 'express';
 import expressWs from 'express-ws';
 import cors from 'cors';
 import healthRoutes from './routes/health';
-import figmaRoutes from './routes/figma';
+import figmaRoutes from './figma-api';
 import customersRoutes from './routes/customers';
 import { setupAssistRoutes } from './routes/assist';
 
@@ -36,7 +36,7 @@ app.use(express.static('public'));
 
 // Register HTTP routes
 app.use('/api', healthRoutes);
-app.use('/api', figmaRoutes);
+app.use('/api/figma', figmaRoutes);
 app.use('/api', customersRoutes);
 
 // Register Assist routes (includes both REST and WebSocket)

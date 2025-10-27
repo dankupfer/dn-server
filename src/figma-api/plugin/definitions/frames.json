@@ -1,0 +1,69 @@
+{
+  "App_frame": {
+    "name": "App_frame",
+    "width": 393,
+    "height": 852,
+    "backgroundColor": "#E3F2FD",
+    "properties": {
+      "appName": {
+        "type": "TEXT",
+        "defaultValue": "",
+        "label": "App Name",
+        "description": "Name of your application (used for project folder and package.json)"
+      },
+      "brand": {
+        "type": "TEXT",
+        "defaultValue": "BrandA",
+        "label": "Brand",
+        "description": "Brand theme to use (BrandA, BrandB)"
+      },
+      "mode": {
+        "type": "TEXT",
+        "defaultValue": "light",
+        "label": "Theme Mode",
+        "description": "Light or dark theme mode"
+      },
+      "apiBase": {
+        "type": "TEXT",
+        "defaultValue": "http://localhost:3001",
+        "label": "API Base URL",
+        "description": "Base URL for API endpoints"
+      }
+    },
+    "elements": [
+      { "type": "text", "content": "App Frame", "x": 20, "y": 20, "fontSize": 24, "fontWeight": 700 },
+      { "type": "text", "content": "Full screen app container", "x": 20, "y": 55, "fontSize": 14, "color": "#666666" },
+      { "type": "text", "content": "Use plugin UI to configure →", "x": 20, "y": 100, "fontSize": 12, "color": "#666666" }
+    ]
+  },
+  "ScreenBuilder_frame": {
+    "name": "ScreenBuilder_frame",
+    "width": 393,
+    "height": 568,
+    "backgroundColor": "#E8F5E9",
+    "properties": {
+      "id": {
+        "type": "TEXT",
+        "defaultValue": "screen-1",
+        "label": "Screen ID",
+        "description": "Unique identifier for this screen"
+      },
+      "title": {
+        "type": "TEXT",
+        "defaultValue": "",
+        "label": "Title",
+        "description": "Full title for headers (optional, defaults to name)"
+      },
+      "section_type": {
+        "type": "TEXT",
+        "defaultValue": "slide-panel",
+        "label": "Section Type",
+        "description": "Where this journey appears: main-carousel (between tabs and bottomNav), slide-panel (slides from right, keeps bottomNav), full-screen (complete takeover), or modal (slides up from bottom)"
+      }
+    },
+    "elements": [
+      { "type": "text", "content": "ScreenBuilder Frame", "x": 20, "y": 20, "fontSize": 20, "fontWeight": 700 },
+      { "type": "text", "content": "Drag Item components inside", "x": 20, "y": 50, "fontSize": 12, "color": "#666666" }
+    ]
+  }
+}
