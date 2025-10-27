@@ -1,0 +1,365 @@
+{
+  "App_frame": {
+    "componentType": "frame",
+    "name": "App_frame",
+    "label": "App Frame",
+    "description": "Main application frame component",
+    "width": 393,
+    "height": 852,
+    "backgroundColor": "#E3F2FD",
+    "fields": [
+      {
+        "key": "appName",
+        "type": "text",
+        "label": "App Name",
+        "description": "Name of the application",
+        "defaultValue": "rn-starter-app",
+        "required": true,
+        "placeholder": "my-app"
+      },
+      {
+        "key": "brand",
+        "type": "select",
+        "label": "Brand",
+        "description": "Brand theme to use",
+        "defaultValue": "lloyds",
+        "required": true,
+        "options": [
+          "lloyds",
+          "brandA",
+          "brandB"
+        ]
+      },
+      {
+        "key": "mode",
+        "type": "select",
+        "label": "Theme Mode",
+        "description": "Light or dark theme",
+        "defaultValue": "light",
+        "required": true,
+        "options": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "key": "apiBase",
+        "type": "text",
+        "label": "API Base URL",
+        "description": "Base URL for API calls",
+        "defaultValue": "http://localhost:3001",
+        "required": false,
+        "placeholder": "https://api.example.com"
+      }
+    ]
+  },
+  "ScreenBuilder_frame": {
+    "componentType": "frame",
+    "name": "ScreenBuilder_frame",
+    "label": "ScreenBuilder Frame",
+    "description": "Frame for JSON-driven screen building",
+    "width": 393,
+    "height": 852,
+    "backgroundColor": "#FFF3E0",
+    "fields": [
+      {
+        "key": "id",
+        "type": "text",
+        "label": "Screen ID",
+        "description": "Unique identifier for this screen",
+        "defaultValue": "",
+        "required": true,
+        "placeholder": "screen-id",
+        "maps_to": "prop0"
+      },
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Screen Name",
+        "description": "Human-readable name",
+        "defaultValue": "",
+        "required": true,
+        "placeholder": "My Screen",
+        "maps_to": "prop1"
+      },
+      {
+        "key": "title",
+        "type": "text",
+        "label": "Screen Title",
+        "description": "Title shown in header",
+        "defaultValue": "",
+        "required": false,
+        "placeholder": "Screen Title",
+        "maps_to": "prop2"
+      },
+      {
+        "key": "section_type",
+        "type": "select",
+        "label": "Section Type",
+        "description": "Type of section for navigation",
+        "defaultValue": "main-carousel",
+        "required": true,
+        "options": [
+          "main-carousel",
+          "slide-panel",
+          "full-screen",
+          "modal"
+        ],
+        "maps_to": "prop3"
+      },
+      {
+        "key": "sectionHome",
+        "type": "checkbox",
+        "label": "Include in Home Section",
+        "description": "Show this screen in the home section carousel",
+        "defaultValue": false,
+        "required": false,
+        "maps_to": "prop4",
+        "conditionalRules": {
+          "disableWhen": {
+            "section_type": [
+              "full-screen"
+            ]
+          },
+          "hideWhen": {
+            "section_type": [
+              "full-screen"
+            ]
+          }
+        },
+        "conditionalField": {
+          "key": "sectionHomeOption",
+          "type": "select",
+          "label": "Home Section Option",
+          "description": "Select which home section to include",
+          "showWhen": {
+            "sectionHome": true
+          },
+          "optionsFrom": "section_type",
+          "optionsMap": {
+            "main-carousel": [
+              "summary",
+              "everyday",
+              "invest",
+              "borrow",
+              "homes",
+              "insurance"
+            ],
+            "slide-panel": [
+              "home",
+              "apply",
+              "cards"
+            ],
+            "modal": [
+              "payments",
+              "search"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "Journey": {
+    "componentType": "journey",
+    "name": "Journey",
+    "label": "Journey Component",
+    "description": "Self-contained journey with complex functionality",
+    "width": 393,
+    "height": 568,
+    "backgroundColor": "#FFF3E0",
+    "hasConfigurations": true,
+    "configurationField": {
+      "key": "journeyOption",
+      "type": "select",
+      "label": "Journey Configuration",
+      "description": "Select the type of journey to configure",
+      "required": true
+    },
+    "commonFields": [
+      {
+        "key": "id",
+        "type": "text",
+        "label": "Journey ID",
+        "description": "Unique identifier",
+        "defaultValue": "",
+        "required": true,
+        "placeholder": "journey-id",
+        "maps_to": "prop0"
+      },
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Journey Name",
+        "description": "Human-readable name",
+        "defaultValue": "",
+        "required": true,
+        "placeholder": "My Journey",
+        "maps_to": "prop1"
+      },
+      {
+        "key": "title",
+        "type": "text",
+        "label": "Journey Title",
+        "description": "Title displayed to user",
+        "defaultValue": "",
+        "required": true,
+        "placeholder": "Journey Title",
+        "maps_to": "prop2"
+      },
+      {
+        "key": "section_type",
+        "type": "select",
+        "label": "Section Type",
+        "description": "Navigation section placement",
+        "defaultValue": "main-carousel",
+        "required": true,
+        "options": [
+          "main-carousel",
+          "slide-panel",
+          "full-screen",
+          "modal"
+        ],
+        "maps_to": "prop3"
+      },
+      {
+        "key": "sectionHome",
+        "type": "checkbox",
+        "label": "Include in Home Section",
+        "description": "Show in home carousel",
+        "defaultValue": false,
+        "required": false,
+        "maps_to": "prop4",
+        "conditionalRules": {
+          "disableWhen": {
+            "section_type": [
+              "full-screen"
+            ]
+          }
+        },
+        "conditionalField": {
+          "key": "sectionHomeOption",
+          "type": "select",
+          "label": "Home Section Option",
+          "description": "Which home section",
+          "showWhen": {
+            "sectionHome": true
+          },
+          "optionsFrom": "section_type",
+          "optionsMap": {
+            "main-carousel": [
+              "summary",
+              "everyday",
+              "invest",
+              "borrow",
+              "homes",
+              "insurance"
+            ],
+            "slide-panel": [
+              "home",
+              "apply",
+              "cards"
+            ],
+            "modal": [
+              "payments",
+              "search"
+            ]
+          }
+        }
+      }
+    ],
+    "configurations": {
+      "CoreJourney": {
+        "label": "Core Journey",
+        "description": "Standard customer journey flow",
+        "fields": [
+          {
+            "key": "feature1",
+            "type": "checkbox",
+            "label": "Enable Feature 1",
+            "description": "Core feature toggle",
+            "defaultValue": false,
+            "required": false,
+            "maps_to": "prop5"
+          },
+          {
+            "key": "feature2",
+            "type": "checkbox",
+            "label": "Enable Feature 2",
+            "description": "Additional core feature",
+            "defaultValue": false,
+            "required": false,
+            "maps_to": "prop6"
+          },
+          {
+            "key": "coreOption",
+            "type": "text",
+            "label": "Core Option",
+            "description": "Core-specific configuration",
+            "defaultValue": "",
+            "required": false,
+            "placeholder": "Core option value",
+            "maps_to": "prop7"
+          }
+        ]
+      },
+      "AssistJourney": {
+        "label": "Assist Journey",
+        "description": "Customer assistance and support flow",
+        "fields": [
+          {
+            "key": "assistType",
+            "type": "select",
+            "label": "Assist Type",
+            "description": "Type of assistance offered",
+            "defaultValue": "chat",
+            "required": true,
+            "options": [
+              "chat",
+              "phone",
+              "video",
+              "email"
+            ],
+            "maps_to": "prop5"
+          },
+          {
+            "key": "autoResponse",
+            "type": "checkbox",
+            "label": "Enable Auto-Response",
+            "description": "Automated initial response",
+            "defaultValue": true,
+            "required": false,
+            "maps_to": "prop6"
+          },
+          {
+            "key": "escalationPath",
+            "type": "text",
+            "label": "Escalation Path",
+            "description": "Path for escalating issues",
+            "defaultValue": "",
+            "required": false,
+            "placeholder": "/escalation/support",
+            "maps_to": "prop7"
+          },
+          {
+            "key": "knowledgeBase",
+            "type": "checkbox",
+            "label": "Link Knowledge Base",
+            "description": "Include KB articles",
+            "defaultValue": true,
+            "required": false,
+            "maps_to": "prop8"
+          },
+          {
+            "key": "knowledgeBase",
+            "type": "checkbox",
+            "label": "Link Knowledge Base",
+            "description": "Include KB articles",
+            "defaultValue": true,
+            "required": false,
+            "maps_to": "prop8"
+          }
+        ]
+      }
+    }
+  }
+}

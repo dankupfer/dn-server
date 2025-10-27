@@ -37,7 +37,6 @@ export function initExportTab() {
  * Update App_frame configuration
  */
 export function updateAppFrameConfig(config: AppFrameConfig | null) {
-    console.log('🎯 App_frame config updated:', config);
     appFrameConfig = config;
 
     // Trigger form update if on export tab

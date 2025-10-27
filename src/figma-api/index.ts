@@ -8,6 +8,9 @@ import { generateCustomerWithAI } from '../services/ai/customerGenerator';
 import { exportFullApp, exportSingleComponent } from './plugin/controllers/exportController';
 import appBuilderRoutes from './app-builder/routes';
 
+// Import new API controller
+import * as figmaApiController from './plugin/controllers/figmaApiController';
+
 const router = express.Router();
 const figmaController = new FigmaController();
 
@@ -30,76 +33,114 @@ router.get('/plugin-ui', (req: Request, res: Response) => {
   }
 });
 
-// Get available journey options
-router.get('/journey-options', (req: Request, res: Response) => {
-  try {
-    console.log('📋 Getting available journey options');
+// ============================================
+// NEW GENERIC API ENDPOINTS
+// ============================================
 
-    const journeyOptions = formBuilder.getAvailableJourneyOptions();
+/**
+ * POST /api/figma/form-config
+ * Generic form configuration endpoint - works for ANY component
+ */
+router.post('/form-config', figmaApiController.getFormConfig);
 
-    res.json({
-      success: true,
-      data: journeyOptions
-    });
+/**
+ * POST /api/figma/conditional-rules
+ * Evaluate conditional rules and return affected fields
+ */
+router.post('/conditional-rules', figmaApiController.getConditionalRules);
 
-  } catch (error) {
-    console.error('Error getting journey options:', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
+/**
+ * POST /api/figma/conditional-options
+ * Get options for a conditional dropdown
+ */
+router.post('/conditional-options', figmaApiController.getConditionalOptions);
 
-// Get form configuration for a specific journey option
-router.get('/form-config/:journeyOption', (req: Request, res: Response) => {
-  try {
-    const { journeyOption } = req.params;
-    console.log('📋 Getting form config for journey option:', journeyOption);
+/**
+ * GET /api/figma/component-definitions
+ * Get all component definitions
+ */
+router.get('/component-definitions', figmaApiController.getComponentDefinitions);
 
-    const formConfig = formBuilder.buildForm(journeyOption);
+/**
+ * GET /api/figma/component-configurations/:componentName
+ * Get available configurations for a component
+ */
+router.get('/component-configurations/:componentName', figmaApiController.getComponentConfigurations);
 
-    if (!formConfig) {
-      return res.status(404).json({
-        success: false,
-        error: `Unknown journey option: ${journeyOption}`
-      });
-    }
+// ============================================
+// LEGACY ENDPOINTS (kept for backward compatibility)
+// ============================================
 
-    res.json({
-      success: true,
-      data: formConfig
-    });
+// Get available journey options (LEGACY - use component-variants/Journey instead)
+// router.get('/journey-options', (req: Request, res: Response) => {
+//   try {
+//     console.log('📋 Getting available journey options (LEGACY)');
 
-  } catch (error) {
-    console.error('Error building form:', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
+//     const journeyOptions = formBuilder.getAvailableJourneyOptions();
 
-// Get field definitions
-router.get('/field-definitions', (req: Request, res: Response) => {
-  try {
-    console.log('📋 Getting field definitions');
+//     res.json({
+//       success: true,
+//       data: journeyOptions
+//     });
 
-    const commonDefinitions = formBuilder.getcommonDefinitions();
+//   } catch (error) {
+//     console.error('Error getting journey options:', error);
+//     res.status(500).json({
+//       success: false,
+//       error: error instanceof Error ? error.message : 'Unknown error'
+//     });
+//   }
+// });
 
-    res.json({
-      success: true,
-      data: commonDefinitions
-    });
+// Get form configuration for a specific journey option (LEGACY)
+// router.get('/form-config/:journeyOption', (req: Request, res: Response) => {
+//   try {
+//     const { journeyOption } = req.params;
+//     console.log('📋 Getting form config for journey option (LEGACY):', journeyOption);
 
-  } catch (error) {
-    console.error('Error getting field definitions:', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
+//     const formConfig = formBuilder.buildForm(journeyOption);
+
+//     if (!formConfig) {
+//       return res.status(404).json({
+//         success: false,
+//         error: `Unknown journey option: ${journeyOption}`
+//       });
+//     }
+
+//     res.json({
+//       success: true,
+//       data: formConfig
+//     });
+
+//   } catch (error) {
+//     console.error('Error building form:', error);
+//     res.status(500).json({
+//       success: false,
+//       error: error instanceof Error ? error.message : 'Unknown error'
+//     });
+//   }
+// });
+
+// Get field definitions (LEGACY - definitions now in unified-components.json)
+// router.get('/field-definitions', (req: Request, res: Response) => {
+//   try {
+//     console.log('📋 Getting field definitions (LEGACY)');
+
+//     const commonDefinitions = formBuilder.getcommonDefinitions();
+
+//     res.json({
+//       success: true,
+//       data: commonDefinitions
+//     });
+
+//   } catch (error) {
+//     console.error('Error getting field definitions:', error);
+//     res.status(500).json({
+//       success: false,
+//       error: error instanceof Error ? error.message : 'Unknown error'
+//     });
+//   }
+// });
 
 // Create module from Figma selection
 router.post('/create-module', async (req: Request, res: Response) => {

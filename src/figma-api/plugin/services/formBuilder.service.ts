@@ -2,273 +2,329 @@
 import fs from 'fs';
 import path from 'path';
 
-interface ComponentProperty {
-    type: 'TEXT' | 'BOOLEAN' | 'INSTANCE_SWAP' | 'VARIANT';
-    defaultValue: string | boolean;
-    variantOptions?: string[];
+interface FieldDefinition {
+    key: string;
+    type: 'text' | 'checkbox' | 'select';
+    label: string;
+    description?: string;
+    defaultValue: any;
+    required: boolean;
+    placeholder?: string;
+    options?: string[];
+    maps_to?: string;
+    conditionalRules?: {
+        disableWhen?: Record<string, any[]>;
+        hideWhen?: Record<string, any[]>;
+    };
+    conditionalField?: {
+        key: string;
+        type: string;
+        label: string;
+        description?: string;
+        showWhen?: Record<string, any>;
+        optionsFrom?: string;
+        optionsMap?: Record<string, string[]>;
+        savedValue?: string;
+    };
+}
+
+interface ConfigurationDefinition {
+    label: string;
+    description: string;
+    fields: FieldDefinition[];
 }
 
 interface ComponentDefinition {
+    componentType: 'frame' | 'journey';
     name: string;
-    width: number;
-    height: number;
-    backgroundColor: string;
-    properties?: Record<string, ComponentProperty>;
-    [key: string]: any;
-}
-
-interface ComponentDefinitions {
-    [componentType: string]: ComponentDefinition;
-}
-
-interface JourneyDefinition {
-    properties?: Record<string, string>;
-    genericProperties?: Record<string, ComponentProperty>;
-    optionConfigurations?: Record<string, any>;
-    renderType?: string;
-    [key: string]: any;
-}
-
-interface JourneyDefinitions {
-    [componentName: string]: JourneyDefinition;
+    label: string;
+    description: string;
+    hasConfigurations?: boolean;
+    configurationField?: {
+        key: string;
+        type: string;
+        label: string;
+        description: string;
+        required: boolean;
+    };
+    commonFields?: FieldDefinition[];
+    fields?: FieldDefinition[];
+    configurations?: Record<string, ConfigurationDefinition>;
 }
 
 interface FormField {
-    name: string;           // Semantic name for display/logic
-    genericKey: string;     // Generic key for Figma storage (prop0, prop1, etc.)
+    key: string;
+    type: 'text' | 'checkbox' | 'select';
     label: string;
     description?: string;
-    type: 'text' | 'checkbox' | 'select';
-    defaultValue: string | boolean;
-    value?: string | boolean;
-    options?: string[] | null;
+    defaultValue: any;
+    value?: any;
     required: boolean;
+    placeholder?: string;
+    options?: string[];
+    conditionalRules?: any;
+    conditionalField?: any;
 }
 
 interface FormConfig {
-    journeyOption: string;
+    componentName: string;
+    componentLabel: string;
     title: string;
     fields: FormField[];
-}
-
-interface JourneyOptionMetadata {
-    journeyOption: string;
-    label: string;
-    fieldCount: number;
-}
-
-interface FieldConfiguration {
-    type: 'text' | 'checkbox' | 'select';
-    options?: string[];
-}
-
-interface FieldDefinition {
-    type: 'text' | 'checkbox' | 'select';
-    label: string;
-    description: string;
-    options?: string[];
-    defaultValue: string | boolean;
-    conditionalOptions?: Record<string, string[]>;
-}
-
-interface commonDefinitions {
-    [fieldName: string]: FieldDefinition;
+    configurationField?: any;
+    hasConfigurations?: boolean;
 }
 
 class FormBuilderService {
-    private componentDefinitions: ComponentDefinitions | null = null;
-    private journeyDefinitions: JourneyDefinitions | null = null;
-    private commonDefinitions: commonDefinitions | null = null;  // ← Add this
+    private componentDefinitions: Record<string, ComponentDefinition> | null = null;
 
     constructor() {
         this.loadDefinitions();
     }
 
     /**
-     * Load definition files
+     * Load unified component definitions
      */
     private loadDefinitions(): void {
         try {
             const definitionsPath = path.join(__dirname, '../definitions');
+            const unifiedPath = path.join(definitionsPath, 'unified-components.json');
 
-            const componentsPath = path.join(definitionsPath, 'components.json');
-            this.componentDefinitions = JSON.parse(fs.readFileSync(componentsPath, 'utf8'));
+            this.componentDefinitions = JSON.parse(fs.readFileSync(unifiedPath, 'utf8'));
 
-            const journeysPath = path.join(definitionsPath, 'journeys.json');
-            this.journeyDefinitions = JSON.parse(fs.readFileSync(journeysPath, 'utf8'));
-
-            const commonDefinitionsPath = path.join(definitionsPath, 'commonDefinitions.json');  // ← Add this
-            this.commonDefinitions = JSON.parse(fs.readFileSync(commonDefinitionsPath, 'utf8'));  // ← Add this
-
-            console.log('✅ Form builder loaded definitions successfully');
+            console.log('✅ Form builder loaded unified definitions successfully');
+            console.log('📋 Available components:', Object.keys(this.componentDefinitions || {}));
         } catch (error) {
             console.error('❌ Error loading definitions:', error);
-            throw new Error('Failed to load definition files');
+            throw new Error('Failed to load unified definition file');
         }
     }
 
     /**
- * Get field configuration for common fields
- * Single source of truth for field types and options
- * @param fieldName - Semantic field name (e.g., 'section_type', 'id')
- * @returns Field configuration with type and options
- */
-    private getFieldConfig(fieldName: string): FieldConfiguration {
-        if (!this.commonDefinitions) {
-            return { type: 'text' };
-        }
-
-        const fieldDef = this.commonDefinitions[fieldName];
-        if (!fieldDef) {
-            return { type: 'text' };
-        }
-
-        return {
-            type: fieldDef.type,
-            options: fieldDef.options
-        };
-    }
-
-    /**
- * Get field definitions
- * @returns Field definitions object
- */
-    getcommonDefinitions(): commonDefinitions {
-        if (!this.commonDefinitions) {
-            throw new Error('Field definitions not loaded');
-        }
-        return this.commonDefinitions;
-    }
-
-    /**
-     * Get all available journey options with their forms
-     * @returns Array of journey options with form metadata
+     * Get all available component definitions
      */
-    getAvailableJourneyOptions(): JourneyOptionMetadata[] {
-        if (!this.journeyDefinitions) {
-            throw new Error('Journey definitions not loaded');
+    getComponentDefinitions(): Record<string, ComponentDefinition> {
+        if (!this.componentDefinitions) {
+            throw new Error('Component definitions not loaded');
         }
-
-        const result: JourneyOptionMetadata[] = [];
-
-        // For Journey component, extract optionConfigurations
-        const journeyDef = this.journeyDefinitions['Journey'];
-        if (journeyDef && journeyDef.optionConfigurations) {
-            const optionConfigs = journeyDef.optionConfigurations as Record<string, any>;
-
-            Object.keys(optionConfigs).forEach(journeyOption => {
-                const config = optionConfigs[journeyOption];
-                const fieldCount = Object.keys(config).length;
-
-                result.push({
-                    journeyOption: journeyOption,
-                    label: journeyOption,
-                    fieldCount: fieldCount
-                });
-            });
-        }
-
-        return result;
+        return this.componentDefinitions;
     }
 
     /**
- * Build form configuration for a journey option
- * @param journeyOption - Journey option name (e.g., 'CoreJourney', 'AssistJourney')
- * @returns Form configuration with fields
- */
-    buildForm(journeyOption: string): FormConfig | null {
-        if (!this.journeyDefinitions || !this.componentDefinitions) {
-            throw new Error('Definitions not loaded');
+     * Get definition for a specific component
+     */
+    getComponentDefinition(componentName: string): ComponentDefinition | null {
+        if (!this.componentDefinitions) {
+            throw new Error('Component definitions not loaded');
         }
 
-        // Get Journey component definition
-        const journeyDef = this.journeyDefinitions['Journey'];
-        if (!journeyDef || !journeyDef.optionConfigurations) {
-            console.warn(`⚠️  No journey definition found`);
+        return this.componentDefinitions[componentName] || null;
+    }
+
+    /**
+     * Get available journey configurations (if component has configurations)
+     */
+    getAvailableConfigurations(componentName: string): Array<{ value: string; label: string; description: string }> {
+        const definition = this.getComponentDefinition(componentName);
+
+        if (!definition || !definition.hasConfigurations || !definition.configurations) {
+            return [];
+        }
+
+        return Object.entries(definition.configurations).map(([key, config]) => ({
+            value: key,
+            label: config.label,
+            description: config.description
+        }));
+    }
+
+    /**
+     * GENERIC form builder - works for ANY component type
+     * @param componentName - Name of the component (App_frame, Journey, ScreenBuilder_frame, etc.)
+     * @param currentValues - Current property values
+     * @param selectedConfiguration - For components with configurations (e.g., Journey's journeyOption)
+     */
+    buildForm(
+        componentName: string,
+        currentValues?: Record<string, any>,
+        selectedConfiguration?: string
+    ): FormConfig | null {
+        const definition = this.getComponentDefinition(componentName);
+
+        if (!definition) {
+            console.warn(`⚠️  No definition found for component: ${componentName}`);
             return null;
         }
 
-        // Get specific journey option configuration
-        const optionConfig = journeyDef.optionConfigurations[journeyOption];
-        if (!optionConfig) {
-            console.warn(`⚠️  No option configuration found for: ${journeyOption}`);
-            return null;
-        }
+        console.log(`🔨 Building form for: ${componentName}`);
+        console.log(`🔍 Has configurations:`, definition.hasConfigurations);        // ADD THIS
+        console.log(`🔍 Selected configuration:`, selectedConfiguration);           // ADD THIS
+        console.log(`🔍 Available configurations:`, definition.configurations ? Object.keys(definition.configurations) : 'none');  // ADD THIS
 
-        // Build form fields
-        const fields: FormField[] = [];
+        const formFields: FormField[] = [];
 
-        // Add common properties first (prop0, prop1, prop2)
-        const commonProps = journeyDef.commonProperties || {};
-        for (const [genericKey, propConfig] of Object.entries(commonProps)) {
-            const config = propConfig as any;
-            const semanticName = config.maps_to;
-            const fieldDef = this.commonDefinitions?.[semanticName];
+        // Handle components WITH configurations (e.g., Journey)
+        if (definition.hasConfigurations && definition.configurations) {
+            // Add configuration selector field
+            if (definition.configurationField) {
+                const configurationOptions = Object.keys(definition.configurations);
+                const currentConfiguration = selectedConfiguration || currentValues?.journeyOption || configurationOptions[0];
 
-            if (fieldDef) {
-                fields.push({
-                    name: semanticName,
-                    genericKey: genericKey,
-                    label: fieldDef.label || semanticName,
-                    description: fieldDef.description || '',
-                    type: fieldDef.type || 'text',
-                    defaultValue: fieldDef.defaultValue,
-                    options: fieldDef.options || null,
-                    required: true
+                // Don't add configurationField to formFields, return it separately
+                // This allows special handling in the UI
+            }
+
+            // Add common fields (fields that appear for ALL configurations)
+            if (definition.commonFields) {
+                definition.commonFields.forEach(fieldDef => {
+                    formFields.push(this.buildFieldConfig(fieldDef, currentValues));
+                });
+            }
+
+            // Add configuration-specific fields
+            const currentConfiguration = selectedConfiguration || currentValues?.journeyOption;
+            if (currentConfiguration && definition.configurations[currentConfiguration]) {
+                const configDef = definition.configurations[currentConfiguration];
+                configDef.fields.forEach(fieldDef => {
+                    formFields.push(this.buildFieldConfig(fieldDef, currentValues));
                 });
             }
         }
-
-        // Add option-specific properties (prop3, prop4, etc.)
-        for (const [genericKey, propConfig] of Object.entries(optionConfig)) {
-            const config = propConfig as any;
-            const semanticName = config.maps_to;
-
-            // Check for inline type first, then fallback to commonDefinitions
-            const fieldDef = this.commonDefinitions?.[semanticName];
-            const fieldType = config.type || fieldDef?.type || 'text';
-
-            fields.push({
-                name: semanticName,
-                genericKey: genericKey,
-                label: config.label || fieldDef?.label || semanticName,
-                description: config.description || fieldDef?.description || '',
-                type: fieldType,
-                defaultValue: config.defaultValue !== undefined ? config.defaultValue : fieldDef?.defaultValue,
-                options: config.options || fieldDef?.options || null,
-                required: true
+        // Handle components WITHOUT configurations (e.g., App_frame, ScreenBuilder_frame)
+        else if (definition.fields) {
+            definition.fields.forEach(fieldDef => {
+                formFields.push(this.buildFieldConfig(fieldDef, currentValues));
             });
         }
 
         return {
-            journeyOption: journeyOption,
-            title: `${journeyOption} Configuration`,
-            fields
+            componentName: definition.name,
+            componentLabel: definition.label,
+            title: `${definition.label} Configuration`,
+            fields: formFields,
+            hasConfigurations: definition.hasConfigurations,
+            configurationField: definition.configurationField ? {
+                ...definition.configurationField,
+                options: definition.configurations ? Object.keys(definition.configurations) : [],
+                value: selectedConfiguration || currentValues?.journeyOption
+            } : undefined
         };
     }
 
     /**
-     * Build form with current values pre-filled
-     * @param journeyOption - Journey option name
-     * @param currentValues - Current property values (semantic)
-     * @returns Form configuration with pre-filled values
+     * Build a single field configuration from definition
      */
-    buildFormWithValues(journeyOption: string, currentValues: Record<string, any>): FormConfig | null {
-        const formConfig = this.buildForm(journeyOption);
+    private buildFieldConfig(fieldDef: FieldDefinition, currentValues?: Record<string, any>): FormField {
+        const currentValue = currentValues?.[fieldDef.key];
 
-        if (!formConfig) {
-            return null;
+        // Handle conditional field if it exists
+        let conditionalFieldWithValue = fieldDef.conditionalField;
+        if (conditionalFieldWithValue && currentValues) {
+            // Get the saved value for the conditional field (e.g., sectionHomeOption)
+            const conditionalValue = currentValues[conditionalFieldWithValue.key];
+            if (conditionalValue !== undefined) {
+                conditionalFieldWithValue = {
+                    ...conditionalFieldWithValue,
+                    savedValue: conditionalValue  // Add savedValue property
+                };
+            }
         }
 
-        // Pre-fill current values
-        formConfig.fields = formConfig.fields.map(field => ({
-            ...field,
-            value: currentValues[field.name] !== undefined
-                ? currentValues[field.name]
-                : field.defaultValue
-        }));
+        return {
+            key: fieldDef.key,
+            type: fieldDef.type,
+            label: fieldDef.label,
+            description: fieldDef.description,
+            defaultValue: fieldDef.defaultValue,
+            value: currentValue !== undefined ? currentValue : fieldDef.defaultValue,
+            required: fieldDef.required,
+            placeholder: fieldDef.placeholder,
+            options: fieldDef.options,
+            conditionalRules: fieldDef.conditionalRules,
+            conditionalField: conditionalFieldWithValue
+        };
+    }
 
-        return formConfig;
+    /**
+     * Evaluate conditional rules for a field
+     * Returns whether the field should be disabled/hidden
+     */
+    evaluateConditionalRules(
+        fieldKey: string,
+        currentValues: Record<string, any>,
+        componentName: string
+    ): { disabled: boolean; hidden: boolean } {
+        const definition = this.getComponentDefinition(componentName);
+        if (!definition) {
+            return { disabled: false, hidden: false };
+        }
+
+        // Find the field in the definition
+        let fieldDef: FieldDefinition | undefined;
+
+        if (definition.fields) {
+            fieldDef = definition.fields.find(f => f.key === fieldKey);
+        } else if (definition.commonFields) {
+            fieldDef = definition.commonFields.find(f => f.key === fieldKey);
+        }
+
+        if (!fieldDef || !fieldDef.conditionalRules) {
+            return { disabled: false, hidden: false };
+        }
+
+        let disabled = false;
+        let hidden = false;
+
+        // Check disableWhen rules
+        if (fieldDef.conditionalRules.disableWhen) {
+            for (const [dependentField, disableValues] of Object.entries(fieldDef.conditionalRules.disableWhen)) {
+                if (disableValues.includes(currentValues[dependentField])) {
+                    disabled = true;
+                    break;
+                }
+            }
+        }
+
+        // Check hideWhen rules
+        if (fieldDef.conditionalRules.hideWhen) {
+            for (const [dependentField, hideValues] of Object.entries(fieldDef.conditionalRules.hideWhen)) {
+                if (hideValues.includes(currentValues[dependentField])) {
+                    hidden = true;
+                    break;
+                }
+            }
+        }
+
+        return { disabled, hidden };
+    }
+
+    /**
+     * Get conditional field options based on parent field value
+     */
+    getConditionalOptions(
+        parentFieldKey: string,
+        parentFieldValue: any,
+        componentName: string
+    ): string[] {
+        const definition = this.getComponentDefinition(componentName);
+        if (!definition) {
+            return [];
+        }
+
+        // Find the parent field
+        let parentField: FieldDefinition | undefined;
+
+        if (definition.fields) {
+            parentField = definition.fields.find(f => f.key === parentFieldKey);
+        } else if (definition.commonFields) {
+            parentField = definition.commonFields.find(f => f.key === parentFieldKey);
+        }
+
+        if (!parentField || !parentField.conditionalField?.optionsMap) {
+            return [];
+        }
+
+        return parentField.conditionalField.optionsMap[parentFieldValue] || [];
     }
 }
 

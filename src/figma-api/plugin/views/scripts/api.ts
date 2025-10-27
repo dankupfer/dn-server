@@ -1,89 +1,98 @@
 // src/figma-api/views/scripts/api.ts
-// Handles all API calls to the server
+// API communication layer
 
-const API_BASE_URL = 'http://localhost:3001/api/figma';
-
-interface JourneyOptionMetadata {
-    journeyOption: string;
-    label: string;
-    fieldCount: number;
-}
-
-interface FormField {
-    name: string;
-    genericKey: string;
-    label: string;
-    type: 'text' | 'checkbox' | 'select';
-    defaultValue: string | boolean;
-    value?: string | boolean;
-    options?: string[] | null;
-    required: boolean;
-}
-
-interface FormConfig {
-    journeyOption: string;
-    title: string;
-    fields: FormField[];
-}
-
-interface ApiResponse<T> {
-    success: boolean;
-    data?: T;
-    error?: string;
-}
+const API_BASE = 'http://localhost:3001';
 
 /**
- * Fetch available journey options
+ * Fetch form configuration for any component
+ * GENERIC - works for all component types
  */
-export async function fetchJourneyOptions(): Promise<JourneyOptionMetadata[]> {
-    try {
-        console.log('📡 Fetching journey options from:', `${API_BASE_URL}/journey-options`);
-        const response = await fetch(`${API_BASE_URL}/journey-options`);
-        const result = await response.json() as ApiResponse<JourneyOptionMetadata[]>;
+export async function fetchFormConfig(params: {
+    componentName: string;
+    currentValues?: Record<string, any>;
+    selectedConfiguration?: string;
+}): Promise<any> {
+    const response = await fetch(`${API_BASE}/api/figma/form-config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+    });
 
-        console.log('📦 Server response:', result);
-
-        if (!result.success || !result.data) {
-            throw new Error(result.error || 'Failed to fetch journey options');
-        }
-
-        return result.data;
-    } catch (error) {
-        console.error('❌ Error fetching journey options:', error);
-        throw error;
+    if (!response.ok) {
+        throw new Error(`Failed to fetch form config: ${response.statusText}`);
     }
+
+    return response.json();
 }
 
 /**
- * Fetch form configuration for a journey option
+ * Fetch conditional rules - server tells us what to update
  */
-export async function fetchFormConfig(journeyOption: string): Promise<FormConfig> {
-    try {
-        console.log('🔗 Fetching form config for:', journeyOption);
-        const response = await fetch(`${API_BASE_URL}/form-config/${journeyOption}`);
-        const result = await response.json() as ApiResponse<FormConfig>;
+export async function fetchConditionalRules(
+    componentName: string,
+    changedFieldKey: string | null,
+    currentValues: Record<string, any>
+): Promise<any> {
+    const response = await fetch(`${API_BASE}/api/figma/conditional-rules`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            componentName,
+            changedFieldKey,
+            currentValues
+        })
+    });
 
-        if (!result.success || !result.data) {
-            throw new Error(result.error || 'Failed to fetch form config');
-        }
-
-        return result.data;
-    } catch (error) {
-        console.error('❌ Error fetching form config:', error);
-        throw error;
+    if (!response.ok) {
+        throw new Error(`Failed to fetch conditional rules: ${response.statusText}`);
     }
+
+    return response.json();
 }
 
 /**
- * Fetch field definitions from server
+ * Fetch conditional options for a field
+ */
+export async function fetchConditionalOptions(
+    componentName: string,
+    fieldKey: string,
+    dependentFieldKey: string,
+    dependentFieldValue: any
+): Promise<string[]> {
+    const response = await fetch(`${API_BASE}/api/figma/conditional-options`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            componentName,
+            fieldKey,
+            dependentFieldKey,
+            dependentFieldValue
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch conditional options: ${response.statusText}`);
+    }
+
+    return response.json();
+}
+
+/**
+ * Legacy - Get field definitions
  */
 export async function fetchcommonDefinitions(): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/field-definitions`);
-    const result = await response.json();
+    // No longer needed - definitions handled server-side
+    return {};
+}
 
-    if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch field definitions');
+/**
+ * Legacy - Get journey options
+ */
+export async function fetchJourneyOptions(): Promise<any[]> {
+    // Still useful for variant selectors
+    const response = await fetch(`${API_BASE}/api/figma/definitions/journeys`);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch journey options: ${response.statusText}`);
     }
-
-    return result.data;
+    return response.json();
 }

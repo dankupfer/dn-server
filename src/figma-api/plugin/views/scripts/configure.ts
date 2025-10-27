@@ -1,46 +1,13 @@
-// src/figma-api/views/scripts/configure.ts
-// Configure tab - main orchestrator for component configuration
+// src/figma-api/plugin/views/scripts/configure.ts
+// FIXED: Proper event listener cleanup and conditional field handling
 
-import { fetchcommonDefinitions } from './api';
-
-// Import all functions from the new modular files
-import {
-    shouldDisableField,
-    setupConditionalFieldListeners,
-    applyConditionalRules,
-    toggleSectionHomeOptions,
-    updateSectionHomeOptions
-} from './configure.conditional';
-
-import {
-    buildFormForComponent,
-    buildFieldFromDefinition,
-    buildDynamicFields,
-    buildJourneyOptionSelector,
-    buildAppFrameForm,
-    buildScreenBuilderForm,
-} from './configure.builders';
-
+import { buildFormForComponent } from './configure.builders';
+import { updateConditionalFields } from './configure.conditional';
 import {
     autoSave as autoSaveInternal,
-    handleJourneyOptionChange as handleJourneyOptionChangeInternal,
+    handleConfigurationChange as handleConfigurationChangeInternal,
     handleClearPluginData as handleClearPluginDataInternal
 } from './configure.autosave';
-
-// Re-export for backward compatibility
-export {
-    shouldDisableField,
-    setupConditionalFieldListeners,
-    applyConditionalRules,
-    toggleSectionHomeOptions,
-    updateSectionHomeOptions,
-    buildFormForComponent,
-    buildFieldFromDefinition,
-    buildDynamicFields,
-    buildJourneyOptionSelector,
-    buildAppFrameForm,
-    buildScreenBuilderForm,
-};
 
 interface ComponentSelection {
     componentName: string;
@@ -49,21 +16,12 @@ interface ComponentSelection {
 
 // Module state
 let currentSelection: ComponentSelection | null = null;
-let commonDefinitions: any = null;
 
 /**
  * Initialize configure tab
  */
 export async function initConfigureTab() {
-    console.log('Configure tab initialized');
-
-    // Load field definitions
-    try {
-        commonDefinitions = await fetchcommonDefinitions();
-        console.log('✅ Field definitions loaded:', commonDefinitions);
-    } catch (error) {
-        console.error('❌ Error loading field definitions:', error);
-    }
+    console.log('✅ Configure tab initialized');
 
     // Set up clear plugin data button
     const clearButton = document.getElementById('clear-plugin-data');
@@ -82,10 +40,11 @@ export function updateSelection(selection: ComponentSelection | null) {
 
 /**
  * Update the config form based on current selection
+ * FIXED: Proper event listener cleanup
  */
 async function updateConfigForm() {
     const noSelection = document.getElementById('no-selection');
-    const configForm = document.getElementById('config-form');
+    let configForm = document.getElementById('config-form');
 
     if (!noSelection || !configForm) return;
 
@@ -98,30 +57,76 @@ async function updateConfigForm() {
     noSelection.style.display = 'none';
     configForm.style.display = 'block';
 
-    // Build form based on component type
-    const formHTML = await buildFormForComponent(currentSelection, commonDefinitions);
-    configForm.innerHTML = formHTML;
+    try {
+        // Build form (fetches config from server)
+        const formHTML = await buildFormForComponent(currentSelection);
 
-    // Add event listeners for conditional fields
-    setupConditionalFieldListeners(currentSelection, commonDefinitions, autoSave);
+        // CRITICAL FIX: Remove ALL old event listeners by replacing the element
+        const newConfigForm = configForm.cloneNode(false) as HTMLElement;
+        newConfigForm.innerHTML = formHTML;
+        configForm.parentNode?.replaceChild(newConfigForm, configForm);
+
+        // Update reference to the new element
+        configForm = newConfigForm;
+
+        // SINGLE EVENT LISTENER - Added only once to fresh element
+        configForm.addEventListener('change', async (e) => {
+            const target = e.target as HTMLElement;
+
+            console.log('🔔 Change event triggered by:', target.id);
+
+            if (target.id.startsWith('config-')) {
+                const fieldKey = target.id.replace('config-', '');
+
+                // Skip configuration selector - it has its own handler
+                if (fieldKey === 'journeyOption') {
+                    console.log('⏭️ Skipping journeyOption - has its own handler');
+                    return;
+                }
+
+                const isConditionalDropdown = fieldKey.endsWith('-option');
+
+                if (!isConditionalDropdown) {
+                    await updateConditionalFields(fieldKey, currentSelection);
+                }
+
+                autoSave();
+            }
+        });
+
+        // Initial conditional field check (NO SAVE - just UI update)
+        await updateConditionalFields(null, currentSelection);
+
+        console.log('✅ Form rendered successfully');
+    } catch (error) {
+        console.error('❌ Error updating form:', error);
+        if (configForm) {
+            configForm.innerHTML = `
+                <div class="section">
+                    <h2>Error</h2>
+                    <p class="error">Failed to load form configuration</p>
+                </div>
+            `;
+        }
+    }
 }
 
 /**
- * Auto-save wrapper that uses module state
+ * Auto-save wrapper
  */
 export function autoSave() {
     autoSaveInternal(currentSelection);
 }
 
 /**
- * Handle Journey Option change wrapper
+ * Handle configuration change (for Journey component)
  */
-export function handleJourneyOptionChange() {
-    handleJourneyOptionChangeInternal(currentSelection, updateConfigForm);
+export function handleConfigurationChange() {
+    handleConfigurationChangeInternal(currentSelection, updateConfigForm);
 }
 
 /**
- * Handle clearing all plugin data wrapper
+ * Handle clearing all plugin data
  */
 export function handleClearPluginData() {
     handleClearPluginDataInternal();
@@ -129,5 +134,5 @@ export function handleClearPluginData() {
 
 // Make functions available globally for inline onclick handlers
 (window as any).autoSave = autoSave;
-(window as any).handleJourneyOptionChange = handleJourneyOptionChange;
+(window as any).handleConfigurationChange = handleConfigurationChange;
 (window as any).handleClearPluginData = handleClearPluginData;

@@ -1,5 +1,7 @@
 // src/figma-api/views/scripts/configure.conditional.ts
-// Conditional field logic for dynamic form behavior
+// SIMPLIFIED: Single function to update conditional fields based on server response
+
+import { fetchConditionalRules } from './api';
 
 interface ComponentSelection {
     componentName: string;
@@ -7,227 +9,119 @@ interface ComponentSelection {
 }
 
 /**
- * Check if a field should be disabled based on conditional rules
+ * Update conditional fields based on form state
+ * Called when a field changes OR on initial render
+ * @param changedFieldKey - The field that just changed (null for initial render)
+ * @param currentSelection - Current component selection
  */
-export function shouldDisableField(
-    fieldName: string,
-    dependentFieldValue: any,
-    commonDefinitions: any
-): boolean {
-    const fieldDef = commonDefinitions?.[fieldName];
-    if (!fieldDef || !fieldDef.conditionalRules) return false;
-
-    const disableWhen = fieldDef.conditionalRules.disableWhen;
-    if (!disableWhen) return false;
-
-    // Check if current value triggers disable rule
-    for (const [dependentField, disableValues] of Object.entries(disableWhen)) {
-        if (Array.isArray(disableValues) && disableValues.includes(dependentFieldValue)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/**
- * Setup event listeners for conditional field rendering
- */
-export function setupConditionalFieldListeners(
-    currentSelection: ComponentSelection | null,
-    commonDefinitions: any,
-    autoSaveCallback: () => void
-) {
-    const componentName = currentSelection?.componentName;
-
-    // Determine the IDs based on component type
-    let sectionHomeCheckboxId: string;
-    let sectionHomeInputGroupId: string;
-    let sectionTypeSelectId: string;
-    let conditionalContainerId: string;
-    let sectionHomeOptionSelectId: string;
-
-    if (componentName === 'Journey') {
-        // Journey uses generic prop IDs - UPDATED MAPPINGS
-        sectionHomeCheckboxId = 'config-prop4';  // ✅ prop4 now maps to sectionHome
-        sectionHomeInputGroupId = 'input-group-prop4';
-        sectionTypeSelectId = 'config-prop3';    // ✅ prop3 now maps to section_type
-        conditionalContainerId = 'config-prop4-conditional';
-        sectionHomeOptionSelectId = 'config-prop4-option';
-    } else {
-        // ScreenBuilder use semantic IDs
-        sectionHomeCheckboxId = 'config-sectionHome';
-        sectionHomeInputGroupId = 'input-group-sectionHome';
-        sectionTypeSelectId = 'config-section_type';
-        conditionalContainerId = 'config-sectionHome-conditional';
-        sectionHomeOptionSelectId = 'config-sectionHome-option';
-    }
-
-    const sectionHomeCheckbox = document.getElementById(sectionHomeCheckboxId) as HTMLInputElement;
-    const sectionTypeSelect = document.getElementById(sectionTypeSelectId) as HTMLSelectElement;
-
-    if (sectionHomeCheckbox) {
-        sectionHomeCheckbox.addEventListener('change', () => {
-            toggleSectionHomeOptions(
-                conditionalContainerId,
-                sectionHomeCheckboxId,
-                commonDefinitions,
-                currentSelection
-            );
-            autoSaveCallback();
-        });
-    }
-
-    if (sectionTypeSelect) {
-        sectionTypeSelect.addEventListener('change', () => {
-            // Update conditional rules (disable/enable sectionHome)
-            applyConditionalRules(
-                sectionTypeSelectId,
-                sectionHomeCheckboxId,
-                sectionHomeInputGroupId,
-                commonDefinitions
-            );
-
-            // Update dropdown options
-            updateSectionHomeOptions(
-                sectionTypeSelectId,
-                conditionalContainerId,
-                sectionHomeOptionSelectId,
-                commonDefinitions,
-                currentSelection
-            );
-
-            autoSaveCallback();
-        });
-    }
-
-    // Initial application of conditional rules
-    applyConditionalRules(
-        sectionTypeSelectId,
-        sectionHomeCheckboxId,
-        sectionHomeInputGroupId,
-        commonDefinitions
-    );
-
-    // Initial render of conditional field
-    toggleSectionHomeOptions(
-        conditionalContainerId,
-        sectionHomeCheckboxId,
-        commonDefinitions,
-        currentSelection
-    );
-}
-
-/**
- * Apply conditional rules (disable/hide fields based on other field values)
- */
-export function applyConditionalRules(
-    sectionTypeSelectId: string,
-    sectionHomeCheckboxId: string,
-    sectionHomeInputGroupId: string,
-    commonDefinitions: any
-) {
-    const sectionTypeSelect = document.getElementById(sectionTypeSelectId) as HTMLSelectElement;
-    const sectionHomeCheckbox = document.getElementById(sectionHomeCheckboxId) as HTMLInputElement;
-    const sectionHomeInputGroup = document.getElementById(sectionHomeInputGroupId);
-
-    if (!sectionTypeSelect || !sectionHomeCheckbox || !sectionHomeInputGroup) return;
-
-    const sectionTypeValue = sectionTypeSelect.value;
-    const shouldDisable = shouldDisableField('sectionHome', sectionTypeValue, commonDefinitions);
-
-    if (shouldDisable) {
-        // Disable and uncheck the checkbox
-        sectionHomeCheckbox.disabled = true;
-        sectionHomeCheckbox.checked = false;
-
-        // Optionally hide the entire input group
-        sectionHomeInputGroup.style.opacity = '0.5';
-        sectionHomeInputGroup.style.pointerEvents = 'none';
-
-        // Hide conditional dropdown
-        const conditionalContainerId = sectionHomeCheckboxId.replace('config-', 'config-') + '-conditional';
-        const conditionalContainer = document.getElementById(conditionalContainerId);
-        if (conditionalContainer) {
-            conditionalContainer.style.display = 'none';
-        }
-    } else {
-        // Enable the checkbox
-        sectionHomeCheckbox.disabled = false;
-        sectionHomeInputGroup.style.opacity = '1';
-        sectionHomeInputGroup.style.pointerEvents = 'auto';
-    }
-}
-
-/**
- * Toggle visibility of sectionHome options dropdown
- */
-export function toggleSectionHomeOptions(
-    conditionalContainerId: string,
-    checkboxId: string,
-    commonDefinitions: any,
+export async function updateConditionalFields(
+    changedFieldKey: string | null,
     currentSelection: ComponentSelection | null
 ) {
-    const sectionHomeCheckbox = document.getElementById(checkboxId) as HTMLInputElement;
-    const conditionalContainer = document.getElementById(conditionalContainerId);
+    if (!currentSelection) return;
 
-    if (!conditionalContainer) return;
+    const { componentName } = currentSelection;
+    const currentValues = collectCurrentValues();
 
-    // Only show if checkbox is checked AND not disabled
-    if (sectionHomeCheckbox && sectionHomeCheckbox.checked && !sectionHomeCheckbox.disabled) {
-        conditionalContainer.style.display = 'block';
-
-        // Determine the select ID based on container ID
-        const selectId = conditionalContainerId.replace('-conditional', '-option');
-        const sectionTypeId = checkboxId.replace('sectionHome', 'section_type').replace('prop4', 'prop3');
-
-        updateSectionHomeOptions(
-            sectionTypeId,
-            conditionalContainerId,
-            selectId,
-            commonDefinitions,
-            currentSelection
+    try {
+        // Ask server: "Given current form state, what should each field look like?"
+        const response = await fetchConditionalRules(
+            componentName,
+            changedFieldKey,
+            currentValues
         );
-    } else {
-        conditionalContainer.style.display = 'none';
+
+        // Apply the states the server told us
+        response.affectedFields?.forEach((field: any) => {
+            applyFieldState(field.key, field);
+        });
+
+    } catch (error) {
+        console.error('Error updating conditional fields:', error);
     }
 }
 
 /**
- * Update sectionHome dropdown options based on section_type value
+ * Apply field state (enable/disable, show/hide, update options)
  */
-export function updateSectionHomeOptions(
-    sectionTypeSelectId: string,
-    conditionalContainerId: string,
-    selectId: string,
-    commonDefinitions: any,
-    currentSelection: ComponentSelection | null
-) {
-    const sectionTypeSelect = document.getElementById(sectionTypeSelectId) as HTMLSelectElement;
-    const optionSelect = document.getElementById(selectId) as HTMLSelectElement;
+function applyFieldState(fieldKey: string, state: any) {
+    const input = document.getElementById(`config-${fieldKey}`);
+    const inputGroup = document.getElementById(`input-group-${fieldKey}`);
 
-    if (!sectionTypeSelect || !optionSelect) return;
+    if (!input || !inputGroup) return;
 
-    const sectionType = sectionTypeSelect.value;
-    const fieldDef = commonDefinitions?.sectionHome;
+    // Handle disabled state
+    if (state.disabled !== undefined) {
+        (input as HTMLInputElement).disabled = state.disabled;
+        inputGroup.style.opacity = state.disabled ? '0.5' : '1';
+        inputGroup.style.pointerEvents = state.disabled ? 'none' : 'auto';
 
-    if (!fieldDef || !fieldDef.conditionalOptions) return;
+        // If checkbox is disabled, uncheck it
+        if (state.disabled && input instanceof HTMLInputElement && input.type === 'checkbox') {
+            input.checked = false;
+        }
+    }
 
-    const options = fieldDef.conditionalOptions[sectionType] || [];
+    // Handle hidden state
+    if (state.hidden !== undefined) {
+        inputGroup.style.display = state.hidden ? 'none' : 'block';
+    }
 
-    // Clear existing options
-    optionSelect.innerHTML = '';
+    // Handle conditional field visibility (for checkboxes with dropdown)
+    if (state.showConditionalField !== undefined) {
+        const conditionalContainer = document.getElementById(`config-${fieldKey}-conditional`);
+        if (conditionalContainer) {
+            conditionalContainer.style.display = state.showConditionalField ? 'block' : 'none';
+        }
+    }
 
-    // Add new options
-    options.forEach((option: string) => {
-        const optionElement = document.createElement('option');
-        optionElement.value = option;
-        optionElement.textContent = option;
-        optionSelect.appendChild(optionElement);
+    // Handle conditional field options (populate dropdown)
+    if (state.conditionalOptions) {
+        const optionSelect = document.getElementById(`config-${fieldKey}-option`) as HTMLSelectElement;
+        if (optionSelect) {
+            const currentValue = optionSelect.value;
+            const savedValue = optionSelect.getAttribute('data-saved-value') || '';  // Get from data attribute
+
+            optionSelect.innerHTML = '';
+            state.conditionalOptions.forEach((option: string) => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                optionSelect.appendChild(optionElement);
+            });
+
+            // Priority: server savedConditionalValue > data-saved-value > current value
+            if (state.savedConditionalValue) {
+                optionSelect.value = state.savedConditionalValue;
+            } else if (savedValue && state.conditionalOptions.includes(savedValue)) {
+                optionSelect.value = savedValue;
+            } else if (currentValue && state.conditionalOptions.includes(currentValue)) {
+                optionSelect.value = currentValue;
+            }
+        }
+    }
+}
+
+/**
+ * Collect current values from all form inputs
+ */
+function collectCurrentValues(): Record<string, any> {
+    const values: Record<string, any> = {};
+    const allInputs = document.querySelectorAll('[id^="config-"]');
+
+    allInputs.forEach(input => {
+        const fieldKey = input.id.replace('config-', '');
+
+        if (input instanceof HTMLInputElement) {
+            if (input.type === 'checkbox') {
+                values[fieldKey] = input.checked;
+            } else {
+                values[fieldKey] = input.value;
+            }
+        } else if (input instanceof HTMLSelectElement) {
+            values[fieldKey] = input.value;
+        }
     });
 
-    // Try to restore saved value if it exists
-    if (currentSelection?.properties.sectionHomeOption) {
-        optionSelect.value = currentSelection.properties.sectionHomeOption;
-    }
+    return values;
 }

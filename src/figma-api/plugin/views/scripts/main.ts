@@ -125,7 +125,6 @@ function setupMessageListener() {
                 break;
 
             case 'app-frame-config':
-                console.log('🎯 app-frame-config received:', msg.data);
                 updateAppFrameConfig(msg.data);
                 break;
 
