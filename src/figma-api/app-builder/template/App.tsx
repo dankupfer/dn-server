@@ -83,7 +83,7 @@ const AppWithTheme = () => {
           }}
         >
           {/* <SafeAreaView style={[styles.container, { backgroundColor: getToken('background_page_default') }]}> */}
-          <SafeAreaView style={[styles.container, { backgroundColor: themeName === 'dark' ? 'black' : 'green' }]}>
+          <SafeAreaView style={[styles.container, { backgroundColor: themeName === 'dark' ? 'black' : '#f1f1f1ff' }]}>
             <AssistRouter screenWidth={screenWidth} />
           </SafeAreaView>
         </HeaderProvider>

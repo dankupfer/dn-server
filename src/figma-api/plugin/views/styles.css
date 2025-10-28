@@ -243,6 +243,7 @@ button.secondary:hover {
 .info-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .info-table tr {
@@ -257,6 +258,11 @@ button.secondary:hover {
     padding: 8px 0;
     font-size: 12px;
     color: #374151;
+
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    max-width: 0;
 }
 
 .info-table td:first-child {
