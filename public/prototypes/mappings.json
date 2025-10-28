@@ -59,5 +59,31 @@
     "figmaFileId": "test-file-123",
     "createdAt": "2025-10-28T22:48:23.438Z",
     "views": 0
+  },
+  "proto-f04fb4aa-c4c8-46ed-b51d-f1d0310ae859": {
+    "path": "dn-figma-plugin/page-1/myapp33",
+    "figmaFileId": "unknown",
+    "createdAt": "2025-10-28T23:26:10.751Z",
+    "views": 2,
+    "lastViewed": "2025-10-28T23:27:39.930Z"
+  },
+  "proto-72d35eb2-559b-4745-9298-6ce08cef46e8": {
+    "path": "dn-figma-plugin/page-1/myapp33",
+    "figmaFileId": "unknown",
+    "createdAt": "2025-10-28T23:36:11.707Z",
+    "views": 0
+  },
+  "proto-708b1c30-01ce-42ff-a1b5-ff593dc543ce": {
+    "path": "dn-figma-plugin/page-1/myapp33",
+    "figmaFileId": "unknown",
+    "createdAt": "2025-10-28T23:39:14.877Z",
+    "views": 0
+  },
+  "proto-b184ece3-8317-4928-9385-17bf32b5fbdd": {
+    "path": "dn-figma-plugin/page-1/myapp33",
+    "figmaFileId": "unknown",
+    "createdAt": "2025-10-28T23:43:29.801Z",
+    "views": 1,
+    "lastViewed": "2025-10-28T23:43:46.217Z"
   }
 }

@@ -139,7 +139,7 @@ async function buildPrototype(jobId: string, config: BuildConfig): Promise<void>
 }
 
 /**
- * Copy node_modules to temp directory
+ * Copy node_modules to temp directory and install missing dependencies
  */
 async function copyNodeModules(tempPath: string): Promise<void> {
   const nodeModulesSource = path.join(__dirname, '../template/node_modules');
@@ -153,6 +153,14 @@ async function copyNodeModules(tempPath: string): Promise<void> {
         return !dest.startsWith(src);
       }
     });
+
+    // Install any missing dependencies
+    console.log('  Installing missing dependencies...');
+    await execAsync('npm install --legacy-peer-deps', {
+      cwd: tempPath,
+      timeout: 120000 // 2 minutes
+    });
+
   } else {
     throw new Error('Template node_modules not found. Run npm install in template directory.');
   }

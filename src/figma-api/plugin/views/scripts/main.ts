@@ -5,6 +5,7 @@ import { initGenerateTab, handleComponentsCreated, handleFilesGenerated, handleC
 import { initConfigureTab, updateSelection, autoSave } from './configure';
 import { initExportTab, updateExportSelection, updateAppFrameConfig, handleFullAppExportComplete, handleSingleComponentExportComplete } from './export';
 import { showFeedback, sendToPlugin } from './utils';
+import * as ExportTab from './export';
 
 /**
  * Initialize the application
@@ -76,12 +77,12 @@ function switchTab(tabName: string, targetButton: HTMLElement) {
     if (tabName === 'configure' || tabName === 'export') {
         sendToPlugin({ type: 'get-selection' });
     }
-    
+
     // Trigger export form update when switching to export tab
     if (tabName === 'export') {
         // Request fresh App_frame config every time we switch to Export tab
         sendToPlugin({ type: 'get-app-frame-config' });
-        
+
         // Import updateExportSelection at module level to access it here
         // For now, trigger it with stored selection or null
         const lastSelection = (window as any).lastSelection || null;
@@ -133,12 +134,16 @@ function setupMessageListener() {
                 showFeedback(`✅ Cleared plugin data from ${msg.data.count} component(s)`, 'success');
                 break;
 
-            case 'full-app-exported':
+            case 'export-success':
                 handleFullAppExportComplete(msg.data);
                 break;
 
             case 'single-component-exported':
                 handleSingleComponentExportComplete(msg.data);
+                break;
+
+            case 'prototype-status-update':
+                ExportTab.handlePrototypeStatusUpdate(msg.data);
                 break;
 
             case 'error':

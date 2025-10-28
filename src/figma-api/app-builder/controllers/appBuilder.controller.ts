@@ -455,3 +455,45 @@ export function validateConfig(req: Request, res: Response): void {
         });
     }
 }
+
+/**
+ * Build app programmatically (for plugin export)
+ * Returns result instead of sending response
+ */
+export async function buildAppForExport(config: {
+    appName: string;
+    exportPath: string;
+    appFrame: any;
+    components: any[];
+}): Promise<{ success: boolean; appPath: string; error?: string }> {
+    try {
+        const fullAppConfig = {
+            appName: config.appName,
+            version: '1.0.0',
+            exportedAt: new Date().toISOString(),
+            appFrame: config.appFrame,
+            components: config.components
+        };
+
+        const result = await executeBuild(fullAppConfig, config.exportPath);
+
+        if (result.success && result.result) {
+            return {
+                success: true,
+                appPath: result.result.appPath // Fixed: use result.result.appPath
+            };
+        } else {
+            return {
+                success: false,
+                appPath: '',
+                error: result.error || 'Build failed'
+            };
+        }
+    } catch (error: any) {
+        return {
+            success: false,
+            appPath: '',
+            error: error.message
+        };
+    }
+}

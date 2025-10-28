@@ -513,13 +513,16 @@ File: ${data.filePath}`, "success");
   var currentExportSelection = { type: "none" };
   var currentSelection2 = null;
   var appFrameConfig = null;
+  var pollingInterval = null;
   function initExportTab() {
     console.log("Export tab initialized");
     sendToPlugin({ type: "get-app-frame-config" });
   }
   function updateAppFrameConfig(config) {
     appFrameConfig = config;
-    updateExportForm();
+    if (!pollingInterval) {
+      updateExportForm();
+    }
   }
   function updateExportSelection(selection) {
     currentSelection2 = selection;
@@ -555,7 +558,7 @@ File: ${data.filePath}`, "success");
     if (!appFrameConfig) {
       return `
             <div class="section">
-                <h2>Export Full App</h2>
+                <h2>Export Options</h2>
                 
                 <div class="warning-box">
                     <strong>\u26A0\uFE0F App_frame Required</strong>
@@ -568,7 +571,7 @@ File: ${data.filePath}`, "success");
     if (!appFrameConfig.appName || appFrameConfig.appName.trim() === "") {
       return `
             <div class="section">
-                <h2>Export Full App</h2>
+                <h2>Export Options</h2>
                 
                 <div class="warning-box">
                     <strong>\u26A0\uFE0F App Name Required</strong>
@@ -586,10 +589,11 @@ File: ${data.filePath}`, "success");
     const hasExported = appFrameConfig.exportState?.hasExported || false;
     const exportedName = appFrameConfig.exportState?.exportedWithAppName;
     const nameChanged = hasExported && exportedName !== appFrameConfig.appName;
+    const prototypeUrl = appFrameConfig.exportState?.prototypeUrl;
     return `
         <div class="section">
-            <h2>Export Full App</h2>
-            <p class="description">Export complete app configuration from all Journey and ScreenBuilder frames on the canvas.</p>
+            <h2>Export Options</h2>
+            <p class="description">Choose how to export your app configuration</p>
             
             <div class="component-info">
                 <h3>Project Configuration</h3>
@@ -603,10 +607,6 @@ File: ${data.filePath}`, "success");
                         <td><strong>Last Exported:</strong></td>
                         <td>${new Date(appFrameConfig.exportState.lastExportDate).toLocaleString()}</td>
                     </tr>
-                    <tr>
-                        <td><strong>Export Path:</strong></td>
-                        <td style="font-size: 11px;">${appFrameConfig.exportState.exportPath}</td>
-                    </tr>
                     ` : ""}
                 </table>
             </div>
@@ -615,36 +615,84 @@ File: ${data.filePath}`, "success");
             <div class="warning-box" style="margin-bottom: 16px;">
                 <strong>\u26A0\uFE0F App Name Changed</strong>
                 <p>App name was changed from "${exportedName}" to "${appFrameConfig.appName}".</p>
-                <p>Re-exporting will create a new project folder. Component exports are disabled until full export completes.</p>
+                <p>Re-exporting will create a new project folder.</p>
             </div>
             ` : ""}
-            
-            <div class="input-group">
-                <label for="export-path">Export Path</label>
-                <small class="description">Directory where project folder will be created</small>
-                <input 
-                    type="text" 
-                    id="export-path" 
-                    placeholder="/Users/username/projects"
-                    value_to_replace_and_test_later="${appFrameConfig.exportState?.exportPath || "~/Desktop"}"
-                    value="${appFrameConfig.exportState?.exportPath || "/Users/dankupfer/Documents/dev/dn-server"}"
-                >
-                <small class="description">Project will be created at: {path}/${appFrameConfig.appName}/</small>
+
+            <!-- Option 1: Export Web -->
+            <div class="export-option">
+                <h3>\u{1F310} Web Prototype</h3>
+                <p class="description">Generate a shareable web link with iPhone frame viewer</p>
+                
+                ${prototypeUrl ? `
+                <div class="info-box" style="margin: 12px 0;">
+                    <strong>Current Prototype:</strong>
+                    <a href="${prototypeUrl}" target="_blank" style="display: block; margin-top: 4px; font-size: 11px; word-break: break-all;">${prototypeUrl}</a>
+                </div>
+                ` : ""}
+                
+                <div class="button-group">
+                    <button class="primary" onclick="handleWebExport()">
+                        ${prototypeUrl ? "\u{1F504} Update" : "\u{1F680} Generate"} Web Link
+                    </button>
+                </div>
+                
+                <!-- Polling status (hidden by default) -->
+                <div id="web-export-status" style="display: none; margin-top: 12px;">
+                    <div class="info-box">
+                        <strong>Building prototype...</strong>
+                        <div style="margin: 8px 0;">
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                                <div id="web-progress-bar" style="background: #667eea; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+                        <p id="web-status-text" style="margin: 4px 0 0 0; font-size: 12px;">Starting build...</p>
+                    </div>
+                </div>
             </div>
-            
-            <div class="button-group">
-                <button class="primary" onclick="handleFullAppExport()">
-                    ${hasExported && !nameChanged ? "Re-export" : "Export"} Full App Configii!!
-                </button>
+
+            <!-- Option 2: Simulator Live -->
+            <div class="export-option">
+                <h3>\u{1F4F1} Simulator Live</h3>
+                <p class="description">Create React Native project with full source code</p>
+                
+                <div class="input-group">
+                    <label for="simulator-path">Export Path</label>
+                    <input 
+                        type="text" 
+                        id="simulator-path" 
+                        placeholder="/Users/username/projects"
+                        value="${appFrameConfig.exportState?.exportPath || "/Users/dankupfer/Documents/dev/dn-server"}"
+                    >
+                    <small class="description">Project will be created at: {path}/${appFrameConfig.appName}/</small>
+                </div>
+                
+                <div class="button-group">
+                    <button class="primary" onclick="handleSimulatorExport()">
+                        ${hasExported && !nameChanged ? "\u{1F504} Re-export" : "\u{1F4E6} Export"} Project
+                    </button>
+                </div>
             </div>
-            
-            <div class="info-box">
+
+            <!-- Option 3: Download Zip (Coming Soon) -->
+            <div class="export-option" style="opacity: 0.6;">
+                <h3>\u{1F4E6} Download Zip</h3>
+                <p class="description">Download complete project as zip file (Coming Soon)</p>
+                
+                <div class="button-group">
+                    <button class="secondary" disabled>
+                        \u{1F6A7} Coming Soon
+                    </button>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 20px;">
                 <strong>What gets exported:</strong>
                 <ul>
                     <li>App configuration (from App_frame)</li>
                     <li>All Journey components with their properties</li>
                     <li>All ScreenBuilder frames with their properties</li>
-                    <li>Creates project structure: ${appFrameConfig.appName}/fullAppConfig.json</li>
+                    <li>Complete routing and navigation setup</li>
                 </ul>
             </div>
         </div>
@@ -742,15 +790,29 @@ File: ${data.filePath}`, "success");
         </div>
     `;
   }
-  function handleFullAppExport() {
-    const exportPath = document.getElementById("export-path")?.value;
+  function handleWebExport() {
+    console.log("\u{1F310} Starting web prototype export...");
+    const statusDiv = document.getElementById("web-export-status");
+    if (statusDiv) {
+      statusDiv.style.display = "block";
+    }
+    sendToPlugin({
+      type: "export-full-app",
+      exportType: "web",
+      exportPath: ""
+      // Not needed for web export
+    });
+  }
+  function handleSimulatorExport() {
+    const exportPath = document.getElementById("simulator-path")?.value;
     if (!exportPath || exportPath.trim() === "") {
       alert("Please enter an export path");
       return;
     }
-    console.log("\u{1F680} Exporting full app to:", exportPath);
+    console.log("\u{1F4F1} Exporting to simulator:", exportPath);
     sendToPlugin({
       type: "export-full-app",
+      exportType: "simulator",
       exportPath
     });
   }
@@ -769,11 +831,89 @@ File: ${data.filePath}`, "success");
     });
   }
   function handleFullAppExportComplete(data) {
-    alert(`\u2705 Full app config exported!
+    console.log("Export complete:", data);
+    if (data.exportType === "web") {
+      if (data.jobId) {
+        console.log("\u{1F504} Starting polling for job:", data.jobId);
+        const statusDiv = document.getElementById("web-export-status");
+        const progressBar = document.getElementById("web-progress-bar");
+        const statusText = document.getElementById("web-status-text");
+        if (statusDiv) statusDiv.style.display = "block";
+        if (progressBar) progressBar.style.width = "10%";
+        if (statusText) statusText.textContent = "Build started...";
+        startPolling(data.jobId);
+      } else {
+        alert("\u26A0\uFE0F No job ID returned from server");
+      }
+    } else if (data.exportType === "simulator") {
+      alert(`\u2705 Simulator export complete!
 
 Saved to: ${data.filePath}
 
 Screens exported: ${data.screenCount}`);
+    }
+  }
+  function startPolling(jobId) {
+    pollStatus(jobId);
+    pollingInterval = window.setInterval(() => {
+      pollStatus(jobId);
+    }, 5e3);
+  }
+  function pollStatus(jobId) {
+    console.log("\u{1F4CA} Polling status for:", jobId);
+    sendToPlugin({
+      type: "poll-prototype-status",
+      jobId
+    });
+  }
+  function handlePrototypeStatusUpdate(data) {
+    console.log("\u{1F4CA} Status update:", data);
+    const progressBar = document.getElementById("web-progress-bar");
+    const statusText = document.getElementById("web-status-text");
+    if (progressBar) {
+      progressBar.style.width = `${data.progress}%`;
+    }
+    if (statusText) {
+      statusText.textContent = data.currentStep || "Processing...";
+    }
+    if (data.status === "complete") {
+      console.log("\u2705 Build complete!");
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+      }
+      if (statusText) {
+        statusText.innerHTML = `<span style="color: #22c55e;">\u2705 Complete! Build time: ${data.result.buildTime}s</span>`;
+      }
+      setTimeout(() => {
+        const statusDiv = document.getElementById("web-export-status");
+        if (statusDiv) {
+          statusDiv.style.display = "none";
+        }
+        if (appFrameConfig && appFrameConfig.exportState) {
+          appFrameConfig.exportState.prototypeUrl = data.result.prototypeUrl;
+        }
+        updateExportForm();
+        const message = `\u2705 Web prototype ready!
+
+${data.result.prototypeUrl}
+
+Click OK to open in browser.`;
+        if (confirm(message)) {
+          window.open(data.result.prototypeUrl, "_blank");
+        }
+      }, 2e3);
+    } else if (data.status === "error") {
+      console.error("\u274C Build failed:", data.error);
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+      }
+      if (statusText) {
+        statusText.innerHTML = `<span style="color: #ef4444;">\u274C Error: ${data.error}</span>`;
+      }
+      alert(`Build failed: ${data.error}`);
+    }
   }
   function handleSingleComponentExportComplete(data) {
     console.log(data);
@@ -782,7 +922,8 @@ Screens exported: ${data.screenCount}`);
 Component: ${data.componentName}
 Config updated successfully!`);
   }
-  window.handleFullAppExport = handleFullAppExport;
+  window.handleWebExport = handleWebExport;
+  window.handleSimulatorExport = handleSimulatorExport;
   window.handleSingleComponentExport = handleSingleComponentExport;
 
   // src/figma-api/plugin/views/scripts/main.ts
@@ -862,11 +1003,14 @@ Config updated successfully!`);
         case "plugin-data-cleared":
           showFeedback(`\u2705 Cleared plugin data from ${msg.data.count} component(s)`, "success");
           break;
-        case "full-app-exported":
+        case "export-success":
           handleFullAppExportComplete(msg.data);
           break;
         case "single-component-exported":
           handleSingleComponentExportComplete(msg.data);
+          break;
+        case "prototype-status-update":
+          handlePrototypeStatusUpdate(msg.data);
           break;
         case "error":
           handleCustomerError();

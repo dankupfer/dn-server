@@ -1,0 +1,234 @@
+{
+  "appName": "myApp33",
+  "version": "1.0.0",
+  "exportedAt": "2025-10-28T23:43:07.520Z",
+  "appFrame": {
+    "appName": "myApp33",
+    "brand": "lloyds",
+    "mode": "light",
+    "apiBase": "http://localhost:3001"
+  },
+  "components": [
+    {
+      "componentName": "ScreenBuilder_frame",
+      "nodeId": "324:26",
+      "properties": {
+        "section_type#320:94": "slide-panel",
+        "title#320:93": "",
+        "id#320:92": "screen-1",
+        "id": "screen-2",
+        "name": "Apply",
+        "title": "Save & Invest",
+        "section_type": "slide-panel",
+        "sectionHome": true,
+        "sectionHomeOption": "apply",
+        "items": [
+          {
+            "componentName": "AccountCard",
+            "nodeId": "324:27",
+            "properties": {
+              "balance#320:81": "£836.50",
+              "subtitle#320:78": "30-95-74 / 46557160",
+              "title#320:75": "Club Lloyds",
+              "AccountCard": "Condensed"
+            }
+          },
+          {
+            "componentName": "SectionHeader",
+            "nodeId": "324:28",
+            "properties": {
+              "title#320:87": "Test Header"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "componentName": "ScreenBuilder_frame",
+      "nodeId": "324:36",
+      "properties": {
+        "section_type#320:94": "slide-panel",
+        "title#320:93": "",
+        "id#320:92": "screen-1",
+        "id": "screen-3",
+        "name": "Payments",
+        "title": "Pay & Transfer",
+        "section_type": "modal",
+        "sectionHome": true,
+        "sectionHomeOption": "payments",
+        "items": [
+          {
+            "componentName": "AccountCard",
+            "nodeId": "324:37",
+            "properties": {
+              "balance#320:81": "£836.50",
+              "subtitle#320:78": "30-95-74 / 46557160",
+              "title#320:75": "Club Lloyds",
+              "AccountCard": "Condensed"
+            }
+          },
+          {
+            "componentName": "SectionHeader",
+            "nodeId": "324:38",
+            "properties": {
+              "title#320:87": "Test Header"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "componentName": "ScreenBuilder_frame",
+      "nodeId": "324:46",
+      "properties": {
+        "section_type#320:94": "slide-panel",
+        "title#320:93": "",
+        "id#320:92": "screen-1",
+        "id": "screen-5",
+        "name": "Cards",
+        "title": "Cards Section",
+        "section_type": "slide-panel",
+        "sectionHome": true,
+        "sectionHomeOption": "cards",
+        "items": [
+          {
+            "componentName": "AccountCard",
+            "nodeId": "324:47",
+            "properties": {
+              "balance#320:81": "£836.50",
+              "subtitle#320:78": "30-95-74 / 46557160",
+              "title#320:75": "Club Lloyds",
+              "AccountCard": "Condensed"
+            }
+          },
+          {
+            "componentName": "SectionHeader",
+            "nodeId": "324:48",
+            "properties": {
+              "title#320:87": "Test Header"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "componentName": "ScreenBuilder_frame",
+      "nodeId": "324:66",
+      "properties": {
+        "section_type#320:94": "slide-panel",
+        "title#320:93": "",
+        "id#320:92": "screen-1",
+        "id": "screen-4",
+        "name": "Search",
+        "title": "Search",
+        "section_type": "modal",
+        "sectionHome": true,
+        "sectionHomeOption": "search",
+        "items": [
+          {
+            "componentName": "AccountCard",
+            "nodeId": "324:67",
+            "properties": {
+              "balance#320:81": "£836.50",
+              "subtitle#320:78": "30-95-74 / 46557160",
+              "title#320:75": "Club Lloyds",
+              "AccountCard": "Condensed"
+            }
+          },
+          {
+            "componentName": "SectionHeader",
+            "nodeId": "324:68",
+            "properties": {
+              "title#320:87": "Test Header"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "componentName": "ScreenBuilder_frame",
+      "nodeId": "323:11",
+      "properties": {
+        "section_type#320:94": "slide-panel",
+        "title#320:93": "",
+        "id#320:92": "screen-1",
+        "id": "screen-1",
+        "name": "Save & Invest",
+        "title": "Save & Invest",
+        "section_type": "main-carousel",
+        "sectionHome": true,
+        "sectionHomeOption": "invest",
+        "items": [
+          {
+            "componentName": "AccountCard",
+            "nodeId": "323:16",
+            "properties": {
+              "balance#320:81": "£836.50",
+              "subtitle#320:78": "30-95-74 / 46557160",
+              "title#320:75": "Club Lloyds",
+              "AccountCard": "Condensed"
+            }
+          },
+          {
+            "componentName": "SectionHeader",
+            "nodeId": "323:14",
+            "properties": {
+              "title#320:87": "Test Header"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "componentName": "Journey",
+      "nodeId": "320:276",
+      "properties": {
+        "prop8#320:104": "",
+        "prop7#320:103": "",
+        "prop5#320:101": "",
+        "prop4#320:100": "",
+        "prop0#320:96": "",
+        "prop3#320:99": "",
+        "prop1#320:97": "",
+        "prop2#320:98": "",
+        "prop9#320:105": "",
+        "prop6#320:102": "",
+        "journeyOption#320:95": "CoreJourney",
+        "journeyOption": "AssistJourney",
+        "id": "assist-1",
+        "name": "Everyday",
+        "title": "Lloyds Assistant",
+        "section_type": "main-carousel",
+        "sectionHome": true,
+        "sectionHomeOption": "everyday",
+        "tts": false,
+        "gemini": false
+      }
+    },
+    {
+      "componentName": "Journey",
+      "nodeId": "320:272",
+      "properties": {
+        "prop8#320:104": "",
+        "prop7#320:103": "",
+        "prop5#320:101": "",
+        "prop4#320:100": "",
+        "prop0#320:96": "",
+        "prop3#320:99": "",
+        "prop1#320:97": "",
+        "prop2#320:98": "",
+        "prop9#320:105": "",
+        "prop6#320:102": "",
+        "journeyOption#320:95": "CoreJourney",
+        "journeyOption": "CoreJourney",
+        "id": "core-1",
+        "name": "Summary",
+        "title": "Hi Dan K",
+        "section_type": "main-carousel",
+        "sectionHome": true,
+        "sectionHomeOption": "summary",
+        "defaultCustomer": ""
+      }
+    }
+  ]
+}
