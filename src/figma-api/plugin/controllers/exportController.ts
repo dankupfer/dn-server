@@ -63,7 +63,7 @@ export async function exportFullApp(req: Request, res: Response) {
 
         try {
             // Import the buildApp controller function
-            const { buildApp: buildAppController } = await import('../../app-builder/controllers/appBuilderController');
+            const { buildApp: buildAppController } = await import('../../app-builder/controllers/appBuilder.controller');
 
             // Create a mock request/response for the app-builder
             const mockReq = {

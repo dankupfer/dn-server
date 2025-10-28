@@ -27,7 +27,7 @@ export async function copyBaseTemplate(
     const errors: string[] = [];
 
     // Get template source path
-    const templatePath = path.join(__dirname, '../template');
+    const templatePath = path.join(__dirname, '../template/app-files');
 
     try {
         // Verify template exists
