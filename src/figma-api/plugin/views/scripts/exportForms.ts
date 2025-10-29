@@ -94,6 +94,19 @@ export function buildFullAppExportForm(appFrameConfig: AppFrameConfig | null): s
                     </button>
                 </div>
 
+                 <!-- Polling status (hidden by default) -->
+                <div id="web-export-status" style="display: none; margin-top: 12px;">
+                    <div class="info-box">
+                        <strong>Building prototype...</strong>
+                        <div style="margin: 8px 0;">
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                                <div id="web-progress-bar" style="background: #667eea; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+                        <p id="web-status-text" style="margin: 4px 0 0 0; font-size: 12px;">Starting build...</p>
+                    </div>
+                </div>
+
                 <!-- Public Access Options -->
                 <div class="input-group" style="margin-top: 16px;">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -152,19 +165,6 @@ export function buildFullAppExportForm(appFrameConfig: AppFrameConfig | null): s
                                 min="${new Date().toISOString().split('T')[0]}"
                             >
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Polling status (hidden by default) -->
-                <div id="web-export-status" style="display: none; margin-top: 12px;">
-                    <div class="info-box">
-                        <strong>Building prototype...</strong>
-                        <div style="margin: 8px 0;">
-                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
-                                <div id="web-progress-bar" style="background: #667eea; height: 100%; width: 0%; transition: width 0.3s;"></div>
-                            </div>
-                        </div>
-                        <p id="web-status-text" style="margin: 4px 0 0 0; font-size: 12px;">Starting build...</p>
                     </div>
                 </div>
             </div>

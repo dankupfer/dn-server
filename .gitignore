@@ -140,3 +140,4 @@ vite.config.ts.timestamp-*
 
 # Figma Plugin Export
 figma-exports/
+public/prototypes

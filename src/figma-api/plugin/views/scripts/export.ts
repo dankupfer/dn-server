@@ -396,6 +396,9 @@ export function handleSingleComponentExportComplete(data: any) {
 }
 
 // Make functions available globally for onclick handlers
+(window as any).handleWebExport = handleWebExport;
+(window as any).handleSimulatorExport = handleSimulatorExport;
+(window as any).handleSingleComponentExport = handleSingleComponentExport;
 (window as any).togglePublicAccessFields = togglePublicAccessFields;
 (window as any).refreshPassword = refreshPassword;
 (window as any).handleExpiryChange = handleExpiryChange;

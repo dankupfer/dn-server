@@ -593,6 +593,19 @@ File: ${data.filePath}`, "success");
                     </button>
                 </div>
 
+                 <!-- Polling status (hidden by default) -->
+                <div id="web-export-status" style="display: none; margin-top: 12px;">
+                    <div class="info-box">
+                        <strong>Building prototype...</strong>
+                        <div style="margin: 8px 0;">
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                                <div id="web-progress-bar" style="background: #667eea; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+                        <p id="web-status-text" style="margin: 4px 0 0 0; font-size: 12px;">Starting build...</p>
+                    </div>
+                </div>
+
                 <!-- Public Access Options -->
                 <div class="input-group" style="margin-top: 16px;">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -651,19 +664,6 @@ File: ${data.filePath}`, "success");
                                 min="${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}"
                             >
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Polling status (hidden by default) -->
-                <div id="web-export-status" style="display: none; margin-top: 12px;">
-                    <div class="info-box">
-                        <strong>Building prototype...</strong>
-                        <div style="margin: 8px 0;">
-                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
-                                <div id="web-progress-bar" style="background: #667eea; height: 100%; width: 0%; transition: width 0.3s;"></div>
-                            </div>
-                        </div>
-                        <p id="web-status-text" style="margin: 4px 0 0 0; font-size: 12px;">Starting build...</p>
                     </div>
                 </div>
             </div>
@@ -878,6 +878,46 @@ File: ${data.filePath}`, "success");
     }
     exportContainer.innerHTML = html;
   }
+  function handleWebExport() {
+    console.log("\u{1F310} Starting web prototype export...");
+    const statusDiv = document.getElementById("web-export-status");
+    if (statusDiv) {
+      statusDiv.style.display = "block";
+    }
+    sendToPlugin({
+      type: "export-full-app",
+      exportType: "web",
+      exportPath: ""
+      // Not needed for web export
+    });
+  }
+  function handleSimulatorExport() {
+    const exportPath = document.getElementById("simulator-path")?.value;
+    if (!exportPath || exportPath.trim() === "") {
+      alert("Please enter an export path");
+      return;
+    }
+    console.log("\u{1F4F1} Exporting to simulator:", exportPath);
+    sendToPlugin({
+      type: "export-full-app",
+      exportType: "simulator",
+      exportPath
+    });
+  }
+  function handleSingleComponentExport() {
+    if (!currentSelection2 || !currentSelection2.componentName) {
+      alert("No component selected");
+      return;
+    }
+    console.log("\u{1F680} Exporting single component:", currentSelection2);
+    sendToPlugin({
+      type: "export-single-component",
+      componentData: {
+        componentName: currentSelection2.componentName,
+        properties: currentSelection2.properties
+      }
+    });
+  }
   function handleFullAppExportComplete(data) {
     console.log("Export complete:", data);
     if (data.exportType === "web") {
@@ -975,6 +1015,9 @@ Click OK to open in browser.`;
 Component: ${data.componentName}
 Config updated successfully!`);
   }
+  window.handleWebExport = handleWebExport;
+  window.handleSimulatorExport = handleSimulatorExport;
+  window.handleSingleComponentExport = handleSingleComponentExport;
   window.togglePublicAccessFields = togglePublicAccessFields;
   window.refreshPassword = refreshPassword;
   window.handleExpiryChange = handleExpiryChange;
