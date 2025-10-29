@@ -6,6 +6,7 @@ import cors from 'cors';
 import healthRoutes from './routes/health';
 import figmaRoutes from './figma-api';
 import customersRoutes from './routes/customers';
+import prototypeViewerRoutes from './routes/prototypes.routes';
 import { setupAssistRoutes } from './routes/assist';
 
 // Log environment setup
@@ -43,14 +44,20 @@ app.use('/api', customersRoutes);
 const assistRouter = setupAssistRoutes(wsInstance.app);
 app.use('/api', assistRouter);
 
+// Register public prototype viewer routes (NOT under /api)
+app.use('/prototypes', prototypeViewerRoutes);
+
 // Start server
 app.listen(PORT, () => {
   console.log(`\n🚀 DN Server running on http://localhost:${PORT}`);
   console.log(`\n📡 Available Endpoints:`);
-  console.log(`   ❤️  Health:    http://localhost:${PORT}/api/health`);
-  console.log(`   🎨 Figma:     http://localhost:${PORT}/api/create-module`);
-  console.log(`   🦁 Customers: http://localhost:${PORT}/api/create-customer`);
-  console.log(`   🤖 Assist:    http://localhost:${PORT}/api/assist/chat`);
-  console.log(`   🎙️  Voice:     ws://localhost:${PORT}/api/assist`);
+  console.log(`   ❤️  Health:      http://localhost:${PORT}/api/health`);
+  console.log(`   🎨 Figma:       http://localhost:${PORT}/api/figma/plugin/ui`);
+  console.log(`   🏗️  App Builder: http://localhost:${PORT}/api/figma/app-builder/build`);
+  console.log(`   🌐 Prototypes:  http://localhost:${PORT}/api/figma/app-builder/prototype/build`);
+  console.log(`   🦁 Customers:   http://localhost:${PORT}/api/customers`);
+  console.log(`   🤖 Assist:      http://localhost:${PORT}/api/assist/chat`);
+  console.log(`   🎙️  Voice:       ws://localhost:${PORT}/api/assist`);
+  console.log(`   👀 Viewer:      http://localhost:${PORT}/prototypes/:uuid`);
   console.log('');
 });

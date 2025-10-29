@@ -6,7 +6,7 @@ import { Request, Response } from 'express';
 import formBuilderService from '../services/formBuilder.service';
 
 /**
- * POST /api/figma/form-config
+ * POST /api/figma/plugin/form-config
  * Generic form configuration endpoint - works for ANY component
  */
 export const getFormConfig = async (req: Request, res: Response) => {
@@ -45,7 +45,7 @@ export const getFormConfig = async (req: Request, res: Response) => {
 };
 
 /**
- * POST /api/figma/conditional-rules
+ * POST /api/figma/plugin/conditional-rules
  * Evaluate conditional rules and return affected fields
  */
 export const getConditionalRules = async (req: Request, res: Response) => {

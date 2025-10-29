@@ -177,7 +177,7 @@ Returns JSON definitions with:
 
 ### Get Form Configuration
 ```
-POST /api/figma/form-config
+POST /api/figma/plugin/form-config
 Body: {
   componentType: "Journey",
   currentProperties: { Type: "CoreJourney", prop0: "...", ... }
@@ -251,7 +251,7 @@ figma-api/
 - [x] Add validation service
 
 ### Phase 3: Dynamic Forms ✅
-- [x] Implement POST /api/figma/form-config endpoint
+- [x] Implement POST /api/figma/plugin/form-config endpoint
 - [x] Build form configuration logic based on component state
 - [x] Handle conditional field rendering
 - [x] Support nested dependencies (section_type → sectionHome → sectionHomeOption)

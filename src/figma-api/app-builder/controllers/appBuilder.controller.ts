@@ -1,13 +1,16 @@
-// figma-api/app-builder/controllers/appBuilderController.ts
+// src/figma-api/app-builder/controllers/appBuilder.controller.ts
 
 /**
  * APP BUILDER CONTROLLER
  * 
- * Main controller for the app builder API endpoint.
- * Orchestrates all services to build a complete app from fullAppConfig.json
+ * Main controller for building apps from fullAppConfig.json
+ * Supports two build types:
+ * - 'local': Build app in user-specified location (existing behavior)
+ * - 'prototype': Build web prototype for sharing (new behavior)
  */
 
 import { Request, Response } from 'express';
+import path from 'path';
 import {
     FullAppConfig,
     AppBuilderRequest,
@@ -19,48 +22,64 @@ import {
 
 // Import services
 import { parseAppConfig, validateNormalisedComponents, generateParseSummary } from '../services/parser.service';
-import { categoriseComponents, validateCategorisation, sortRoutes, generateCategorisationReport } from '../services/categoriser.service';
+import { categoriseComponents, validateCategorisation, sortRoutes, generateCategorisationReport, getAllRoutes } from '../services/categoriser.service';
 import { copyBaseTemplate, generateTemplateCopySummary } from '../services/templateCopy.service';
 import { generateModules, generateModuleSummary, validateGeneratedModules } from '../services/moduleGenerator.service';
 import { generateRouters, generateRouterSummary, validateGeneratedRouters } from '../services/routerGenerator.service';
-import { getAllRoutes } from '../services/categoriser.service';
+
+export type BuildType = 'local' | 'prototype';
+
+export interface BuildOptions {
+    dryRun?: boolean;
+    buildType?: BuildType;
+    // Prototype-specific options
+    figmaFileId?: string;
+    figmaFileName?: string;
+    figmaPageName?: string;
+}
 
 /**
- * Main build endpoint handler
- * POST /api/app-builder/build
+ * Main build function - can be called directly or via HTTP
  */
-export async function buildApp(req: Request, res: Response): Promise<void> {
+export async function executeBuild(
+    config: FullAppConfig,
+    targetPath?: string,
+    options: BuildOptions = {}
+): Promise<{ success: boolean; result?: any; error?: string; summary?: BuildSummary }> {
     const startTime = Date.now();
-    const buildId = generateBuildId();
+    const buildType = options.buildType || 'local';
 
     console.log(`\n========================================`);
-    console.log(`🚀 App Builder - Build Started`);
-    console.log(`Build ID: ${buildId}`);
+    console.log(`🚀 App Builder - ${buildType === 'prototype' ? 'Prototype' : 'Local'} Build Started`);
     console.log(`Timestamp: ${new Date().toISOString()}`);
     console.log(`========================================\n`);
 
     try {
-        // Extract request data
-        const { config, targetPath, options } = req.body as AppBuilderRequest;
+        // Determine output path based on build type
+        let appPath: string;
 
-        if (!config) {
-            const errorResponse: AppBuilderErrorResponse = {
-                success: false,
-                error: 'Missing configuration',
-                details: 'Request body must include "config" field with fullAppConfig.json',
-                timestamp: new Date().toISOString()
-            };
-            res.status(400).json(errorResponse);
-            return;
+        if (buildType === 'prototype') {
+            // Prototype builds go to public/prototypes/{file}/{page}/{app}/temp
+            const { figmaFileName = 'unknown', figmaPageName = 'unknown' } = options;
+            const safeName = (name: string) => name.replace(/[^a-z0-9-_]/gi, '-').toLowerCase();
+
+            appPath = path.join(
+                __dirname,
+                '../../../../public/prototypes',
+                safeName(figmaFileName),
+                safeName(figmaPageName),
+                safeName(config.appName),
+                'temp'
+            );
+        } else {
+            // Local builds go to user-specified path
+            const basePath = targetPath || process.env.APP_BUILD_PATH || '/tmp/generated-apps';
+            appPath = `${basePath}/${config.appName}`;
         }
-
-        // Determine output path
-        const basePath = targetPath || process.env.APP_BUILD_PATH || '/tmp/generated-apps';
-        const appPath = `${basePath}/${config.appName}`;
 
         console.log(`📦 App Name: ${config.appName}`);
         console.log(`📂 Output Path: ${appPath}`);
-        console.log(`⚙️  Options:`, options || 'default');
+        console.log(`🏗️  Build Type: ${buildType}`);
         console.log('');
 
         // ========================================
@@ -71,15 +90,10 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
 
         if (!parseResult.success || !parseResult.normalised) {
             console.log(`❌ Parse failed\n`);
-            const errorResponse: AppBuilderErrorResponse = {
+            return {
                 success: false,
                 error: 'Configuration validation failed',
-                details: 'The provided configuration has errors. See validationErrors for details.',
-                validationErrors: parseResult.errors,
-                timestamp: new Date().toISOString()
             };
-            res.status(400).json(errorResponse);
-            return;
         }
 
         console.log(`✓ Parse successful`);
@@ -91,14 +105,10 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
 
         if (allValidationErrors.filter(e => e.type === 'error').length > 0) {
             console.log(`❌ Validation failed\n`);
-            const errorResponse: AppBuilderErrorResponse = {
+            return {
                 success: false,
-                error: 'Component validation failed',
-                validationErrors: allValidationErrors,
-                timestamp: new Date().toISOString()
+                error: 'Component validation failed'
             };
-            res.status(400).json(errorResponse);
-            return;
         }
 
         // Log warnings if any
@@ -117,14 +127,10 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
 
         if (!categoriseResult.success || !categoriseResult.categorised) {
             console.log(`❌ Categorisation failed\n`);
-            const errorResponse: AppBuilderErrorResponse = {
+            return {
                 success: false,
-                error: 'Component categorisation failed',
-                details: categoriseResult.warnings.join(', '),
-                timestamp: new Date().toISOString()
+                error: 'Component categorisation failed'
             };
-            res.status(500).json(errorResponse);
-            return;
         }
 
         console.log(`✓ Categorisation successful`);
@@ -164,14 +170,10 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
 
             if (!templateResult.success) {
                 console.log(`❌ Template copy failed\n`);
-                const errorResponse: AppBuilderErrorResponse = {
+                return {
                     success: false,
-                    error: 'Template copy failed',
-                    details: templateResult.errors.join(', '),
-                    timestamp: new Date().toISOString()
+                    error: 'Template copy failed'
                 };
-                res.status(500).json(errorResponse);
-                return;
             }
 
             console.log(`✓ Template copy successful`);
@@ -201,14 +203,10 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
 
             if (!moduleResult.success) {
                 console.log(`❌ Module generation failed\n`);
-                const errorResponse: AppBuilderErrorResponse = {
+                return {
                     success: false,
-                    error: 'Module generation failed',
-                    details: moduleResult.errors.join(', '),
-                    timestamp: new Date().toISOString()
+                    error: 'Module generation failed'
                 };
-                res.status(500).json(errorResponse);
-                return;
             }
 
             console.log(`✓ Module generation successful`);
@@ -239,14 +237,10 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
 
             if (!routerResult.success) {
                 console.log(`❌ Router generation failed\n`);
-                const errorResponse: AppBuilderErrorResponse = {
+                return {
                     success: false,
-                    error: 'Router generation failed',
-                    details: routerResult.errors.join(', '),
-                    timestamp: new Date().toISOString()
+                    error: 'Router generation failed'
                 };
-                res.status(500).json(errorResponse);
-                return;
             }
 
             console.log(`✓ Router generation successful`);
@@ -262,7 +256,7 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
         }
 
         // ========================================
-        // PHASE 6: BUILD SUMMARY
+        // BUILD SUMMARY
         // ========================================
         const endTime = Date.now();
         const duration = ((endTime - startTime) / 1000).toFixed(2);
@@ -273,7 +267,7 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
             carouselRoutes: categoriseResult.categorised.carouselRoutes.length,
             bottomNavRoutes: categoriseResult.categorised.bottomNavRoutes.length,
             childRoutes: categoriseResult.categorised.childRoutes.length,
-            generatedFiles: allRoutes.length * 2 + 3, // modules (2 files each) + 3 router files
+            generatedFiles: allRoutes.length * 2 + 3,
             warnings: [
                 ...warnings.map(w => w.message),
                 ...categoriseResult.warnings,
@@ -296,27 +290,79 @@ export async function buildApp(req: Request, res: Response): Promise<void> {
         }
         console.log(`========================================\n`);
 
+        return {
+            success: true,
+            result: {
+                appPath,
+                buildType,
+                duration: parseFloat(duration)
+            },
+            summary
+        };
+
+    } catch (error) {
+        console.log(`\n❌ Build failed with exception\n`);
+        console.error(error);
+
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error occurred'
+        };
+    }
+}
+
+/**
+ * HTTP endpoint handler for local builds
+ * POST /api/figma/app-builder/build
+ */
+export async function buildApp(req: Request, res: Response): Promise<void> {
+    const buildId = generateBuildId();
+
+    try {
+        const { config, targetPath, options } = req.body as AppBuilderRequest;
+
+        if (!config) {
+            const errorResponse: AppBuilderErrorResponse = {
+                success: false,
+                error: 'Missing configuration',
+                details: 'Request body must include "config" field with fullAppConfig.json',
+                timestamp: new Date().toISOString()
+            };
+            res.status(400).json(errorResponse);
+            return;
+        }
+
+        // Execute build with 'local' type
+        const result = await executeBuild(config, targetPath, { ...options, buildType: 'local' });
+
+        if (!result.success) {
+            const errorResponse: AppBuilderErrorResponse = {
+                success: false,
+                error: result.error || 'Build failed',
+                timestamp: new Date().toISOString()
+            };
+            res.status(500).json(errorResponse);
+            return;
+        }
+
         const successResponse: AppBuilderSuccessResponse = {
             success: true,
             buildId,
-            appPath,
-            summary,
+            appPath: result.result.appPath,
+            summary: result.summary!,
             timestamp: new Date().toISOString()
         };
 
         res.status(200).json(successResponse);
 
     } catch (error) {
-        console.log(`\n❌ Build failed with exception\n`);
-        console.error(error);
-
+        console.error('Build error:', error);
         const errorResponse: AppBuilderErrorResponse = {
             success: false,
             error: 'Internal server error',
             details: error instanceof Error ? error.message : 'Unknown error occurred',
             timestamp: new Date().toISOString()
         };
-
         res.status(500).json(errorResponse);
     }
 }
@@ -332,7 +378,7 @@ function generateBuildId(): string {
 
 /**
  * Health check endpoint
- * GET /api/app-builder/health
+ * GET /api/figma/app-builder/health
  */
 export function healthCheck(req: Request, res: Response): void {
     res.status(200).json({
@@ -345,12 +391,11 @@ export function healthCheck(req: Request, res: Response): void {
 
 /**
  * Get build status endpoint (future)
- * GET /api/app-builder/status/:buildId
+ * GET /api/figma/app-builder/status/:buildId
  */
 export function getBuildStatus(req: Request, res: Response): void {
     const { buildId } = req.params;
 
-    // TODO: Implement build status tracking
     res.status(200).json({
         buildId,
         status: 'completed',
@@ -361,7 +406,7 @@ export function getBuildStatus(req: Request, res: Response): void {
 
 /**
  * Validate config endpoint
- * POST /api/app-builder/validate
+ * POST /api/figma/app-builder/validate
  */
 export function validateConfig(req: Request, res: Response): void {
     try {
@@ -376,7 +421,6 @@ export function validateConfig(req: Request, res: Response): void {
             return;
         }
 
-        // Parse and validate
         const parseResult = parseAppConfig(config);
 
         if (!parseResult.success || !parseResult.normalised) {
@@ -388,7 +432,6 @@ export function validateConfig(req: Request, res: Response): void {
             return;
         }
 
-        // Additional validation
         const additionalErrors = validateNormalisedComponents(parseResult.normalised);
         const allErrors = [...parseResult.errors, ...additionalErrors];
 
@@ -410,5 +453,47 @@ export function validateConfig(req: Request, res: Response): void {
             details: error instanceof Error ? error.message : 'Unknown error',
             timestamp: new Date().toISOString()
         });
+    }
+}
+
+/**
+ * Build app programmatically (for plugin export)
+ * Returns result instead of sending response
+ */
+export async function buildAppForExport(config: {
+    appName: string;
+    exportPath: string;
+    appFrame: any;
+    components: any[];
+}): Promise<{ success: boolean; appPath: string; error?: string }> {
+    try {
+        const fullAppConfig = {
+            appName: config.appName,
+            version: '1.0.0',
+            exportedAt: new Date().toISOString(),
+            appFrame: config.appFrame,
+            components: config.components
+        };
+
+        const result = await executeBuild(fullAppConfig, config.exportPath);
+
+        if (result.success && result.result) {
+            return {
+                success: true,
+                appPath: result.result.appPath // Fixed: use result.result.appPath
+            };
+        } else {
+            return {
+                success: false,
+                appPath: '',
+                error: result.error || 'Build failed'
+            };
+        }
+    } catch (error: any) {
+        return {
+            success: false,
+            appPath: '',
+            error: error.message
+        };
     }
 }

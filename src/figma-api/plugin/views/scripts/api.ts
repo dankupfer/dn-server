@@ -12,7 +12,7 @@ export async function fetchFormConfig(params: {
     currentValues?: Record<string, any>;
     selectedConfiguration?: string;
 }): Promise<any> {
-    const response = await fetch(`${API_BASE}/api/figma/form-config`, {
+    const response = await fetch(`${API_BASE}/api/figma/plugin/form-config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params)
@@ -33,7 +33,7 @@ export async function fetchConditionalRules(
     changedFieldKey: string | null,
     currentValues: Record<string, any>
 ): Promise<any> {
-    const response = await fetch(`${API_BASE}/api/figma/conditional-rules`, {
+    const response = await fetch(`${API_BASE}/api/figma/plugin/conditional-rules`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

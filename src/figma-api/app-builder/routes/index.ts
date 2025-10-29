@@ -1,9 +1,10 @@
-// figma-api/app-builder/routes/index.ts
+// src/figma-api/app-builder/routes/index.ts
 
 /**
  * APP BUILDER ROUTES
  * 
  * Express routes for the app builder API endpoints
+ * Includes both local app building and web prototype generation
  */
 
 import { Router } from 'express';
@@ -12,12 +13,19 @@ import {
     healthCheck,
     getBuildStatus,
     validateConfig
-} from '../controllers/appBuilderController';
+} from '../controllers/appBuilder.controller';
+
+// Import prototype routes
+import prototypeRoutes from './prototype.routes';
 
 const router = Router();
 
+// ============================================
+// LOCAL APP BUILDING
+// ============================================
+
 /**
- * POST /api/app-builder/build
+ * POST /api/figma/app-builder/build
  * Build a complete app from fullAppConfig.json
  * 
  * Request body:
@@ -35,7 +43,7 @@ const router = Router();
 router.post('/build', buildApp);
 
 /**
- * POST /api/app-builder/validate
+ * POST /api/figma/app-builder/validate
  * Validate fullAppConfig.json without building
  * 
  * Request body: FullAppConfig
@@ -47,7 +55,7 @@ router.post('/build', buildApp);
 router.post('/validate', validateConfig);
 
 /**
- * GET /api/app-builder/health
+ * GET /api/figma/app-builder/health
  * Health check endpoint
  * 
  * Response:
@@ -56,12 +64,25 @@ router.post('/validate', validateConfig);
 router.get('/health', healthCheck);
 
 /**
- * GET /api/app-builder/status/:buildId
+ * GET /api/figma/app-builder/status/:buildId
  * Get status of a build (future implementation)
  * 
  * Response:
  * - 200: { buildId: string, status: string, timestamp: string }
  */
 router.get('/status/:buildId', getBuildStatus);
+
+// ============================================
+// WEB PROTOTYPE BUILDING
+// ============================================
+
+/**
+ * Mount prototype routes at /prototype
+ * - POST /api/figma/app-builder/prototype/build
+ * - GET  /api/figma/app-builder/prototype/status/:jobId
+ * - GET  /api/figma/app-builder/prototype/metadata/:uuid
+ * - GET  /api/figma/app-builder/prototype/jobs
+ */
+router.use('/prototype', prototypeRoutes);
 
 export default router;
