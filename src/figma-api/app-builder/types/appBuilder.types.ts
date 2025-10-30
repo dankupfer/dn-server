@@ -79,11 +79,9 @@ export type SectionType =
   | 'full';           // Child screen (full takeover)
 
 /**
- * Journey types
+ * Journey types - extendable via unified-components.json
  */
-export type JourneyType = 
-  | 'CoreJourney' 
-  | 'AssistJourney';
+export type JourneyType = string;
 
 // ============================================================================
 // NORMALIZED TYPES (after parsing)

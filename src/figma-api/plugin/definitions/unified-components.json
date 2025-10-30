@@ -4,9 +4,16 @@
     "name": "App_frame",
     "label": "App Frame",
     "description": "Main application frame component",
+    
     "width": 393,
     "height": 852,
     "backgroundColor": "#E3F2FD",
+    "elements": [
+      { "type": "text", "content": "App Frame", "x": 20, "y": 20, "fontSize": 24, "fontWeight": 700 },
+      { "type": "text", "content": "Full screen app container", "x": 20, "y": 55, "fontSize": 14, "color": "#666666" },
+      { "type": "text", "content": "Use plugin UI to configure →", "x": 20, "y": 100, "fontSize": 12, "color": "#666666" }
+    ],
+    
     "fields": [
       {
         "key": "appName",
@@ -39,10 +46,7 @@
         "description": "Light or dark theme",
         "defaultValue": "light",
         "required": true,
-        "options": [
-          "light",
-          "dark"
-        ]
+        "options": ["light", "dark"]
       },
       {
         "key": "apiBase",
@@ -57,22 +61,28 @@
         "key": "defaultCustomerId",
         "type": "text",
         "label": "Default customer",
-        "description": "Choose the default customer for the beggining of the journey (leave it blank to keep it as is)",
-        "defaultValue": false,
+        "description": "Choose the default customer for the beginning of the journey",
+        "defaultValue": "",
         "required": false,
         "placeholder": "cust_1758054135313_al2bczxir"
       }
-
     ]
   },
+
   "ScreenBuilder_frame": {
     "componentType": "frame",
     "name": "ScreenBuilder_frame",
     "label": "ScreenBuilder Frame",
     "description": "Frame for JSON-driven screen building",
+    
     "width": 393,
     "height": 852,
     "backgroundColor": "#FFF3E0",
+    "elements": [
+      { "type": "text", "content": "ScreenBuilder Frame", "x": 20, "y": 20, "fontSize": 20, "fontWeight": 700 },
+      { "type": "text", "content": "Drag Item components inside", "x": 20, "y": 50, "fontSize": 12, "color": "#666666" }
+    ],
+    
     "fields": [
       {
         "key": "id",
@@ -111,12 +121,7 @@
         "description": "Type of section for navigation",
         "defaultValue": "main-carousel",
         "required": true,
-        "options": [
-          "main-carousel",
-          "slide-panel",
-          "full-screen",
-          "modal"
-        ],
+        "options": ["main-carousel", "slide-panel", "full-screen", "modal"],
         "maps_to": "prop3"
       },
       {
@@ -128,57 +133,41 @@
         "required": false,
         "maps_to": "prop4",
         "conditionalRules": {
-          "disableWhen": {
-            "section_type": [
-              "full-screen"
-            ]
-          },
-          "hideWhen": {
-            "section_type": [
-              "full-screen"
-            ]
-          }
+          "disableWhen": { "section_type": ["full-screen"] },
+          "hideWhen": { "section_type": ["full-screen"] }
         },
         "conditionalField": {
           "key": "sectionHomeOption",
           "type": "select",
           "label": "Home Section Option",
           "description": "Select which home section to include",
-          "showWhen": {
-            "sectionHome": true
-          },
+          "showWhen": { "sectionHome": true },
           "optionsFrom": "section_type",
           "optionsMap": {
-            "main-carousel": [
-              "summary",
-              "everyday",
-              "invest",
-              "borrow",
-              "homes",
-              "insurance"
-            ],
-            "slide-panel": [
-              "home",
-              "apply",
-              "cards"
-            ],
-            "modal": [
-              "payments",
-              "search"
-            ]
+            "main-carousel": ["summary", "everyday", "invest", "borrow", "homes", "insurance"],
+            "slide-panel": ["home", "apply", "cards"],
+            "modal": ["payments", "search"]
           }
         }
       }
     ]
   },
+
   "Journey": {
     "componentType": "journey",
     "name": "Journey",
     "label": "Journey Component",
     "description": "Self-contained journey with complex functionality",
+    
     "width": 393,
     "height": 568,
     "backgroundColor": "#FFF3E0",
+    "elements": [
+      { "type": "text", "content": "Journey Component", "x": 20, "y": 20, "fontSize": 20, "fontWeight": 700 },
+      { "type": "text", "content": "Self-contained journey", "x": 20, "y": 50, "fontSize": 12, "color": "#666666" },
+      { "type": "text", "content": "Select Type to configure →", "x": 20, "y": 70, "fontSize": 12, "color": "#666666" }
+    ],
+    
     "hasConfigurations": true,
     "configurationField": {
       "key": "journeyOption",
@@ -187,6 +176,7 @@
       "description": "Select the type of journey to configure",
       "required": true
     },
+    
     "commonFields": [
       {
         "key": "id",
@@ -202,7 +192,7 @@
         "key": "name",
         "type": "text",
         "label": "Journey Name",
-        "description": "Short label for navigation (e.g., 'Payments', 'Home')",
+        "description": "Short label for navigation",
         "defaultValue": "",
         "required": true,
         "placeholder": "My Journey",
@@ -212,9 +202,9 @@
         "key": "title",
         "type": "text",
         "label": "Journey Title",
-        "description": "Full title for headers (optional, defaults to name if empty)",
+        "description": "Full title for headers",
         "defaultValue": "",
-        "required": true,
+        "required": false,
         "placeholder": "Journey Title",
         "maps_to": "prop2"
       },
@@ -225,12 +215,7 @@
         "description": "Navigation section placement",
         "defaultValue": "main-carousel",
         "required": true,
-        "options": [
-          "main-carousel",
-          "slide-panel",
-          "full-screen",
-          "modal"
-        ],
+        "options": ["main-carousel", "slide-panel", "full-screen", "modal"],
         "maps_to": "prop3"
       },
       {
@@ -242,48 +227,40 @@
         "required": false,
         "maps_to": "prop4",
         "conditionalRules": {
-          "disableWhen": {
-            "section_type": [
-              "full-screen"
-            ]
-          }
+          "disableWhen": { "section_type": ["full-screen"] }
         },
         "conditionalField": {
           "key": "sectionHomeOption",
           "type": "select",
           "label": "Home Section Option",
           "description": "Which home section",
-          "showWhen": {
-            "sectionHome": true
-          },
+          "showWhen": { "sectionHome": true },
           "optionsFrom": "section_type",
           "optionsMap": {
-            "main-carousel": [
-              "summary",
-              "everyday",
-              "invest",
-              "borrow",
-              "homes",
-              "insurance"
-            ],
-            "slide-panel": [
-              "home",
-              "apply",
-              "cards"
-            ],
-            "modal": [
-              "payments",
-              "search"
-            ]
-          }
+            "main-carousel": ["summary", "everyday", "invest", "borrow", "homes", "insurance"],
+            "slide-panel": ["home", "apply", "cards"],
+            "modal": ["payments", "search"]
+          },
+          "maps_to": "prop8"
         }
       }
     ],
+    
     "configurations": {
       "CoreJourney": {
         "label": "Core Journey",
         "description": "Standard customer journey flow",
-        "fields": []
+        "fields": [
+          {
+            "key": "customer-id",
+            "type": "text",
+            "label": "Customer ID",
+            "description": "ID of the customer data to load",
+            "defaultValue": "customer-1",
+            "required": false,
+            "maps_to": "prop5"
+          }
+        ]
       },
       "AssistJourney": {
         "label": "Assist Journey",
@@ -296,7 +273,7 @@
             "description": "Enable text-to-speech for voice interactions",
             "defaultValue": false,
             "required": false,
-            "maps_to": "prop5"
+            "maps_to": "prop6"
           },
           {
             "key": "gemini",
@@ -309,20 +286,140 @@
           }
         ]
       },
-        "WebviewJourney": {
+      "WebviewJourney": {
         "label": "Webview Journey",
         "description": "Basic Webview wrapper",
         "fields": [
           {
             "key": "defaultUrl",
             "type": "text",
-            "label": "Default url",
+            "label": "Default URL",
             "description": "Enter the URL to display in the webview",
-            "defaultValue": true,
+            "defaultValue": "",
             "required": true,
             "maps_to": "prop5"
           }
         ]
+      }
+    }
+  },
+
+  "AccountCard": {
+    "componentType": "item",
+    "name": "AccountCard",
+    "label": "Account Card",
+    "description": "Card displaying account information",
+    
+    "width": 350,
+    "height": 80,
+    "backgroundColor": "#FFFFFF",
+    "elements": [
+      { "type": "text", "content": "Club Lloyds", "x": 16, "y": 16, "fontSize": 16, "fontWeight": 600, "propertyBinding": "title" },
+      { "type": "text", "content": "30-95-74 / 46557160", "x": 16, "y": 40, "fontSize": 12, "color": "#6B7280", "propertyBinding": "subtitle" },
+      { "type": "text", "content": "£836.50", "x": 290, "y": 20, "fontSize": 20, "fontWeight": 700, "textAlign": "right", "propertyBinding": "balance" }
+    ],
+    
+    "variants": [
+      {
+        "name": "Condensed",
+        "properties": { "variant": "Condensed" },
+        "height": 80,
+        "elements": [
+          { "type": "text", "content": "Club Lloyds", "x": 16, "y": 16, "fontSize": 16, "fontWeight": 600, "propertyBinding": "title" },
+          { "type": "text", "content": "30-95-74 / 46557160", "x": 16, "y": 40, "fontSize": 12, "color": "#6B7280", "propertyBinding": "subtitle" },
+          { "type": "text", "content": "£836.50", "x": 290, "y": 20, "fontSize": 20, "fontWeight": 700, "textAlign": "right", "propertyBinding": "balance" }
+        ]
+      },
+      {
+        "name": "Detailed",
+        "properties": { "variant": "Detailed" },
+        "height": 120,
+        "elements": [
+          { "type": "text", "content": "Club Lloyds", "x": 16, "y": 16, "fontSize": 18, "fontWeight": 600, "propertyBinding": "title" },
+          { "type": "text", "content": "30-95-74 / 46557160", "x": 16, "y": 40, "fontSize": 12, "color": "#6B7280", "propertyBinding": "subtitle" },
+          { "type": "text", "content": "£836.50", "x": 250, "y": 70, "fontSize": 24, "fontWeight": 700, "textAlign": "right", "propertyBinding": "balance" },
+          { "type": "text", "content": "Available Balance", "x": 16, "y": 70, "fontSize": 12, "color": "#6B7280" },
+          { "type": "text", "content": "View Statements", "x": 16, "y": 100, "fontSize": 14, "color": "#006a4e" }
+        ]
+      }
+    ],
+    
+    "properties": {
+      "title": {
+        "type": "TEXT",
+        "defaultValue": "Club Lloyds",
+        "label": "Account Name"
+      },
+      "subtitle": {
+        "type": "TEXT",
+        "defaultValue": "30-95-74 / 46557160",
+        "label": "Account Number"
+      },
+      "balance": {
+        "type": "TEXT",
+        "defaultValue": "£836.50",
+        "label": "Balance"
+      },
+      "variant": {
+        "type": "VARIANT",
+        "defaultValue": "Condensed",
+        "options": ["Condensed", "Detailed"]
+      }
+    }
+  },
+
+  "CreditCard": {
+    "componentType": "item",
+    "name": "CreditCard",
+    "label": "Credit Card",
+    "description": "Card displaying credit card information",
+    
+    "width": 350,
+    "height": 120,
+    "backgroundColor": "#FFFFFF",
+    "elements": [
+      { "type": "text", "content": "Lloyds Bank Cashback Credit Card", "x": 16, "y": 16, "fontSize": 16, "fontWeight": 600, "propertyBinding": "title" },
+      { "type": "text", "content": "**** **** **** 9053", "x": 16, "y": 36, "fontSize": 12, "color": "#6B7280", "propertyBinding": "subtitle" },
+      { "type": "text", "content": "£4,935.05", "x": 290, "y": 20, "fontSize": 20, "fontWeight": 700, "textAlign": "right", "propertyBinding": "balance" }
+    ],
+    
+    "properties": {
+      "title": {
+        "type": "TEXT",
+        "defaultValue": "Lloyds Bank Cashback Credit Card",
+        "label": "Card Name"
+      },
+      "subtitle": {
+        "type": "TEXT",
+        "defaultValue": "**** **** **** 9053",
+        "label": "Card Number"
+      },
+      "balance": {
+        "type": "TEXT",
+        "defaultValue": "£4,935.05",
+        "label": "Balance"
+      }
+    }
+  },
+
+  "SectionHeader": {
+    "componentType": "item",
+    "name": "SectionHeader",
+    "label": "Section Header",
+    "description": "Text header for sections",
+    
+    "width": 350,
+    "height": 40,
+    "backgroundColor": "transparent",
+    "elements": [
+      { "type": "text", "content": "Section Title", "x": 0, "y": 10, "fontSize": 18, "fontWeight": 600, "propertyBinding": "title" }
+    ],
+    
+    "properties": {
+      "title": {
+        "type": "TEXT",
+        "defaultValue": "Section Title",
+        "label": "Title"
       }
     }
   }
