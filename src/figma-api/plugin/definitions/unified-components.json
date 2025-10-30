@@ -306,6 +306,21 @@
             "maps_to": "prop7"
           }
         ]
+      },
+        "WebviewJourney": {
+        "label": "Webview Journey",
+        "description": "Basic Webview wrapper",
+        "fields": [
+          {
+            "key": "defaultUrl",
+            "type": "text",
+            "label": "Default url",
+            "description": "Enter the URL to display in the webview",
+            "defaultValue": true,
+            "required": true,
+            "maps_to": "prop5"
+          }
+        ]
       }
     }
   }

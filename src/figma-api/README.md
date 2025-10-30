@@ -165,9 +165,9 @@ Use generic property names (`prop0`, `prop1`, etc.) on Figma components, then ma
 
 ### Get Component Definitions
 ```
-GET /api/figma/definitions/components
-GET /api/figma/definitions/frames  
-GET /api/figma/definitions/journeys
+GET /api/figma/plugin/definitions/components
+GET /api/figma/plugin/definitions/frames  
+GET /api/figma/plugin/definitions/journeys
 ```
 
 Returns JSON definitions with:
@@ -246,7 +246,7 @@ figma-api/
 
 ### Phase 2: Definition System ✅
 - [x] Create JSON definition files (components, frames, journeys)
-- [x] Implement GET /api/figma/definitions endpoints
+- [x] Implement GET /api/figma/plugin/definitions endpoints
 - [x] Add property mapping service
 - [x] Add validation service
 

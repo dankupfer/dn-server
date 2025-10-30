@@ -71,7 +71,7 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
   const { replace, stackSize } = useHeader();
   const styles = createFigmaRouterStyles(theme);
 
-  const HEADER_HEIGHT = 60;
+  const HEADER_HEIGHT = 85;
 
   // Build carousel sections dynamically from routes
   const carouselSections = carouselRoutes.map(route => ({

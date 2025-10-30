@@ -173,7 +173,7 @@ export const getConditionalOptions = async (req: Request, res: Response) => {
 };
 
 /**
- * GET /api/figma/definitions/components
+ * GET /api/figma/plugin/definitions/components
  * Get all component definitions
  */
 export const getComponentDefinitions = async (req: Request, res: Response) => {
@@ -190,7 +190,7 @@ export const getComponentDefinitions = async (req: Request, res: Response) => {
 };
 
 /**
- * GET /api/figma/definitions/configurations/:componentName
+ * GET /api/figma/plugin/definitions/configurations/:componentName
  * Get available configurations for a component (e.g., Journey options)
  */
 export const getComponentConfigurations = async (req: Request, res: Response) => {
@@ -228,7 +228,7 @@ function evaluateShowCondition(
 
 /**
  * Legacy endpoint for backward compatibility
- * GET /api/figma/definitions/journeys
+ * GET /api/figma/plugin/definitions/journeys
  */
 export const getJourneyOptions = async (req: Request, res: Response) => {
     try {

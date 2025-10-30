@@ -72,7 +72,7 @@ const AppWithTheme = () => {
     <>
       <StatusBar
         barStyle={themeName === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={getToken('background_page_default')}
+        backgroundColor={themeName === 'dark' ? 'black' : '#f1f1f1ff'}
       />
       <HiddenDevMenu flagConfig={flagConfig} Settings={Settings} devSkipClicks={true} showDebugZones={true}>
         <HeaderProvider
@@ -96,6 +96,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    marginTop: 20,
+    marginTop: 0,
   },
 });

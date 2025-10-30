@@ -90,7 +90,7 @@ export async function fetchcommonDefinitions(): Promise<any> {
  */
 export async function fetchJourneyOptions(): Promise<any[]> {
     // Still useful for variant selectors
-    const response = await fetch(`${API_BASE}/api/figma/definitions/journeys`);
+    const response = await fetch(`${API_BASE}/api/figma/plugin/definitions/journeys`);
     if (!response.ok) {
         throw new Error(`Failed to fetch journey options: ${response.statusText}`);
     }
