@@ -22,12 +22,14 @@
         "type": "select",
         "label": "Brand",
         "description": "Brand theme to use",
-        "defaultValue": "lloyds",
+        "defaultValue": "reimaginedLloyds",
         "required": true,
         "options": [
-          "lloyds",
-          "brandA",
-          "brandB"
+          "reimaginedLloyds",
+          "reimaginedHalifax",
+          "reimaginedScottishWidows",
+          "reimaginedMbna",
+          "reimaginedBos"
         ]
       },
       {
@@ -50,7 +52,17 @@
         "defaultValue": "http://localhost:3001",
         "required": false,
         "placeholder": "https://api.example.com"
+      },
+      {
+        "key": "defaultCustomerId",
+        "type": "text",
+        "label": "Default customer",
+        "description": "Choose the default customer for the beggining of the journey (leave it blank to keep it as is)",
+        "defaultValue": false,
+        "required": false,
+        "placeholder": "cust_1758054135313_al2bczxir"
       }
+
     ]
   },
   "ScreenBuilder_frame": {
@@ -271,17 +283,7 @@
       "CoreJourney": {
         "label": "Core Journey",
         "description": "Standard customer journey flow",
-        "fields": [
-          {
-            "key": "defaultCustomer",
-            "type": "text",
-            "label": "Default customer",
-            "description": "Choose the default customer for the beggining of the journey",
-            "defaultValue": false,
-            "required": false,
-            "maps_to": "prop5"
-          }
-        ]
+        "fields": []
       },
       "AssistJourney": {
         "label": "Assist Journey",

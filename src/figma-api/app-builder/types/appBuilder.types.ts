@@ -27,9 +27,11 @@ export interface FullAppConfig {
  */
 export interface AppFrame {
   appName: string;
-  brand: string;          // BrandA, BrandB, reimaginedLloyds, etc.
+  brand: string;
   mode: 'light' | 'dark';
-  apiBase: string;        // API base URL
+  apiBase: string;
+  customerId?: string;
+  defaultCustomerId?: string;
 }
 
 /**

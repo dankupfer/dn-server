@@ -111,6 +111,9 @@ router.get('/definitions/:type', (req: Request, res: Response) => {
             case 'frames':
                 definitionsPath = path.join(__dirname, '../definitions/frames.json');
                 break;
+            case 'unified-components':
+                definitionsPath = path.join(__dirname, '../definitions/unified-components.json');
+                break;
             default:
                 return res.status(400).json({
                     success: false,

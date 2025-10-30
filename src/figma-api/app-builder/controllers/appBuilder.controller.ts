@@ -26,6 +26,7 @@ import { categoriseComponents, validateCategorisation, sortRoutes, generateCateg
 import { copyBaseTemplate, generateTemplateCopySummary } from '../services/templateCopy.service';
 import { generateModules, generateModuleSummary, validateGeneratedModules } from '../services/moduleGenerator.service';
 import { generateRouters, generateRouterSummary, validateGeneratedRouters } from '../services/routerGenerator.service';
+import { configureAppEntryPoint, validateAppEntryPointConfig, generateAppEntryPointSummary } from '../services/appEntryPoint.service';
 
 export type BuildType = 'local' | 'prototype';
 
@@ -178,6 +179,36 @@ export async function executeBuild(
 
             console.log(`✓ Template copy successful`);
             console.log(generateTemplateCopySummary(templateResult));
+        }
+
+        // ========================================
+        // PHASE 3.5: CONFIGURE APP ENTRY POINT
+        // ========================================
+        console.log(`⚙️  Phase 3.5: Configuring App.tsx...`);
+
+        if (options?.dryRun) {
+            console.log(`  ⚠️  DRY RUN MODE - Would configure App.tsx\n`);
+        } else {
+            // Validate app entry point config first
+            const entryPointErrors = validateAppEntryPointConfig(config.appFrame);
+            if (entryPointErrors.length > 0) {
+                console.log(`⚠️  App entry point validation warnings:`);
+                entryPointErrors.forEach(e => console.log(`    ${e}`));
+                console.log('');
+            }
+
+            const entryPointResult = await configureAppEntryPoint(config.appFrame, appPath);
+
+            if (!entryPointResult.success) {
+                console.log(`❌ App entry point configuration failed\n`);
+                return {
+                    success: false,
+                    error: entryPointResult.error || 'App entry point configuration failed'
+                };
+            }
+
+            console.log(`✓ App entry point configured`);
+            console.log(`  ${generateAppEntryPointSummary(config.appFrame)}\n`);
         }
 
         // ========================================

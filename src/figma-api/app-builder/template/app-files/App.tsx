@@ -36,7 +36,7 @@ import { SafeAreaView, StyleSheet, StatusBar, Dimensions } from 'react-native';
 import packageJson from './package.json';
 
 // import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import AssistRouter from './src/modules/core/figma-router';
+import FigmaRouter from './src/modules/core/figma-router';
 import flagConfig from './src/modules/core/figma-router/flags.json';
 import Settings from './src/modules/core/settings';
 
@@ -89,7 +89,7 @@ const AppWithTheme = () => {
         >
           {/* <SafeAreaView style={[styles.container, { backgroundColor: getToken('background_page_default') }]}> */}
           <SafeAreaView style={[styles.container, { backgroundColor: themeName === 'dark' ? 'black' : 'green' }]}>
-            <AssistRouter screenWidth={screenWidth} />
+            <FigmaRouter screenWidth={screenWidth} />
           </SafeAreaView>
         </HeaderProvider>
       </HiddenDevMenu>

@@ -210,15 +210,17 @@ import config from './config.json';
 
 interface ${componentName}Props {
   screenWidth: number;
+  customerData?: any;
 }
 
-const ${componentName}: React.FC<${componentName}Props> = ({ screenWidth }) => {
+const ${componentName}: React.FC<${componentName}Props> = ({ screenWidth, customerData }) => {
   return (
     <${journeyComponent}
       screenWidth={screenWidth}
-      ${journeyType === 'AssistJourney' ? `enableTTS={config.enableTTS}` : ''}
-      ${journeyType === 'AssistJourney' ? `enableGemini={config.enableGemini}` : ''}
-      ${journeyType === 'CoreJourney' && journeyConfig?.customerId ? `customerId={config.customerId}` : ''}
+      ${journeyType === 'CoreJourney' ? 'customerData={customerData}' : ''}
+      ${journeyType === 'AssistJourney' ? 'enableTTS={config.enableTTS}' : ''}
+      ${journeyType === 'AssistJourney' ? 'enableGemini={config.enableGemini}' : ''}
+      ${journeyType === 'CoreJourney' && journeyConfig?.customerId ? 'customerId={config.customerId}' : ''}
       assistantConfig={{
         serverUrl: config.serverUrl,
         debug: config.debug,
