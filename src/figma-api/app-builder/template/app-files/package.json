@@ -9,7 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@dankupfer/dn-components": "^2.0.28",
+    "@dankupfer/dn-components": "^2.0.29",
     "@expo/metro-config": "~0.19.12",
     "@expo/metro-runtime": "~4.0.1",
     "@react-native-async-storage/async-storage": "^1.23.1",

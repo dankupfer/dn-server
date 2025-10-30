@@ -46,6 +46,9 @@ import { HiddenDevMenu } from '@dankupfer/dn-components';
 
 import { HeaderProvider } from '@dankupfer/dn-components';
 
+import { SettingsProvider } from '@dankupfer/dn-components';
+import { settingsConfig } from './src/modules/core/figma-router/settings';
+
 export default function App() {
   const appVersion = packageJson.version;
   const appName = packageJson.name;
@@ -53,13 +56,15 @@ export default function App() {
   console.log(`\n\n\n\n==================================\n\n${appName} started: version ${appVersion}\n\n==================================`);
 
   return (
-    <FlagProvider>
-      <ThemeProvider initialThemeMode="light" initialBrand="reimaginedLloyds">
-        <CustomerProvider apiBaseUrl="http://localhost:3001">
-          <AppWithTheme />
-        </CustomerProvider>
-      </ThemeProvider>
-    </FlagProvider>
+    <SettingsProvider initialConfig={settingsConfig}>
+      <FlagProvider>
+        <ThemeProvider initialThemeMode="light" initialBrand="reimaginedLloyds">
+          <CustomerProvider apiBaseUrl="http://localhost:3001">
+            <AppWithTheme />
+          </CustomerProvider>
+        </ThemeProvider>
+      </FlagProvider>
+    </SettingsProvider>
   );
 }
 
@@ -72,9 +77,9 @@ const AppWithTheme = () => {
     <>
       <StatusBar
         barStyle={themeName === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={themeName === 'dark' ? 'black' : '#f1f1f1ff'}
+        backgroundColor={getToken('background_page_default')}
       />
-      <HiddenDevMenu flagConfig={flagConfig} Settings={Settings} devSkipClicks={true} showDebugZones={true}>
+      <HiddenDevMenu flagConfig={flagConfig} Settings={Settings} devSkipClicks={true}>
         <HeaderProvider
           defaultTransition="crossFade"
           defaultHeader={{
@@ -83,7 +88,7 @@ const AppWithTheme = () => {
           }}
         >
           {/* <SafeAreaView style={[styles.container, { backgroundColor: getToken('background_page_default') }]}> */}
-          <SafeAreaView style={[styles.container, { backgroundColor: themeName === 'dark' ? 'black' : '#f1f1f1ff' }]}>
+          <SafeAreaView style={[styles.container, { backgroundColor: themeName === 'dark' ? 'black' : 'green' }]}>
             <AssistRouter screenWidth={screenWidth} />
           </SafeAreaView>
         </HeaderProvider>
