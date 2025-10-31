@@ -72,12 +72,56 @@ export async function generateViewer(
       border-radius: 32px;
       overflow: hidden;
       background: #fff;
+      position: relative;
     }
     .device-screen iframe {
       width: 100%;
       height: 100%;
       border: none;
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
     }
+    .device-screen iframe.loaded {
+      opacity: 1;
+    }
+    
+    /* Loading animation */
+    .loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+    }
+    .loader-ring {
+      width: 60px;
+      height: 60px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .loader-text {
+      margin-top: 16px;
+      color: #666;
+      font-size: 14px;
+      text-align: center;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    .loader.hidden {
+      opacity: 0;
+      transition: opacity 0.3s ease-out;
+      pointer-events: none;
+    }
+    
     .share-controls {
       position: fixed;
       top: 20px;
@@ -137,18 +181,39 @@ export async function generateViewer(
 </head>
 <body>
   <div class="share-controls">
-    <div class="bundle-badge">${badgeText}</div>
+    <!-- <div class="bundle-badge">${badgeText}</div> -->
     <button class="share-button" onclick="copyUrl()">📋 Copy Link</button>
-    <button class="share-button" onclick="openFullscreen()">🔍 Fullscreen</button>
+    <button class="share-button" id="fullscreenBtn" onclick="toggleFullscreen()">🔍 Fullscreen</button>
   </div>
   <div class="copied-toast" id="toast">Link copied to clipboard!</div>
   <div class="device-frame" id="deviceFrame">
     <div class="device-notch"></div>
     <div class="device-screen">
+      <div class="loader" id="loader">
+        <div class="loader-ring"></div>
+        <div class="loader-text">Loading...</div>
+      </div>
       <iframe ${iframeSrcAttribute} id="prototypeFrame"></iframe>
     </div>
   </div>
   <script>
+    const iframe = document.getElementById('prototypeFrame');
+    const loader = document.getElementById('loader');
+    
+    // Hide loader when iframe loads
+    iframe.addEventListener('load', () => {
+      setTimeout(() => {
+        loader.classList.add('hidden');
+        iframe.classList.add('loaded');
+      }, 500);
+    });
+    
+    // Fallback: hide loader after 5 seconds if load event doesn't fire
+    setTimeout(() => {
+      loader.classList.add('hidden');
+      iframe.classList.add('loaded');
+    }, 5000);
+    
     function copyUrl() {
       navigator.clipboard.writeText(window.location.href).then(() => {
         showToast();
@@ -159,13 +224,40 @@ export async function generateViewer(
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 2000);
     }
-    function openFullscreen() {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        document.documentElement.webkitRequestFullscreen();
-      }
+    function toggleFullscreen() {
+  const btn = document.getElementById('fullscreenBtn');
+  
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    // Enter fullscreen
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen();
     }
+  } else {
+    // Exit fullscreen
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+}
+
+// Listen for fullscreen changes to update button text
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+
+function updateFullscreenButton() {
+  const btn = document.getElementById('fullscreenBtn');
+  const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+  
+  if (isFullscreen) {
+    btn.textContent = '❌ Exit Fullscreen';
+  } else {
+    btn.textContent = '🔍 Fullscreen';
+  }
+}
     ${iframeSrcScript}
   </script>
 </body>

@@ -221,11 +221,11 @@ const ${componentName}: React.FC<${componentName}Props> = ({ screenWidth, custom
       ${journeyType === 'AssistJourney' ? 'enableTTS={config.enableTTS}' : ''}
       ${journeyType === 'AssistJourney' ? 'enableGemini={config.enableGemini}' : ''}
       ${journeyType === 'CoreJourney' && journeyConfig?.customerId ? 'customerId={config.customerId}' : ''}
-      assistantConfig={{
+      ${journeyType === 'AssistJourney' ? `assistantConfig={{
         serverUrl: config.serverUrl,
         debug: config.debug,
         useMockMode: config.useMockMode
-      }}
+      }}` : ''}
     />
   );
 };
