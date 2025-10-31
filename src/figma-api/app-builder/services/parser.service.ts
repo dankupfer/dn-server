@@ -175,7 +175,9 @@ function normaliseComponent(
   errors: ValidationError[],
   seenIds: Set<string>
 ): NormalisedComponent | null {
-  const props = component.properties;
+  // Clean Figma legacy keys like "title#381:0" → "title"
+  const props = cleanProperties(component.properties);
+
 
   // Extract and validate ID
   const id = extractId(props, component.nodeId);
@@ -475,18 +477,38 @@ export function validateNormalisedComponents(
  * Helper function to clean component properties
  * Removes legacy properties with # suffix
  */
-export function cleanProperties(props: ComponentProperties): ComponentProperties {
-  const cleaned: ComponentProperties = {};
-
-  for (const [key, value] of Object.entries(props)) {
-    // Skip properties with # suffix (legacy Figma properties)
-    if (!key.includes('#')) {
-      cleaned[key] = value;
-    }
+export function cleanProperties(props: any): any {
+  if (Array.isArray(props)) {
+    return props.map((p) => cleanProperties(p));
   }
 
-  return cleaned;
+  if (props && typeof props === 'object') {
+    const cleaned: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(props)) {
+      const cleanKey = key.includes('#') ? key.split('#')[0] : key;
+      cleaned[cleanKey] = cleanProperties(value);
+    }
+
+    return cleaned;
+  }
+
+  return props;
 }
+
+
+// export function cleanProperties(props: ComponentProperties): ComponentProperties {
+//   const cleaned: ComponentProperties = {};
+
+//   for (const [key, value] of Object.entries(props)) {
+//     // Skip properties with # suffix (legacy Figma properties)
+//     if (!key.includes('#')) {
+//       cleaned[key] = value;
+//     }
+//   }
+
+//   return cleaned;
+// }
 
 /**
  * Generate a summary of parsed components

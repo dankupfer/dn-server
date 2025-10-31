@@ -25,6 +25,8 @@ import { bundleWithExpoDevServer, stopExpoServer } from './bundlers/expoServerBu
 import { generateViewer } from './utils/viewerGenerator';
 import { updateMappings, getPrototype, incrementViews } from './utils/mappingsManager';
 
+import { cleanProperties } from './parser.service'; // ✅ import normalization util
+
 // Re-export utilities for external use
 export { getPrototype, incrementViews };
 
@@ -99,9 +101,16 @@ async function buildPrototype(jobId: string, config: BuildConfig): Promise<void>
     jobQueue.updateProgress(jobId, 10, 'Creating directories...');
     await fs.ensureDir(tempPath);
 
-    // 2. Save fullAppConfig.json
+    // 2. Normalize and save fullAppConfig.json ✅
     jobQueue.updateProgress(jobId, 15, 'Saving configuration...');
-    await fs.writeJson(path.join(buildPath, 'fullAppConfig.json'), config.fullAppConfig, { spaces: 2 });
+
+    const normalizedFullAppConfig = cleanProperties(config.fullAppConfig);
+
+    // Save normalized version
+    await fs.writeJson(path.join(buildPath, 'fullAppConfig.json'), normalizedFullAppConfig, { spaces: 2 });
+
+    // Replace in-memory config so subsequent steps use the cleaned one
+    config.fullAppConfig = normalizedFullAppConfig;
 
     // 3. Use appBuilder to generate the app
     jobQueue.updateProgress(jobId, 20, 'Building app with appBuilder...');
@@ -129,11 +138,9 @@ async function buildPrototype(jobId: string, config: BuildConfig): Promise<void>
       console.log('→ Using Expo Dev Server mode');
       const expoServerUrl = await bundleWithExpoDevServer(jobId, tempPath, buildPath);
 
-      // Generate viewer
       jobQueue.updateProgress(jobId, 85, 'Generating viewer...');
       await generateViewer(buildPath, bundleType, expoServerUrl);
 
-      // Generate UUID
       jobQueue.updateProgress(jobId, 90, 'Creating shareable link...');
       const uuid = await updateMappings(config, buildPath, bundleType);
       prototypeUrl = `http://localhost:3001/prototypes/${uuid}`;
@@ -143,8 +150,10 @@ async function buildPrototype(jobId: string, config: BuildConfig): Promise<void>
     } else if (bundleType === 'expo') {
       console.log('→ Using Expo Export mode');
       await bundleWithExpo(jobId, tempPath, buildPath);
+
       jobQueue.updateProgress(jobId, 85, 'Generating viewer...');
       await generateViewer(buildPath, bundleType);
+
       jobQueue.updateProgress(jobId, 90, 'Creating shareable link...');
       const uuid = await updateMappings(config, buildPath, bundleType);
       prototypeUrl = `http://localhost:3001/prototypes/${uuid}`;
@@ -152,8 +161,10 @@ async function buildPrototype(jobId: string, config: BuildConfig): Promise<void>
     } else {
       console.log('→ Using esbuild mode');
       await bundleWithEsbuild(jobId, tempPath, buildPath);
+
       jobQueue.updateProgress(jobId, 85, 'Generating viewer...');
       await generateViewer(buildPath, bundleType);
+
       jobQueue.updateProgress(jobId, 90, 'Creating shareable link...');
       const uuid = await updateMappings(config, buildPath, bundleType);
       prototypeUrl = `http://localhost:3001/prototypes/${uuid}`;
@@ -180,6 +191,8 @@ async function buildPrototype(jobId: string, config: BuildConfig): Promise<void>
     throw error;
   }
 }
+
+export { buildPrototype };
 
 // Graceful shutdown handlers
 process.on('SIGINT', async () => {
