@@ -12,7 +12,15 @@ import { buildAppForExport } from '../../app-builder/controllers/appBuilder.cont
  */
 export async function exportFullApp(req: Request, res: Response) {
     try {
-        const { appName, exportPath, exportType, appFrame, components, figmaFileInfo } = req.body;
+        const {
+            appName,
+            exportPath,
+            exportType,
+            appFrame,
+            components,
+            figmaFileInfo,
+            bundleType  // NEW: Optional bundleType parameter
+        } = req.body;
 
         // Validate required fields
         if (!appName || !appFrame || !components) {
@@ -47,6 +55,7 @@ export async function exportFullApp(req: Request, res: Response) {
         }
 
         console.log(`📤 Received ${exportType} export request for app:`, appName);
+        console.log(`📦 Bundle type: ${bundleType || 'default from env'}`);
         if (figmaFileInfo) {
             console.log('📄 Figma file:', figmaFileInfo.fileName, '/', figmaFileInfo.pageName);
         }
@@ -65,7 +74,8 @@ export async function exportFullApp(req: Request, res: Response) {
                     exportedAt: new Date().toISOString(),
                     appFrame,
                     components
-                }
+                },
+                bundleType: bundleType as 'esbuild' | 'expo' | undefined  // NEW: Pass bundleType
             });
 
             return res.json({
@@ -73,7 +83,8 @@ export async function exportFullApp(req: Request, res: Response) {
                 message: 'Web prototype build started',
                 jobId: jobId,
                 exportType: 'web',
-                estimatedTime: 60
+                bundleType: bundleType || process.env.BUNDLE_TYPE || 'esbuild',
+                estimatedTime: bundleType === 'expo' ? 60 : 15  // Different estimates
             });
 
         } else if (exportType === 'simulator') {

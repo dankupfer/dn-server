@@ -221,11 +221,11 @@ const ${componentName}: React.FC<${componentName}Props> = ({ screenWidth, custom
       ${journeyType === 'AssistJourney' ? 'enableTTS={config.enableTTS}' : ''}
       ${journeyType === 'AssistJourney' ? 'enableGemini={config.enableGemini}' : ''}
       ${journeyType === 'CoreJourney' && journeyConfig?.customerId ? 'customerId={config.customerId}' : ''}
-      assistantConfig={{
+      ${journeyType === 'AssistJourney' ? `assistantConfig={{
         serverUrl: config.serverUrl,
         debug: config.debug,
         useMockMode: config.useMockMode
-      }}
+      }}` : ''}
     />
   );
 };
@@ -305,46 +305,233 @@ function generateJourneyConfig(component: NormalisedComponent): string {
 }
 
 /**
- * Generate ScreenBuilder screenData.json content
- * Placeholder structure - actual screen data would come from Figma
+ * Generates a real ScreenBuilder configuration JSON
+ * from a NormalisedComponent like "ScreenBuilder_frame".
+ * This replaces the current placeholder.
  */
-function generateScreenBuilderConfig(component: NormalisedComponent): string {
-    // TODO: In future, this should extract actual screen data from Figma
-    // For now, create a placeholder structure
+export function generateScreenBuilderConfig(component: NormalisedComponent): string {
+    const props = component.properties ?? {};
+    const items = props.items ?? [];
+
+    const components = items.map((item: any, i: number) => ({
+        type: item.componentName ?? item.type ?? 'UnknownComponent',
+        props: {
+            id: `${component.id}-item-${i}`,
+            ...(item.properties ?? {})
+        },
+        style: { marginBottom: 16 }
+    }));
+    console.log(components)
+
+    const _components = [
+        {
+            "type": "SectionHeader",
+            "props": {
+                "title": "Current accounts"
+            },
+            "style": {
+                "marginBottom": 16
+            }
+        },
+        {
+            "type": "AccountCard",
+            "props": {
+                "id": "club-lloyds",
+                "title": "Club Lloyds",
+                "subtitle": "30-95-74 / 46557160",
+                "variant": "condensed",
+                "accountNumber": "30-95-74 / 46557160",
+                "balance": 836.50,
+                "showMenu": true,
+                "actions": [
+                    {
+                        "label": "Pay & transfer"
+                    },
+                    {
+                        "label": "Regular payments"
+                    }
+                ]
+            },
+            "style": {
+                "marginBottom": 16
+            }
+        },
+        {
+            "type": "AccountCard",
+            "props": {
+                "id": "classic",
+                "title": "Classic",
+                "subtitle": "30-95-74 / 47713368",
+                "variant": "condensed",
+                "accountNumber": "30-95-74 / 47713368",
+                "balance": 0.22,
+                "showMenu": true,
+                "actions": [
+                    {
+                        "label": "Pay & transfer"
+                    },
+                    {
+                        "label": "Regular payments"
+                    }
+                ]
+            },
+            "style": {
+                "marginBottom": 24
+            }
+        },
+        {
+            "type": "SectionHeader",
+            "props": {
+                "title": "Credit cards"
+            },
+            "style": {
+                "marginBottom": 16
+            }
+        },
+        {
+            "type": "CreditCard",
+            "props": {
+                "id": "cashback-card",
+                "title": "Lloyds Bank Cashback Credit Card",
+                "subtitle": "**** **** **** 9053",
+                "cardNumber": "**** **** **** 9053",
+                "balance": 4935.05,
+                "balanceLabel": "Balance after pending",
+                "availableCredit": 2814.95,
+                "showMenu": true,
+                "details": [
+                    {
+                        "label": "Statement balance:",
+                        "value": "£4,005.94"
+                    },
+                    {
+                        "label": "Minimum payment:",
+                        "value": "£99.39"
+                    },
+                    {
+                        "label": "Due date:",
+                        "value": "11 July 2025"
+                    }
+                ],
+                "primaryAction": {
+                    "label": "Pay"
+                }
+            },
+            "style": {
+                "marginBottom": 24
+            }
+        },
+        {
+            "type": "ServiceCard",
+            "props": {
+                "id": "everyday-offers",
+                "title": "Everyday Offers",
+                "subtitle": "",
+                "description": "Activate your offers to earn cashback",
+                "icon": {
+                    "name": "home",
+                    "color": "#4ADE80"
+                },
+                "badge": {
+                    "text": "66 NEW",
+                    "color": "#4ADE80"
+                }
+            },
+            "style": {
+                "marginBottom": 16
+            }
+        },
+        {
+            "type": "ServiceCard",
+            "props": {
+                "id": "manage-cards",
+                "title": "Manage Cards",
+                "subtitle": "",
+                "description": "View PIN, freeze card and more",
+                "icon": {
+                    "name": "home",
+                    "color": "#4ADE80"
+                },
+                "showArrow": true
+            },
+            "style": {
+                "marginBottom": 24
+            }
+        },
+        {
+            "type": "SectionHeader",
+            "props": {
+                "title": "More for you"
+            },
+            "style": {
+                "marginBottom": 16
+            }
+        },
+        {
+            "type": "ServiceGrid",
+            "props": {
+                "id": "services-grid",
+                "items": [
+                    {
+                        "id": "add-accounts",
+                        "title": "View your accounts with other banks",
+                        "description": "Add accounts",
+                        "icon": {
+                            "name": "home",
+                            "color": "#8B5CF6"
+                        }
+                    },
+                    {
+                        "id": "credit-score",
+                        "title": "Check your credit score and track your progress",
+                        "description": "Your credit score",
+                        "icon": {
+                            "name": "chart",
+                            "color": "#EC4899"
+                        }
+                    },
+                    {
+                        "id": "travel",
+                        "title": "Take advantage of all the travel services we offer",
+                        "description": "Travel",
+                        "icon": {
+                            "name": "home",
+                            "color": "#F97316"
+                        }
+                    },
+                    {
+                        "id": "rewards",
+                        "title": "Get rewards, cashback, benefits and more",
+                        "description": "More money in your pocket",
+                        "icon": {
+                            "name": "home",
+                            "color": "#06B6D4"
+                        }
+                    }
+                ]
+            },
+            "style": {
+                "marginBottom": 24
+            }
+        },
+        {
+            "type": "AnimatedHorse",
+            "props": {},
+            "style": {
+                "marginBottom": 24
+            }
+        }
+    ];
 
     const config = {
         scrollable: true,
         style: {},
-        components: [
-            {
-                type: 'SectionHeader',
-                props: {
-                    id: `${component.id}-header`,
-                    title: generateDisplayName(component.id)
-                },
-                style: {
-                    marginBottom: 16
-                }
-            },
-            {
-                type: 'ServiceCard',
-                props: {
-                    id: `${component.id}-placeholder`,
-                    title: 'Generated Screen',
-                    description: `This is a generated screen for ${component.id}. Replace with actual Figma data.`,
-                    icon: { name: 'icons|miscellaneous|settings', color: '#006a4e' },
-                    showArrow: false,
-                    onPress: '() => console.log("Placeholder pressed")'
-                },
-                style: {
-                    marginBottom: 16
-                }
-            }
-        ]
+        components,
     };
 
     return JSON.stringify(config, null, 2);
 }
+
 
 /**
  * Generate component name in PascalCase

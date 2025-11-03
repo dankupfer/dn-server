@@ -9,7 +9,7 @@
  */
 
 import express from 'express';
-import pluginRoutes from './plugin/routes';
+import pluginRoutes from './plugin/routes/plugin.routes';
 import appBuilderRoutes from './app-builder/routes';
 
 const router = express.Router();

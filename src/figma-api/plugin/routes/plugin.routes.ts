@@ -1,4 +1,4 @@
-// src/figma-api/plugin/routes/index.ts
+// src/figma-api/plugin/routes/plugin.routes.ts
 
 /**
  * FIGMA PLUGIN ROUTES
@@ -99,21 +99,39 @@ router.get('/definitions/:type', (req: Request, res: Response) => {
         const { type } = req.params;
         console.log(`📋 Getting ${type} definitions`);
 
-        let definitionsPath: string;
+        // Always read from unified-components.json
+        const unifiedPath = path.join(__dirname, '../definitions/unified-components.json');
+        const allDefinitions = JSON.parse(fs.readFileSync(unifiedPath, 'utf8'));
+
+        let filteredDefinitions: any;
 
         switch (type) {
             case 'journeys':
-                definitionsPath = path.join(__dirname, '../definitions/journeys.json');
+                // Filter for componentType: "journey"
+                filteredDefinitions = Object.entries(allDefinitions)
+                    .filter(([key, def]: [string, any]) => def.componentType === 'journey')
+                    .reduce((acc, [key, def]) => ({ ...acc, [key]: def }), {});
                 break;
+
             case 'components':
-                definitionsPath = path.join(__dirname, '../definitions/components.json');
+                // Filter for componentType: "item"
+                filteredDefinitions = Object.entries(allDefinitions)
+                    .filter(([key, def]: [string, any]) => def.componentType === 'item')
+                    .reduce((acc, [key, def]) => ({ ...acc, [key]: def }), {});
                 break;
+
             case 'frames':
-                definitionsPath = path.join(__dirname, '../definitions/frames.json');
+                // Filter for componentType: "frame"
+                filteredDefinitions = Object.entries(allDefinitions)
+                    .filter(([key, def]: [string, any]) => def.componentType === 'frame')
+                    .reduce((acc, [key, def]) => ({ ...acc, [key]: def }), {});
                 break;
+
             case 'unified-components':
-                definitionsPath = path.join(__dirname, '../definitions/unified-components.json');
+                // Return everything
+                filteredDefinitions = allDefinitions;
                 break;
+
             default:
                 return res.status(400).json({
                     success: false,
@@ -121,11 +139,9 @@ router.get('/definitions/:type', (req: Request, res: Response) => {
                 });
         }
 
-        const definitions = JSON.parse(fs.readFileSync(definitionsPath, 'utf8'));
-
         res.json({
             success: true,
-            data: definitions
+            data: filteredDefinitions
         });
 
     } catch (error) {

@@ -19,13 +19,18 @@ import {
   ComponentProperties
 } from '../types/appBuilder.types';
 
+// Import unified component definitions
+import unifiedComponents from '../../plugin/definitions/unified-components.json';
+
 /**
  * Main parser function
  * Takes raw fullAppConfig and returns validated, normalized components
  */
 export function parseAppConfig(rawConfig: any): ParseResult {
   const errors: ValidationError[] = [];
-  
+
+  console.log('🔍 Starting parse with config:', JSON.stringify(rawConfig, null, 2));
+
   // Step 1: Validate structure
   const structureValid = validateStructure(rawConfig, errors);
   if (!structureValid) {
@@ -34,18 +39,22 @@ export function parseAppConfig(rawConfig: any): ParseResult {
       errors
     };
   }
-  
+
   const config = rawConfig as FullAppConfig;
-  
+
   // Step 2: Validate app frame
   validateAppFrame(config.appFrame, errors);
-  
+
   // Step 3: Normalise components
   const normalised = normaliseComponents(config.components, errors);
-  
+
   // Step 4: Check for critical errors
   const hasCriticalErrors = errors.some(e => e.type === 'error');
-  
+
+  console.log('📋 Normalised components:', normalised.length);
+  console.log('❌ Parse errors:', JSON.stringify(errors, null, 2));
+  console.log('🔴 Has critical errors:', hasCriticalErrors);
+
   return {
     success: !hasCriticalErrors,
     config,
@@ -65,7 +74,7 @@ function validateStructure(config: any, errors: ValidationError[]): boolean {
     });
     return false;
   }
-  
+
   // Required top-level fields
   if (!config.appName || typeof config.appName !== 'string') {
     errors.push({
@@ -74,7 +83,7 @@ function validateStructure(config: any, errors: ValidationError[]): boolean {
       message: 'appName is required and must be a string'
     });
   }
-  
+
   if (!config.appFrame || typeof config.appFrame !== 'object') {
     errors.push({
       type: 'error',
@@ -82,7 +91,7 @@ function validateStructure(config: any, errors: ValidationError[]): boolean {
       message: 'appFrame is required and must be an object'
     });
   }
-  
+
   if (!Array.isArray(config.components)) {
     errors.push({
       type: 'error',
@@ -91,7 +100,7 @@ function validateStructure(config: any, errors: ValidationError[]): boolean {
     });
     return false;
   }
-  
+
   if (config.components.length === 0) {
     errors.push({
       type: 'warning',
@@ -99,7 +108,7 @@ function validateStructure(config: any, errors: ValidationError[]): boolean {
       message: 'No components found in config'
     });
   }
-  
+
   return errors.filter(e => e.type === 'error').length === 0;
 }
 
@@ -114,7 +123,7 @@ function validateAppFrame(appFrame: any, errors: ValidationError[]): void {
       message: 'Brand is required'
     });
   }
-  
+
   if (!appFrame.mode || !['light', 'dark'].includes(appFrame.mode)) {
     errors.push({
       type: 'error',
@@ -122,7 +131,7 @@ function validateAppFrame(appFrame: any, errors: ValidationError[]): void {
       message: 'Mode must be either "light" or "dark"'
     });
   }
-  
+
   if (!appFrame.apiBase || typeof appFrame.apiBase !== 'string') {
     errors.push({
       type: 'warning',
@@ -141,7 +150,7 @@ function normaliseComponents(
 ): NormalisedComponent[] {
   const normalised: NormalisedComponent[] = [];
   const seenIds = new Set<string>();
-  
+
   for (const component of components) {
     try {
       const normalisedComponent = normaliseComponent(component, errors, seenIds);
@@ -157,7 +166,7 @@ function normaliseComponents(
       });
     }
   }
-  
+
   return normalised;
 }
 
@@ -169,8 +178,12 @@ function normaliseComponent(
   errors: ValidationError[],
   seenIds: Set<string>
 ): NormalisedComponent | null {
-  const props = component.properties;
-  
+  // Clean Figma legacy keys like "title#381:0" → "title"
+  let props = cleanProperties(component.properties);
+
+  // Normalize properties based on component definition
+  props = normalizeProperties(props, component.componentName);
+
   // Extract and validate ID
   const id = extractId(props, component.nodeId);
   if (!id) {
@@ -181,7 +194,7 @@ function normaliseComponent(
     });
     return null;
   }
-  
+
   // Check for duplicate IDs
   if (seenIds.has(id)) {
     errors.push({
@@ -190,23 +203,23 @@ function normaliseComponent(
       component: component.nodeId
     });
   }
-  
+
   // Extract name and title
   const name = extractName(props, id);
   const title = extractTitle(props, name);
-  
+
   // Extract section type
   const sectionType = extractSectionType(props, component.componentName);
-  
+
   // Extract sectionHome flag
   const isHome = extractSectionHome(props);
-  
+
   // Extract and normalise homeSection
   let homeSection: string | undefined;
   if (isHome) {
     homeSection = extractHomeSection(props, errors, component.nodeId);
   }
-  
+
   // Build normalised component
   const normalised: NormalisedComponent = {
     id,
@@ -219,7 +232,7 @@ function normaliseComponent(
     homeSection,
     properties: props
   };
-  
+
   // Handle Journey-specific configuration
   if (component.componentName === 'Journey') {
     const journeyConfig = extractJourneyConfig(props, errors, component.nodeId);
@@ -228,8 +241,86 @@ function normaliseComponent(
       normalised.journeyConfig = journeyConfig;
     }
   }
-  
+
   return normalised;
+}
+
+/**
+ * Normalize properties based on component definition from unified-components.json
+ */
+function normalizeProperties(props: ComponentProperties, componentName: string): ComponentProperties {
+  const componentDef = (unifiedComponents as any)[componentName];
+
+  if (!componentDef || !componentDef.properties) {
+    return props;
+  }
+
+  const normalized: ComponentProperties = { ...props };
+
+  // Process each property definition
+  for (const [propKey, propDef] of Object.entries(componentDef.properties) as [string, any][]) {
+
+    // Handle variant property - Figma uses component name as key, we want "variant"
+    if (propDef.type === 'VARIANT' && propDef.variantKey) {
+      const figmaKey = propDef.variantKey; // e.g., "AccountCard"
+
+      if (normalized[figmaKey] !== undefined) {
+        // Move value from Figma key to "variant"
+        normalized.variant = normalized[figmaKey];
+        delete normalized[figmaKey];
+      }
+    }
+
+    // Handle dataType normalization
+    if (propDef.dataType && normalized[propKey] !== undefined) {
+      normalized[propKey] = normalizePropertyValue(normalized[propKey], propDef.dataType);
+    }
+  }
+
+  // Handle items array (for ScreenBuilder_frame)
+  if (normalized.items && Array.isArray(normalized.items)) {
+    normalized.items = normalized.items.map((item: any) => {
+      if (item.properties) {
+        item.properties = normalizeProperties(item.properties, item.componentName);
+      }
+      return item;
+    });
+  }
+
+  return normalized;
+}
+
+/**
+ * Normalize a single property value based on its dataType
+ */
+function normalizePropertyValue(value: any, dataType: string): any {
+  if (dataType === 'number') {
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      // Remove currency symbols (£, $, €), commas, and whitespace
+      const cleaned = value.replace(/[£$€,\s]/g, '');
+      const number = parseFloat(cleaned);
+
+      // Only return number if it's valid
+      return isNaN(number) ? value : number;
+    }
+  }
+
+  if (dataType === 'boolean') {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      return value.toLowerCase() === 'true';
+    }
+  }
+
+  // For string or unknown types, return as-is
+  return value;
 }
 
 /**
@@ -241,11 +332,11 @@ function extractId(props: ComponentProperties, nodeId: string): string | null {
   if (props.id && typeof props.id === 'string' && props.id.trim()) {
     return props.id.trim();
   }
-  
+
   if (props.prop0 && typeof props.prop0 === 'string' && props.prop0.trim()) {
     return props.prop0.trim();
   }
-  
+
   // Generate ID from nodeId as fallback
   return `component-${nodeId.replace(':', '-')}`;
 }
@@ -259,7 +350,7 @@ function extractName(props: ComponentProperties, id: string): string {
   if (props.name && typeof props.name === 'string' && props.name.trim()) {
     return props.name.trim();
   }
-  
+
   // Generate name from id (kebab-case to Title Case)
   return id
     .split('-')
@@ -276,7 +367,7 @@ function extractTitle(props: ComponentProperties, name: string): string | undefi
   if (props.title && typeof props.title === 'string' && props.title.trim()) {
     return props.title.trim();
   }
-  
+
   // Return undefined - UI will use name as fallback
   return undefined;
 }
@@ -290,20 +381,20 @@ function extractSectionType(
 ): SectionType {
   // Priority: section_type > prop1 > default
   let sectionType: string | undefined;
-  
+
   if (props.section_type && typeof props.section_type === 'string') {
     sectionType = props.section_type.toLowerCase().trim();
   } else if (props.prop1 && typeof props.prop1 === 'string') {
     sectionType = props.prop1.toLowerCase().trim();
   }
-  
+
   // Validate section type
   const validTypes: SectionType[] = ['main-carousel', 'slide-panel', 'modal', 'slide', 'full'];
-  
+
   if (sectionType && validTypes.includes(sectionType as SectionType)) {
     return sectionType as SectionType;
   }
-  
+
   // Default based on component type
   return componentName === 'Journey' ? 'main-carousel' : 'slide';
 }
@@ -316,16 +407,16 @@ function extractSectionHome(props: ComponentProperties): boolean {
   if (typeof props.sectionHome === 'boolean') {
     return props.sectionHome;
   }
-  
+
   if (typeof props.prop2 === 'boolean') {
     return props.prop2;
   }
-  
+
   // Handle string 'true'/'false'
   if (typeof props.prop2 === 'string') {
     return props.prop2.toLowerCase() === 'true';
   }
-  
+
   return false;
 }
 
@@ -338,7 +429,7 @@ function extractHomeSection(
   nodeId: string
 ): string | undefined {
   const rawValue = props.sectionHomeOption;
-  
+
   if (!rawValue || typeof rawValue !== 'string') {
     errors.push({
       type: 'error',
@@ -347,10 +438,10 @@ function extractHomeSection(
     });
     return undefined;
   }
-  
+
   // Normalize to lowercase and trim
   const normalized = rawValue.toLowerCase().trim();
-  
+
   if (!normalized) {
     errors.push({
       type: 'error',
@@ -359,7 +450,7 @@ function extractHomeSection(
     });
     return undefined;
   }
-  
+
   return normalized;
 }
 
@@ -372,41 +463,38 @@ function extractJourneyConfig(
   nodeId: string
 ): JourneyConfig | null {
   const journeyType = props.journeyOption as JourneyType;
-  
-  if (!journeyType || !['CoreJourney', 'AssistJourney'].includes(journeyType)) {
+
+  // Simply check if journeyOption exists and is a non-empty string
+  if (!journeyType || typeof journeyType !== 'string' || !journeyType.trim()) {
     errors.push({
       type: 'error',
-      message: 'Journey component must have a valid journeyOption',
+      message: 'Journey component must have a journeyOption',
       component: nodeId
     });
     return null;
   }
-  
+
   const config: JourneyConfig = {
     journeyType,
     debug: false,
     useMockMode: true
   };
-  
+
   // Extract journey-specific properties based on type
   if (journeyType === 'CoreJourney') {
-    // CoreJourney uses prop3 for customerId
-    if (props.prop3 && typeof props.prop3 === 'string') {
-      config.customerId = props.prop3;
+    if (props['customer-id'] && typeof props['customer-id'] === 'string') {
+      config.customerId = props['customer-id'];
     }
   } else if (journeyType === 'AssistJourney') {
-    // AssistJourney uses prop3 for TTS, prop4 for Gemini
-    if (typeof props.prop3 === 'boolean' || typeof props.prop4 === 'boolean') {
-      config.enableTTS = coerceToBoolean(props.prop3);
-      config.enableGemini = coerceToBoolean(props.prop4);
-    }
-    
-    // Check for prop5 (additional config)
-    if (typeof props.prop5 === 'boolean') {
-      // Future: additional AssistJourney config
+    config.enableTTS = coerceToBoolean(props.tts);
+    config.enableGemini = coerceToBoolean(props.gemini);
+  } else if (journeyType === 'WebviewJourney') {
+    // WebviewJourney uses defaultUrl
+    if (props.defaultUrl && typeof props.defaultUrl === 'string') {
+      config.serverUrl = props.defaultUrl;
     }
   }
-  
+
   return config;
 }
 
@@ -430,10 +518,10 @@ export function validateNormalisedComponents(
   components: NormalisedComponent[]
 ): ValidationError[] {
   const errors: ValidationError[] = [];
-  
+
   // Check for home section conflicts
   const homeSections = new Map<string, string[]>();
-  
+
   for (const component of components) {
     if (component.isHome && component.homeSection) {
       const key = `${component.sectionType}-${component.homeSection}`;
@@ -443,7 +531,7 @@ export function validateNormalisedComponents(
       homeSections.get(key)!.push(component.id);
     }
   }
-  
+
   // Report duplicates (warnings, not errors - last one wins)
   for (const [key, ids] of homeSections.entries()) {
     if (ids.length > 1) {
@@ -453,7 +541,7 @@ export function validateNormalisedComponents(
       });
     }
   }
-  
+
   // Validate Journey configs
   for (const component of components) {
     if (component.componentType === 'Journey' && !component.journeyConfig) {
@@ -464,7 +552,7 @@ export function validateNormalisedComponents(
       });
     }
   }
-  
+
   return errors;
 }
 
@@ -472,17 +560,23 @@ export function validateNormalisedComponents(
  * Helper function to clean component properties
  * Removes legacy properties with # suffix
  */
-export function cleanProperties(props: ComponentProperties): ComponentProperties {
-  const cleaned: ComponentProperties = {};
-  
-  for (const [key, value] of Object.entries(props)) {
-    // Skip properties with # suffix (legacy Figma properties)
-    if (!key.includes('#')) {
-      cleaned[key] = value;
-    }
+export function cleanProperties(props: any): any {
+  if (Array.isArray(props)) {
+    return props.map((p) => cleanProperties(p));
   }
-  
-  return cleaned;
+
+  if (props && typeof props === 'object') {
+    const cleaned: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(props)) {
+      const cleanKey = key.includes('#') ? key.split('#')[0] : key;
+      cleaned[cleanKey] = cleanProperties(value);
+    }
+
+    return cleaned;
+  }
+
+  return props;
 }
 
 /**
@@ -494,6 +588,6 @@ export function generateParseSummary(normalised: NormalisedComponent[]): string 
   const screenBuilders = normalised.filter(c => c.componentType === 'ScreenBuilder_frame').length;
   const homes = normalised.filter(c => c.isHome).length;
   const children = normalised.filter(c => !c.isHome).length;
-  
+
   return `Parsed ${total} components: ${journeys} Journeys, ${screenBuilders} ScreenBuilders. ${homes} home sections, ${children} child screens.`;
 }
