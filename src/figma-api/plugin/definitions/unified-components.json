@@ -347,23 +347,27 @@
     "properties": {
       "title": {
         "type": "TEXT",
+        "dataType": "string",
         "defaultValue": "Club Lloyds",
         "label": "Account Name"
       },
       "subtitle": {
         "type": "TEXT",
+        "dataType": "string",
         "defaultValue": "30-95-74 / 46557160",
         "label": "Account Number"
       },
       "balance": {
         "type": "TEXT",
+        "dataType": "number",
         "defaultValue": "£836.50",
         "label": "Balance"
       },
       "variant": {
         "type": "VARIANT",
         "defaultValue": "Condensed",
-        "options": ["Condensed", "Detailed"]
+        "options": ["Condensed", "Detailed"],
+        "variantKey": "AccountCard"
       }
     }
   },
@@ -386,16 +390,19 @@
     "properties": {
       "title": {
         "type": "TEXT",
+        "dataType": "string",
         "defaultValue": "Lloyds Bank Cashback Credit Card",
         "label": "Card Name"
       },
       "subtitle": {
         "type": "TEXT",
+        "dataType": "string",
         "defaultValue": "**** **** **** 9053",
         "label": "Card Number"
       },
       "balance": {
         "type": "TEXT",
+        "dataType": "number",
         "defaultValue": "£4,935.05",
         "label": "Balance"
       }
@@ -418,6 +425,7 @@
     "properties": {
       "title": {
         "type": "TEXT",
+        "dataType": "string",
         "defaultValue": "Section Title",
         "label": "Title"
       }

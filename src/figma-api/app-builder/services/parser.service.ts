@@ -19,6 +19,9 @@ import {
   ComponentProperties
 } from '../types/appBuilder.types';
 
+// Import unified component definitions
+import unifiedComponents from '../../plugin/definitions/unified-components.json';
+
 /**
  * Main parser function
  * Takes raw fullAppConfig and returns validated, normalized components
@@ -176,8 +179,10 @@ function normaliseComponent(
   seenIds: Set<string>
 ): NormalisedComponent | null {
   // Clean Figma legacy keys like "title#381:0" → "title"
-  const props = cleanProperties(component.properties);
+  let props = cleanProperties(component.properties);
 
+  // Normalize properties based on component definition
+  props = normalizeProperties(props, component.componentName);
 
   // Extract and validate ID
   const id = extractId(props, component.nodeId);
@@ -238,6 +243,84 @@ function normaliseComponent(
   }
 
   return normalised;
+}
+
+/**
+ * Normalize properties based on component definition from unified-components.json
+ */
+function normalizeProperties(props: ComponentProperties, componentName: string): ComponentProperties {
+  const componentDef = (unifiedComponents as any)[componentName];
+
+  if (!componentDef || !componentDef.properties) {
+    return props;
+  }
+
+  const normalized: ComponentProperties = { ...props };
+
+  // Process each property definition
+  for (const [propKey, propDef] of Object.entries(componentDef.properties) as [string, any][]) {
+
+    // Handle variant property - Figma uses component name as key, we want "variant"
+    if (propDef.type === 'VARIANT' && propDef.variantKey) {
+      const figmaKey = propDef.variantKey; // e.g., "AccountCard"
+
+      if (normalized[figmaKey] !== undefined) {
+        // Move value from Figma key to "variant"
+        normalized.variant = normalized[figmaKey];
+        delete normalized[figmaKey];
+      }
+    }
+
+    // Handle dataType normalization
+    if (propDef.dataType && normalized[propKey] !== undefined) {
+      normalized[propKey] = normalizePropertyValue(normalized[propKey], propDef.dataType);
+    }
+  }
+
+  // Handle items array (for ScreenBuilder_frame)
+  if (normalized.items && Array.isArray(normalized.items)) {
+    normalized.items = normalized.items.map((item: any) => {
+      if (item.properties) {
+        item.properties = normalizeProperties(item.properties, item.componentName);
+      }
+      return item;
+    });
+  }
+
+  return normalized;
+}
+
+/**
+ * Normalize a single property value based on its dataType
+ */
+function normalizePropertyValue(value: any, dataType: string): any {
+  if (dataType === 'number') {
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      // Remove currency symbols (£, $, €), commas, and whitespace
+      const cleaned = value.replace(/[£$€,\s]/g, '');
+      const number = parseFloat(cleaned);
+
+      // Only return number if it's valid
+      return isNaN(number) ? value : number;
+    }
+  }
+
+  if (dataType === 'boolean') {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      return value.toLowerCase() === 'true';
+    }
+  }
+
+  // For string or unknown types, return as-is
+  return value;
 }
 
 /**
@@ -495,20 +578,6 @@ export function cleanProperties(props: any): any {
 
   return props;
 }
-
-
-// export function cleanProperties(props: ComponentProperties): ComponentProperties {
-//   const cleaned: ComponentProperties = {};
-
-//   for (const [key, value] of Object.entries(props)) {
-//     // Skip properties with # suffix (legacy Figma properties)
-//     if (!key.includes('#')) {
-//       cleaned[key] = value;
-//     }
-//   }
-
-//   return cleaned;
-// }
 
 /**
  * Generate a summary of parsed components
