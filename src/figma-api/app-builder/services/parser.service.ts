@@ -591,3 +591,5 @@ export function generateParseSummary(normalised: NormalisedComponent[]): string 
 
   return `Parsed ${total} components: ${journeys} Journeys, ${screenBuilders} ScreenBuilders. ${homes} home sections, ${children} child screens.`;
 }
+
+export { normalizeProperties };

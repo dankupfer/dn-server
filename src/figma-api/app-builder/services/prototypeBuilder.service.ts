@@ -25,7 +25,29 @@ import { bundleWithExpoDevServer, stopExpoServer } from './bundlers/expoServerBu
 import { generateViewer } from './utils/viewerGenerator';
 import { updateMappings, getPrototype, incrementViews } from './utils/mappingsManager';
 
-import { cleanProperties } from './parser.service'; // ✅ import normalization util
+
+
+import { cleanProperties, normalizeProperties } from './parser.service';
+
+/**
+ * Recursively normalize properties including nested items arrays
+ */
+function normalizePropertiesRecursive(props: any, componentName: string): any {
+  if (!props) return props;
+
+  // Normalize the current level properties
+  let normalized = normalizeProperties(props, componentName);
+
+  // If there's an items array, normalize each item's properties
+  if (normalized.items && Array.isArray(normalized.items)) {
+    normalized.items = normalized.items.map((item: any) => ({
+      ...item,
+      properties: normalizePropertiesRecursive(item.properties, item.componentName)
+    }));
+  }
+
+  return normalized;
+}
 
 // Re-export utilities for external use
 export { getPrototype, incrementViews };
@@ -104,13 +126,23 @@ async function buildPrototype(jobId: string, config: BuildConfig): Promise<void>
     // 2. Normalize and save fullAppConfig.json ✅
     jobQueue.updateProgress(jobId, 15, 'Saving configuration...');
 
-    const normalizedFullAppConfig = cleanProperties(config.fullAppConfig);
+    // First clean properties (remove # suffixes)
+    const cleanedConfig = cleanProperties(config.fullAppConfig);
+
+    // Then normalize data types for all components
+    const normalizedConfig = {
+      ...cleanedConfig,
+      components: cleanedConfig.components.map((component: any) => ({
+        ...component,
+        properties: normalizePropertiesRecursive(component.properties, component.componentName)
+      }))
+    };
 
     // Save normalized version
-    await fs.writeJson(path.join(buildPath, 'fullAppConfig.json'), normalizedFullAppConfig, { spaces: 2 });
+    await fs.writeJson(path.join(buildPath, 'fullAppConfig.json'), normalizedConfig, { spaces: 2 });
 
-    // Replace in-memory config so subsequent steps use the cleaned one
-    config.fullAppConfig = normalizedFullAppConfig;
+    // Replace in-memory config so subsequent steps use the normalized one
+    config.fullAppConfig = normalizedConfig;
 
     // 3. Use appBuilder to generate the app
     jobQueue.updateProgress(jobId, 20, 'Building app with appBuilder...');
