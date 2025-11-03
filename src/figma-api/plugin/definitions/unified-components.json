@@ -7,12 +7,42 @@
     
     "width": 393,
     "height": 852,
-    "backgroundColor": "#E3F2FD",
-    "elements": [
-      { "type": "text", "content": "App Frame", "x": 20, "y": 20, "fontSize": 24, "fontWeight": 700 },
-      { "type": "text", "content": "Full screen app container", "x": 20, "y": 55, "fontSize": 14, "color": "#666666" },
-      { "type": "text", "content": "Use plugin UI to configure →", "x": 20, "y": 100, "fontSize": 12, "color": "#666666" }
+    "backgroundColor": "#FFFFFF",
+    
+    "chromeElements": [
+      {
+        "name": "header",
+        "type": "image",
+        "imagePath": "/assets/app-chrome/header-lloyds-light.png",
+        "x": 0,
+        "y": 0,
+        "width": 393,
+        "height": 80,
+        "locked": true
+      },
+      {
+        "name": "tabs",
+        "type": "image",
+        "imagePath": "/assets/app-chrome/tabs-lloyds-light.png",
+        "x": 0,
+        "y": 80,
+        "width": 393,
+        "height": 50,
+        "locked": true
+      },
+      {
+        "name": "bottom-nav",
+        "type": "image",
+        "imagePath": "/assets/app-chrome/bottom-nav-lloyds-light.png",
+        "x": 0,
+        "y": 732,
+        "width": 393,
+        "height": 120,
+        "locked": true
+      }
     ],
+    
+    "elements": [],
     
     "fields": [
       {
@@ -79,8 +109,8 @@
     "height": 852,
     "backgroundColor": "#FFF3E0",
     "elements": [
-      { "type": "text", "content": "ScreenBuilder Frame", "x": 20, "y": 20, "fontSize": 20, "fontWeight": 700 },
-      { "type": "text", "content": "Drag Item components inside", "x": 20, "y": 50, "fontSize": 12, "color": "#666666" }
+      { "type": "text", "content": "ScreenBuilder Frame", "x": 20, "y": 20, "fontSize": 20, "fontWeight": 700, "locked": true },
+      { "type": "text", "content": "Drag Item components inside", "x": 20, "y": 50, "fontSize": 12, "color": "#666666", "locked": true }
     ],
     
     "fields": [
