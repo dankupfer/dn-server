@@ -235,4 +235,53 @@ router.post('/create-module', async (req: Request, res: Response) => {
     }
 });
 
+/**
+ * GET /api/figma/plugin/assets/*
+ * Serve chrome assets (images)
+ */
+router.get('/assets/*', (req: Request, res: Response) => {
+    try {
+        // Extract the file path from the URL
+        const assetPath = req.params[0]; // Everything after /assets/
+        const fullPath = path.join(__dirname, '../assets', assetPath);
+
+        console.log('📸 Serving asset:', assetPath);
+        console.log('   Full path:', fullPath);
+
+        // Check if file exists
+        if (!fs.existsSync(fullPath)) {
+            console.error('❌ Asset not found:', fullPath);
+            return res.status(404).json({
+                success: false,
+                error: 'Asset not found'
+            });
+        }
+
+        // Determine content type based on extension
+        const ext = path.extname(fullPath).toLowerCase();
+        const contentTypes: Record<string, string> = {
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml'
+        };
+
+        const contentType = contentTypes[ext] || 'application/octet-stream';
+
+        // Send the file
+        res.setHeader('Content-Type', contentType);
+        res.sendFile(fullPath);
+
+        console.log('✅ Asset served successfully');
+
+    } catch (error) {
+        console.error('Error serving asset:', error);
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+});
+
 export default router;
