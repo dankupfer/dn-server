@@ -548,18 +548,28 @@ const FigmaRouter: React.FC<FigmaRouterProps> = ({ screenWidth }) => {
 
   // Render bottom navigation
   const renderBottomNavigation = () => {
+    // Quick hardcoded icon mapping for demo
+    const iconMap: { [key: string]: string } = {
+      'home': 'components|bottom_navigation|tab_1_default',
+      'apply': 'components|bottom_navigation|tab_2_default',
+      'payments': 'components|bottom_navigation|tab_3_default',
+      'search': 'components|bottom_navigation|tab_4_default',
+      'cards': 'components|bottom_navigation|tab_5_default'
+    };
+
     // Build bottom nav items respecting the order from bottomNavRoutes
-    const allItems = bottomNavRoutes.map(route => ({
-      id: route.id,
-      label: route.name,
-      iconDefault: route.type === 'tab'
-        ? 'components|bottom_navigation|tab_1_default'
-        : 'components|bottom_navigation|tab_3_default',
-      iconActive: route.type === 'tab'
-        ? 'components|bottom_navigation|tab_1_default'
-        : 'components|bottom_navigation|tab_3_default',
-      onPress: () => console.log(`${route.name} pressed`)
-    }));
+    const allItems = bottomNavRoutes.map(route => {
+      const routeId = route.id.toLowerCase();
+      const iconPath = iconMap[routeId] || 'components|bottom_navigation|tab_1_default';
+
+      return {
+        id: route.id,
+        label: route.name,
+        iconDefault: iconPath,
+        iconActive: iconPath,
+        onPress: () => console.log(`${route.name} pressed`)
+      };
+    });
 
     // Extract IDs in order
     const tabIds = bottomNavRoutes.filter(r => r.type === 'tab').map(r => r.id);
