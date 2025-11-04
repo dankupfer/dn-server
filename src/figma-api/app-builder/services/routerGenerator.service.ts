@@ -313,19 +313,31 @@ export interface BottomNavRoute {
   name: string;
   title?: string;
   type: 'tab' | 'modal';
+  icon?: string;
   component?: React.ComponentType<{ screenWidth: number }>; // Made optional for 'home'
 }
 
+// Icon mapping for bottom navigation
+const iconMap: { [key: string]: string } = {
+  'home': 'components|bottom_navigation|tab_1_default',
+  'apply': 'components|bottom_navigation|tab_2_default',
+  'payments': 'components|bottom_navigation|tab_3_default',
+  'search': 'components|bottom_navigation|tab_4_default',
+  'cards': 'components|bottom_navigation|tab_5_default'
+};
+
 export const bottomNavRoutes: BottomNavRoute[] = [
-  { id: 'home', name: 'Home', title: 'Home', type: 'tab' }, // No component - shows carousel
+  { id: 'home', name: 'Home', title: 'Home', type: 'tab', icon: iconMap['home'] }, // No component - shows carousel
 `;
 
-    // Add all routes in order (respecting the array order from Figma)
+    // Add all routes in order with icon mapping
     routes.forEach((route, index) => {
         const componentName = imports[index].componentName;
+        const routeId = route.routeId.toLowerCase();
+        const iconPath = `iconMap['${routeId}'] || 'components|bottom_navigation|tab_1_default'`;
         const comma = index < routes.length - 1 ? ',' : '';
         const titleProp = route.title ? `, title: '${route.title}'` : '';
-        content += `  { id: '${route.routeId}', name: '${route.name}'${titleProp}, type: '${route.type}', component: ${componentName} }${comma}\n`;
+        content += `  { id: '${route.routeId}', name: '${route.name}'${titleProp}, type: '${route.type}', icon: ${iconPath}, component: ${componentName} }${comma}\n`;
     });
 
     content += `];\n`;
